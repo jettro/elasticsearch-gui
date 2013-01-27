@@ -15,9 +15,13 @@
 <div>
     <form novalidate class="form-search">
         Search for: <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
-        <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i class="icon-search icon-white"></i></span>
-        <span class="btn btn-info" ng-click="changeQuery()" title="Check Query"><i class="icon-check icon-white"></i></span>
-        <span class="btn btn-info" ng-click="resetQuery()" title="Reset all choices"><i class="icon-refresh icon-white"></i></span>
+        <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i
+                class="icon-search icon-white"></i></span>
+        <span class="btn btn-info" ng-click="changeQuery()" title="Check Query"><i
+                class="icon-check icon-white"></i></span>
+        <span class="btn btn-info" ng-click="resetQuery()" title="Reset all choices"><i
+                class="icon-refresh icon-white"></i></span><br/>
+        Use explain: <label class="checkbox"><input type="checkbox" ng-model="search.explain"/> </label>
     </form>
 </div>
 
@@ -25,12 +29,53 @@
 <div class="well well-large">{{createdQuery}}</div>
 
 <h3>Results</h3>
-
 <table class="table table-condensed">
-    <tr ng-repeat="doc in queryResults">
-        <td>{{doc}}</td>
+    <tr>
+        <th>Total hits</th>
+        <td>{{queryResults.total}}</td>
+    </tr>
+    <tr>
+        <th>Max score</th>
+        <td>{{queryResults.max_score}}</td>
     </tr>
 </table>
+<div class="row" ng-repeat="doc in queryResults.hits">
+    <div class="span4">
+        <table class="table table-condensed">
+            <tr>
+                <th>Index</th>
+                <td>{{doc._index}}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{doc._type}}</td>
+            </tr>
+            <tr>
+                <th>ID</th>
+                <td>{{doc._id}}</td>
+            </tr>
+            <tr>
+                <th>Score</th>
+                <td>{{doc._score}}</td>
+            </tr>
+            <tr>
+                <th>Shard</th>
+                <td>{{doc._shard}}</td>
+            </tr>
+            <tr>
+                <th>Node</th>
+                <td>{{doc._node}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="span8">
+        <p>{{doc._source}}</p>
+
+        <h3 ng-hide="!search.explain">Explanation</h3>
+
+        <p>{{doc._explanation}}</p>
+    </div>
+</div>
 
 <script>
     $('.chooseIndexBtn').button()

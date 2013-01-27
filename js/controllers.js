@@ -75,9 +75,10 @@ function QueryCtrl($scope, $http, ejsResource) {
     };
 
     $scope.executeQuery = function () {
+        $scope.changeQuery();
         var request = createQuery();
         request.doSearch(function (results) {
-            $scope.queryResults = results.hits.hits;
+            $scope.queryResults = results.hits;
         });
 
     };
@@ -98,7 +99,7 @@ function QueryCtrl($scope, $http, ejsResource) {
         request.types($scope.chosenTypes);
 
         request.query(ejs.TermQuery("_all", $scope.search.term));
-        request.explain(true);
+        request.explain($scope.search.explain);
         return request;
     }
 

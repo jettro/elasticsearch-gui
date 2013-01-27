@@ -1,0 +1,37 @@
+<div>Available indexes: <span ng-click="indices()" class="btn btn-mini"><i class="icon-refresh"></i></span>
+
+    <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
+        <div class="btn btn-mini" ng-click="chooseIndex(key)" ng-repeat="(key,value) in indices">{{key}}</div>
+    </div>
+</div>
+
+<div>Available types: <span ng-click="types()" class="btn btn-mini"><i class="icon-refresh"></i></span>
+
+    <div id="chooseTypeBtn" class="btn-group" data-toggle="buttons-checkbox">
+        <div class="btn btn-mini" ng-click="chooseType(type)" ng-repeat="type in types">{{type}}</div>
+    </div>
+</div>
+
+<div>
+    <form novalidate class="form-search">
+        Search for: <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
+        <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i class="icon-search icon-white"></i></span>
+        <span class="btn btn-info" ng-click="changeQuery()" title="Check Query"><i class="icon-check icon-white"></i></span>
+        <span class="btn btn-info" ng-click="resetQuery()" title="Reset all choices"><i class="icon-refresh icon-white"></i></span>
+    </form>
+</div>
+
+<h3>Query</h3>
+<div class="well well-large">{{createdQuery}}</div>
+
+<h3>Results</h3>
+
+<table class="table table-condensed">
+    <tr ng-repeat="doc in queryResults">
+        <td>{{doc}}</td>
+    </tr>
+</table>
+
+<script>
+    $('.chooseIndexBtn').button()
+</script>

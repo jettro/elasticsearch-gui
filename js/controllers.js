@@ -27,10 +27,12 @@ function QueryCtrl($scope, $http, ejsResource) {
     $scope.types = [];
     $scope.chosenIndices = [];
     $scope.chosenTypes = [];
+    $scope.chosenFields = [];
     $scope.createdQuery = "";
     $scope.queryResults = [];
     $scope.fields = [];
     $scope.search = {};
+    $scope.queryFactory = {};
 
     var ejs = ejsResource();
 
@@ -43,14 +45,33 @@ function QueryCtrl($scope, $http, ejsResource) {
     $scope.types = function () {
         $http.get('/_mapping').success(function (data) {
             var myTypes = [];
-            for (var key in data) {
-                for (var type in data[key]) {
+            for (var index in data) {
+                for (var type in data[index]) {
                     if (myTypes.indexOf(type) == -1) {
                         myTypes.push(type);
                     }
                 }
             }
             $scope.types = myTypes;
+        });
+    };
+
+    $scope.fields = function () {
+        $http.get('/_mapping').success(function (data) {
+            var myTypes = [];
+            var myFields = [];
+            for (var index in data) { // wateenjuweeltje
+                for (var type in data[index]) { // blog-item
+                    if (myTypes.indexOf(type) == -1) {
+                        myTypes.push(type);
+                        var properties = data[index][type].properties;
+                        for (var field in properties) {
+                            myFields.push(field);
+                        }
+                    }
+                }
+            }
+            $scope.fields = myFields;
         });
     }
 
@@ -74,6 +95,22 @@ function QueryCtrl($scope, $http, ejsResource) {
         $scope.changeQuery();
     };
 
+    $scope.addQueryField = function () {
+        var i = $scope.chosenFields.indexOf($scope.queryFactory.addField);
+        if (i == -1) {
+            $scope.chosenFields.push($scope.queryFactory.addField);
+        }
+        $scope.changeQuery();
+    };
+
+    $scope.removeQueryField = function (data) {
+        var i = $scope.chosenFields.indexOf(data);
+        if (i > -1) {
+            $scope.chosenFields.splice(i, 1);
+        }
+        $scope.changeQuery();
+    };
+
     $scope.executeQuery = function () {
         $scope.changeQuery();
         var request = createQuery();
@@ -86,22 +123,41 @@ function QueryCtrl($scope, $http, ejsResource) {
     $scope.resetQuery = function () {
         $scope.indices();
         $scope.types();
+        $scope.fields();
         $scope.search.term = "";
     };
 
     $scope.changeQuery = function () {
         $scope.createdQuery = createQuery().toString();
-    }
+    };
 
     function createQuery() {
         var request = ejs.Request();
         request.indices($scope.chosenIndices);
         request.types($scope.chosenTypes);
+        if ($scope.chosenFields.length > 0) {
+            request.fields($scope.chosenFields);
+        }
+        if ($scope.search.term.length > 0) {
+            request.query(ejs.TermQuery("_all", $scope.search.term));
+        } else {
+            request.query(ejs.MatchAllQuery());
+        }
 
-        request.query(ejs.TermQuery("_all", $scope.search.term));
+        // This is a date histogram facet
+//        var dateHistogramFacet = ejs.DateHistogramFacet("Created");
+//        dateHistogramFacet.field("createdOn_date");
+//        dateHistogramFacet.interval("month");
+//        request.facet(dateHistogramFacet);
+
+        // This is a term facet
+//        var termsFacet = ejs.TermsFacet("Category");
+//        termsFacet.field("keywords");
+//        request.facet(termsFacet);
+
         request.explain($scope.search.explain);
         return request;
-    }
+    };
 
     $scope.resetQuery();
 }

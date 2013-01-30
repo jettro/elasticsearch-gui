@@ -13,6 +13,19 @@
 </div>
 
 <div>
+    <form class="form-horizontal">
+        Available Fields:<select ng-model="queryFactory.addField">
+        <option ng-repeat="field in fields">{{field}}</option>
+    </select>
+        <span class="btn btn-info btn-mini" ng-click="addQueryField()" title="Add query Field"><i
+                class="icon-plus-sign icon-white"></i></span>
+        <span ng-repeat="field in chosenFields">{{field}} <span class="btn btn-mini" ng-click="removeQueryField(field)"
+                                                                title="Remove query Field"><i
+                class="icon-remove-sign"></i></span></span>
+    </form>
+</div>
+
+<div>
     <form novalidate class="form-search">
         Search for: <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
         <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i
@@ -68,9 +81,15 @@
             </tr>
         </table>
     </div>
-    <div class="span8">
-        <p>{{doc._source}}</p>
-
+    <div class="span4">
+        <table class="table table-condensed">
+            <tr ng-repeat="(key,value) in doc.fields">
+                <th>{{key}}</th>
+                <td>{{value}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="span4">
         <h3 ng-hide="!search.explain">Explanation</h3>
 
         <p>{{doc._explanation}}</p>

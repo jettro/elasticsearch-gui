@@ -33,6 +33,8 @@ function QueryCtrl($scope, $http, ejsResource) {
     $scope.fields = [];
     $scope.search = {};
     $scope.queryFactory = {};
+    $scope.facets = [];
+    $scope.facetResults = [];
 
     var ejs = ejsResource();
 
@@ -111,11 +113,28 @@ function QueryCtrl($scope, $http, ejsResource) {
         $scope.changeQuery();
     };
 
+    $scope.addFacetField = function () {
+        var i = $scope.facets.indexOf($scope.queryFactory.addFacet);
+        if (i == -1) {
+            $scope.facets.push($scope.queryFactory.addFacet);
+        }
+        $scope.changeQuery();
+    };
+
+    $scope.removeFacetField = function (data) {
+        var i = $scope.facets.indexOf(data);
+        if (i > -1) {
+            $scope.facets.splice(i, 1);
+        }
+        $scope.changeQuery();
+    };
+
     $scope.executeQuery = function () {
         $scope.changeQuery();
         var request = createQuery();
         request.doSearch(function (results) {
             $scope.queryResults = results.hits;
+            $scope.facetResults = results.facets;
         });
 
     };
@@ -150,10 +169,11 @@ function QueryCtrl($scope, $http, ejsResource) {
 //        dateHistogramFacet.interval("month");
 //        request.facet(dateHistogramFacet);
 
-        // This is a term facet
-//        var termsFacet = ejs.TermsFacet("Category");
-//        termsFacet.field("keywords");
-//        request.facet(termsFacet);
+        for (var i = 0; i < $scope.facets.length; i++) {
+            var termsFacet = ejs.TermsFacet($scope.facets[i]);
+            termsFacet.field($scope.facets[i]);
+            request.facet(termsFacet);
+        }
 
         request.explain($scope.search.explain);
         return request;

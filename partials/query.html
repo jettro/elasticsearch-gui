@@ -26,6 +26,19 @@
 </div>
 
 <div>
+    <form class="form-horizontal">
+        Possible Facets:<select ng-model="queryFactory.addFacet">
+        <option ng-repeat="field in fields">{{field}}</option>
+    </select>
+        <span class="btn btn-info btn-mini" ng-click="addFacetField()" title="Add a facet Field"><i
+                class="icon-plus-sign icon-white"></i></span>
+        <span ng-repeat="field in facets">{{field}} <span class="btn btn-mini" ng-click="removeFacetField(field)"
+                                                          title="Remove facet Field"><i
+                class="icon-remove-sign"></i></span></span>
+    </form>
+</div>
+
+<div>
     <form novalidate class="form-search">
         Search for: <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
         <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i
@@ -40,6 +53,19 @@
 
 <h3>Query</h3>
 <div class="well well-large">{{createdQuery}}</div>
+
+<h3>Facet results</h3>
+<div ng-repeat="(key,value) in facetResults">
+    <div><strong>{{key}} - {{value._type}}</strong></div>
+    <div>
+        <span>Total: {{value.total}}</span>
+        <span>Missing: {{value.missing}}</span>
+        <span>Missing: {{value.other}}</span>
+    </div>
+    <div>
+        <span ng-repeat="term in value.terms"> {{term.term}} ({{term.count}})</span>
+    </div>
+</div>
 
 <h3>Results</h3>
 <table class="table table-condensed">

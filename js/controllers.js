@@ -68,7 +68,9 @@ function QueryCtrl($scope, $http, ejsResource) {
                         myTypes.push(type);
                         var properties = data[index][type].properties;
                         for (var field in properties) {
-                            myFields.push(field);
+                            if (myFields.indexOf(field) == -1) {
+                                myFields.push(field);
+                            }
                         }
                     }
                 }

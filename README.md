@@ -13,3 +13,5 @@ chosen name and within that folder _site. Than you can browse to:
 http://<server>:<port>/_plugin/<the_name>/index.html
 
 That should do the trick. If you have questions or problems, use the ticket system.
+
+bin/elasticsearch -f -Des.config=/Users/jcoenradie/javalibs/elasticsearch/projects/gridshore/config/elasticsearch.yml

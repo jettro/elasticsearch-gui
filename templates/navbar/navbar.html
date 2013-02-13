@@ -1,0 +1,15 @@
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container">
+            <a class="brand" href="#">{{heading}}</a>
+
+            <div class="nav-collapse collapse">
+                <ul class="nav">
+                    <li ng-repeat="item in items" ng-class="{active: item.selected}">
+                        <a href="#/{{item.link}}">{{item.title}}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

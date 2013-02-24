@@ -22,7 +22,7 @@ function StatsCtrl() {
 
 }
 
-function QueryCtrl($scope, $http, ejsResource) {
+function QueryCtrl($scope, ejsResource, elastic) {
     $scope.indices = [];
     $scope.types = [];
     $scope.chosenIndices = [];
@@ -39,45 +39,22 @@ function QueryCtrl($scope, $http, ejsResource) {
     var ejs = ejsResource();
 
     $scope.indices = function () {
-        $http.get('/_status').success(function (data) {
-            $scope.indices = data.indices;
+        elastic.indexes(function (data) {
+            $scope.indices = data;
         });
     };
 
     $scope.types = function () {
-        $http.get('/_mapping').success(function (data) {
-            var myTypes = [];
-            for (var index in data) {
-                for (var type in data[index]) {
-                    if (myTypes.indexOf(type) == -1) {
-                        myTypes.push(type);
-                    }
-                }
-            }
-            $scope.types = myTypes;
+        elastic.types(function (data) {
+            $scope.types = data;
         });
     };
 
     $scope.fields = function () {
-        $http.get('/_mapping').success(function (data) {
-            var myTypes = [];
-            var myFields = [];
-            for (var index in data) { // wateenjuweeltje
-                for (var type in data[index]) { // blog-item
-                    if (myTypes.indexOf(type) == -1) {
-                        myTypes.push(type);
-                        var properties = data[index][type].properties;
-                        for (var field in properties) {
-                            if (myFields.indexOf(field) == -1) {
-                                myFields.push(field);
-                            }
-                        }
-                    }
-                }
-            }
-            $scope.fields = myFields;
+        elastic.fields(function (data) {
+            $scope.fields = data;
         });
-    }
+    };
 
     $scope.chooseIndex = function (index) {
         var i = $scope.chosenIndices.indexOf(index);
@@ -179,10 +156,11 @@ function QueryCtrl($scope, $http, ejsResource) {
 
         request.explain($scope.search.explain);
         return request;
-    };
+    }
 
     $scope.resetQuery();
 }
+QueryCtrl.$inject = ['$scope', 'ejsResource', 'elastic']
 
 function NavbarCtrl($scope) {
     var items = $scope.items = [

@@ -1,0 +1,43 @@
+<div class="modal-header">
+    <h1>Create a facet</h1>
+</div>
+<div class="modal-body">
+    <form>
+        <fieldset>
+            <label>Available Fields</label>
+            <select ng-model="dialog.field">
+                <option ng-repeat="field in fields">{{field}}</option>
+            </select>
+            <label>Facet types</label>
+            <select ng-model="dialog.facettype">
+                <option ng-repeat="facetType in facetTypes">{{facetType}}</option>
+            </select>
+
+            <div ng-show="dialog.facettype == 'Term'">
+                <p class="text-info">No special configuration for a Term facet</p>
+            </div>
+            <div ng-show="dialog.facettype == 'Range'">
+                <div ng-repeat="range in ranges">
+                    <span>from: {{range[0]}}</span>
+                    <span>to: {{range[1]}}</span>
+                </div>
+                <label>from</label>
+                <input type="number" ng-model="dialog.range.from"/>
+                <label>to</label>
+                <input type="number" ng-model="dialog.range.to"/>
+                <span class="btn btn-info btn-mini" ng-click="addRangeField()" title="Add range Field">
+                    <i class="icon-plus-sign icon-white"></i>
+                </span>
+            </div>
+            <div ng-show="dialog.facettype == 'DateHistogram'">
+                <label>Interval</label>
+                <select ng-model="interval">
+                    <option ng-repeat="anInterval in intervals">{{anInterval}}</option>
+                </select>
+            </div>
+        </fieldset>
+    </form>
+</div>
+<div class="modal-footer">
+    <button ng-click="close(dialog)" class="btn btn-primary">Close</button>
+</div>

@@ -22,15 +22,17 @@ function StatsCtrl() {
 
 }
 
-function QueryCtrl($scope, ejsResource, elastic) {
+function QueryCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.indices = [];
     $scope.types = [];
+    $scope.fields = [];
+
     $scope.chosenIndices = [];
     $scope.chosenTypes = [];
     $scope.chosenFields = [];
+
     $scope.createdQuery = "";
     $scope.queryResults = [];
-    $scope.fields = [];
     $scope.search = {};
     $scope.queryFactory = {};
     $scope.facets = [];
@@ -38,41 +40,33 @@ function QueryCtrl($scope, ejsResource, elastic) {
 
     var ejs = ejsResource();
 
-    $scope.indices = function () {
+    /* Functions to retrieve values used to created the query */
+    $scope.loadIndices = function () {
         elastic.indexes(function (data) {
             $scope.indices = data;
         });
     };
 
-    $scope.types = function () {
+    $scope.loadTypes = function () {
         elastic.types(function (data) {
             $scope.types = data;
         });
     };
 
-    $scope.fields = function () {
+    $scope.loadFields = function () {
         elastic.fields(function (data) {
             $scope.fields = data;
         });
     };
 
+    /* Function to change the input for the query to be executed */
     $scope.chooseIndex = function (index) {
-        var i = $scope.chosenIndices.indexOf(index);
-        if (i > -1) {
-            $scope.chosenIndices.splice(i, 1);
-        } else {
-            $scope.chosenIndices.push(index);
-        }
+        toggleChoice($scope.chosenIndices, index);
         $scope.changeQuery();
     };
 
     $scope.chooseType = function (type) {
-        var i = $scope.chosenTypes.indexOf(type);
-        if (i > -1) {
-            $scope.chosenTypes.splice(i, 1);
-        } else {
-            $scope.chosenTypes.push(type);
-        }
+        toggleChoice($scope.chosenTypes, type);
         $scope.changeQuery();
     };
 
@@ -92,22 +86,22 @@ function QueryCtrl($scope, ejsResource, elastic) {
         $scope.changeQuery();
     };
 
-    $scope.addFacetField = function () {
-        var i = $scope.facets.indexOf($scope.queryFactory.addFacet);
-        if (i == -1) {
-            $scope.facets.push($scope.queryFactory.addFacet);
-        }
-        $scope.changeQuery();
-    };
-
     $scope.removeFacetField = function (data) {
-        var i = $scope.facets.indexOf(data);
-        if (i > -1) {
-            $scope.facets.splice(i, 1);
+        var found = -1;
+        for (var i = 0; i < $scope.facets.length; i++) {
+            var currentFacet = $scope.facets[i];
+            if (currentFacet.field === data) {
+                found = i;
+                break;
+            }
+        }
+        if (found > -1) {
+            $scope.facets.splice(found, 1);
         }
         $scope.changeQuery();
     };
 
+    /* Functions to create, reset and execute the query */
     $scope.executeQuery = function () {
         $scope.changeQuery();
         var request = createQuery();
@@ -119,14 +113,35 @@ function QueryCtrl($scope, ejsResource, elastic) {
     };
 
     $scope.resetQuery = function () {
-        $scope.indices();
-        $scope.types();
-        $scope.fields();
+        $scope.loadIndices();
+        $scope.loadTypes();
+        $scope.loadFields();
         $scope.search.term = "";
+        $scope.chosenIndices = [];
+        $scope.chosenTypes = [];
+        $scope.chosenFields = [];
+        $scope.changeQuery();
     };
 
     $scope.changeQuery = function () {
         $scope.createdQuery = createQuery().toString();
+    };
+
+    $scope.openDialog = function () {
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'templates/dialog/facet.html',
+            controller: 'FacetDialogCtrl',
+            resolve: {fields: angular.copy($scope.fields)}};
+        var d = $dialog.dialog(opts);
+        d.open().then(function (result) {
+            if (result) {
+                $scope.facets.push(result);
+                $scope.changeQuery();
+            }
+        });
     };
 
     function createQuery() {
@@ -142,25 +157,50 @@ function QueryCtrl($scope, ejsResource, elastic) {
             request.query(ejs.MatchAllQuery());
         }
 
-        // This is a date histogram facet
-//        var dateHistogramFacet = ejs.DateHistogramFacet("Created");
-//        dateHistogramFacet.field("createdOn_date");
-//        dateHistogramFacet.interval("month");
-//        request.facet(dateHistogramFacet);
-
         for (var i = 0; i < $scope.facets.length; i++) {
-            var termsFacet = ejs.TermsFacet($scope.facets[i]);
-            termsFacet.field($scope.facets[i]);
-            request.facet(termsFacet);
+            var facet = $scope.facets[i];
+            if (facet.facetType === 'term') {
+                var termsFacet = ejs.TermsFacet(facet.field);
+                termsFacet.field(facet.field);
+                request.facet(termsFacet);
+            } else if (facet.facetType === 'range') {
+                var rangeFacet = ejs.RangeFacet(facet.field);
+                for (var j = 0; j < facet.ranges.length; j++) {
+                    var range = facet.ranges[j];
+                    if (range[0] == undefined) {
+                        rangeFacet.addUnboundedTo(range[1]);
+                    } else if (range[1] == undefined) {
+                        rangeFacet.addUnboundedFrom(range[0]);
+                    } else {
+                        rangeFacet.addRange(range[0], range[1]);
+                    }
+                }
+                rangeFacet.field(facet.field);
+                request.facet(rangeFacet);
+            } else if (facet.facetType === 'datehistogram') {
+                var dateHistogramFacet = ejs.DateHistogramFacet(facet.field + 'Facet');
+                dateHistogramFacet.field(facet.field);
+                dateHistogramFacet.interval(facet.interval);
+                request.facet(dateHistogramFacet);
+            }
         }
+
 
         request.explain($scope.search.explain);
         return request;
     }
 
+    function toggleChoice(theArray, theChoice) {
+        var i = theArray.indexOf(theChoice);
+        if (i > -1) {
+            theArray.splice(i, 1);
+        } else {
+            theArray.push(theChoice);
+        }
+    };
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', 'ejsResource', 'elastic']
+QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
 
 function NavbarCtrl($scope) {
     var items = $scope.items = [
@@ -183,4 +223,33 @@ function NavbarCtrl($scope) {
             }
         });
     };
+}
+
+function FacetDialogCtrl($scope, dialog, fields) {
+    $scope.fields = fields;
+    $scope.facetTypes = ["Term", "Range", "DateHistogram"];
+    $scope.ranges = [];
+    $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
+    $scope.interval = "";
+
+    $scope.close = function (result) {
+        var dialogResult = {};
+        if ($scope.dialog.facettype === 'Term') {
+            dialogResult.field = $scope.dialog.field;
+            dialogResult.facetType = 'term';
+        } else if ($scope.dialog.facettype === 'Range') {
+            dialogResult.field = $scope.dialog.field;
+            dialogResult.facetType = 'range';
+            dialogResult.ranges = $scope.ranges;
+        } else if ($scope.dialog.facettype === 'DateHistogram') {
+            dialogResult.field = $scope.dialog.field;
+            dialogResult.facetType = 'datehistogram';
+            dialogResult.interval = $scope.interval;
+        }
+        dialog.close(dialogResult);
+    };
+
+    $scope.addRangeField = function () {
+        $scope.ranges.push([$scope.dialog.range.from, $scope.dialog.range.to]);
+    }
 }

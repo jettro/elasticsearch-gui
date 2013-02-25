@@ -1,55 +1,76 @@
-<div>Available indexes: <span ng-click="indices()" class="btn btn-mini"><i class="icon-refresh"></i></span>
-
-    <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
-        <div class="btn btn-mini" ng-click="chooseIndex(key)" ng-repeat="(key,value) in indices">{{key}}</div>
+<div class="row-fluid">
+    <div class="span2"><p class="text-info">Available indexes:</p></div>
+    <div class="span10">
+        <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
+            <div class="btn btn-mini" ng-click="chooseIndex(key)" ng-repeat="(key,value) in indices">{{key}}</div>
+        </div>
     </div>
 </div>
 
-<div>Available types: <span ng-click="types()" class="btn btn-mini"><i class="icon-refresh"></i></span>
-
-    <div id="chooseTypeBtn" class="btn-group" data-toggle="buttons-checkbox">
-        <div class="btn btn-mini" ng-click="chooseType(type)" ng-repeat="type in types">{{type}}</div>
+<div class="row-fluid">
+    <div class="span2"><p class="text-info">Available types:</p></div>
+    <div class="span10">
+        <div id="chooseTypeBtn" class="btn-group" data-toggle="buttons-checkbox">
+            <div class="btn btn-mini" ng-click="chooseType(type)" ng-repeat="type in types">{{type}}</div>
+        </div>
     </div>
 </div>
 
-<div>
+<div class="row-fluid" style="padding-bottom: 5px">
     <form class="form-horizontal">
-        Available Fields:<select ng-model="queryFactory.addField">
-        <option ng-repeat="field in fields">{{field}}</option>
-    </select>
-        <span class="btn btn-info btn-mini" ng-click="addQueryField()" title="Add query Field"><i
-                class="icon-plus-sign icon-white"></i></span>
-        <span ng-repeat="field in chosenFields">{{field}} <span class="btn btn-mini" ng-click="removeQueryField(field)"
-                                                                title="Remove query Field"><i
-                class="icon-remove-sign"></i></span></span>
+        <div class="span2"><p class="text-info">Available Fields:</p></div>
+        <div class="span10">
+            <select ng-model="queryFactory.addField">
+                <option ng-repeat="field in fields">{{field}}</option>
+            </select>
+            <span class="btn btn-info btn-mini" ng-click="addQueryField()" title="Add query Field">
+                <i class="icon-plus-sign icon-white"></i>
+            </span>
+            <span ng-repeat="field in chosenFields">{{field}}
+                <span class="btn btn-mini" ng-click="removeQueryField(field)" title="Remove query Field">
+                    <i class="icon-remove-sign"></i>
+                </span>
+            </span>
+        </div>
     </form>
 </div>
 
-<div>
-    <form class="form-horizontal">
-        Possible Facets:<select ng-model="queryFactory.addFacet">
-        <option ng-repeat="field in fields">{{field}}</option>
-    </select>
-        <span class="btn btn-info btn-mini" ng-click="addFacetField()" title="Add a facet Field"><i
-                class="icon-plus-sign icon-white"></i></span>
-        <span ng-repeat="field in facets">{{field}} <span class="btn btn-mini" ng-click="removeFacetField(field)"
-                                                          title="Remove facet Field"><i
-                class="icon-remove-sign"></i></span></span>
-    </form>
+<div class="row-fluid">
+    <div class="span2">
+        <span class="text-info">Facets</span> <span class="btn btn-info btn-mini" ng-click="openDialog()"
+                                                    title="Add new Facet">
+            <i class="icon-plus-sign icon-white"></i>
+        </span>
+    </div>
+    <div class="span10">
+        <span ng-repeat="facet in facets">{{facet.field}} ({{facet.facetType}})
+            <span class="btn btn-mini" ng-click="removeFacetField(facet.field)" title="Remove facet Field">
+                <i class="icon-remove-sign"></i>
+            </span>
+        </span>
+    </div>
 </div>
 
-<div>
-    <form novalidate class="form-search">
-        Search for: <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
-        <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i
-                class="icon-search icon-white"></i></span>
-        <span class="btn btn-info" ng-click="changeQuery()" title="Check Query"><i
-                class="icon-check icon-white"></i></span>
-        <span class="btn btn-info" ng-click="resetQuery()" title="Reset all choices"><i
-                class="icon-refresh icon-white"></i></span><br/>
-        Use explain: <label class="checkbox"><input type="checkbox" ng-model="search.explain"/> </label>
-    </form>
-</div>
+<form novalidate class="form-search">
+    <div class="row-fluid" style="padding-bottom: 5px">
+        <div class="span2"><p class="text-info">Search for:</p></div>
+        <div class="span10">
+            <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
+            <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query"><i
+                    class="icon-search icon-white"></i></span>
+            <span class="btn btn-info" ng-click="changeQuery()" title="Check Query"><i
+                    class="icon-check icon-white"></i></span>
+            <span class="btn btn-info" ng-click="resetQuery()" title="Reset all choices"><i
+                    class="icon-refresh icon-white"></i></span>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="span12">
+            <span class="text-info">Use explain:</span>
+            <label class="checkbox"><input type="checkbox" ng-model="search.explain"/></label>
+        </div>
+    </div>
+</form>
 
 <h3>Query</h3>
 <div class="well well-large">{{createdQuery}}</div>
@@ -57,14 +78,27 @@
 <h3>Facet results</h3>
 <div ng-repeat="(key,value) in facetResults">
     <div><strong>{{key}} - {{value._type}}</strong></div>
-    <div>
-        <span>Total: {{value.total}}</span>
-        <span>Missing: {{value.missing}}</span>
-        <span>Other: {{value.other}}</span>
+    <div ng-show="value._type === 'terms'">
+        <div>
+            <span>Total: {{value.total}}</span>
+            <span>Missing: {{value.missing}}</span>
+            <span>Other: {{value.other}}</span>
+        </div>
+        <div>
+            <span ng-repeat="term in value.terms"> {{term.term}} ({{term.count}})</span>
+        </div>
     </div>
-    <div>
-        <span ng-repeat="term in value.terms"> {{term.term}} ({{term.count}})</span>
+    <div ng-show="value._type === 'date_histogram'">
+        <div>
+            <span ng-repeat="entry in value.entries"> {{entry.time}} ({{entry.count}})</span>
+        </div>
     </div>
+    <div ng-show="value._type === 'ranges'">
+        <div>
+            <p>TODO</p>
+        </div>
+    </div>
+
 </div>
 
 <h3>Results</h3>
@@ -123,5 +157,6 @@
 </div>
 
 <script>
-    $('.chooseIndexBtn').button()
+    $('.chooseIndexBtn').button();
+    $('.chooseTypeBtn').button();
 </script>

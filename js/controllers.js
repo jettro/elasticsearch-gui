@@ -121,6 +121,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
         $scope.chosenTypes = [];
         $scope.chosenFields = [];
         $scope.changeQuery();
+        $scope.search.type = "or";
     };
 
     $scope.changeQuery = function () {
@@ -132,7 +133,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
             backdrop: true,
             keyboard: true,
             backdropClick: true,
-            templateUrl: 'templates/dialog/facet.html',
+            templateUrl: 'template/dialog/facet.html',
             controller: 'FacetDialogCtrl',
             resolve: {fields: angular.copy($scope.fields)}};
         var d = $dialog.dialog(opts);
@@ -152,7 +153,13 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
             request.fields($scope.chosenFields);
         }
         if ($scope.search.term.length > 0) {
-            request.query(ejs.TermQuery("_all", $scope.search.term));
+            var matchQuery = ejs.MatchQuery("_all", $scope.search.term);
+            if ($scope.search.type === 'phrase') {
+                matchQuery.type('phrase');
+            } else {
+                matchQuery.operator($scope.search.type);
+            }
+            request.query(matchQuery);
         } else {
             request.query(ejs.MatchAllQuery());
         }
@@ -187,6 +194,11 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
 
 
         request.explain($scope.search.explain);
+        if ($scope.search.highlight) {
+            var highlight = ejs.Highlight();
+            highlight.fields($scope.chosenFields);
+            request.highlight(highlight);
+        }
         return request;
     }
 

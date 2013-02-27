@@ -1,5 +1,19 @@
 <div class="row-fluid">
-    <div class="span2"><p class="text-info">Available indexes:</p></div>
+    <div class="span12">
+        <div class="alert">
+            <p>This page is about providing a very basic search and check the query that is created. This way you
+                can learn about creating queries and the result of those query against the data in your ElasticSearch
+                instance.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row-fluid">
+    <div class="span2"><span class="text-info">Available indexes:</span>
+        <button popover-placement="right"
+                popover="Here you can select the index that we query over. If you select nothing, we query over all data"
+                class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
+    </div>
     <div class="span10">
         <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
             <div class="btn btn-mini" ng-click="chooseIndex(key)" ng-repeat="(key,value) in indices">{{key}}</div>
@@ -8,7 +22,12 @@
 </div>
 
 <div class="row-fluid">
-    <div class="span2"><p class="text-info">Available types:</p></div>
+    <div class="span2"><span class="text-info">Available types:</span>
+        <button popover-placement="right"
+                popover="Here you can select the type of documents that we query over. If you select nothing, all types are used for the query.
+                Beware, if you select a type that is not available in the chosen index you see nothing."
+                class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
+    </div>
     <div class="span10">
         <div id="chooseTypeBtn" class="btn-group" data-toggle="buttons-checkbox">
             <div class="btn btn-mini" ng-click="chooseType(type)" ng-repeat="type in types">{{type}}</div>
@@ -18,7 +37,12 @@
 
 <div class="row-fluid" style="padding-bottom: 5px">
     <form class="form-horizontal">
-        <div class="span2"><p class="text-info">Available Fields:</p></div>
+        <div class="span2"><span class="text-info">Available Fields:</span>
+            <button popover-placement="right"
+                    popover="Here you can select the fields that we obtain and that we show on screen. If you select nothing, we also show nothing
+                    on the screen. When the highlight checkbox is checked we use highlighting when showing the fields."
+                    class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
+        </div>
         <div class="span10">
             <select ng-model="queryFactory.addField">
                 <option ng-repeat="field in fields">{{field}}</option>
@@ -37,12 +61,16 @@
 
 <div class="row-fluid">
     <div class="span2">
-        <span class="text-info">Facets</span> <span class="btn btn-info btn-mini" ng-click="openDialog()"
-                                                    title="Add new Facet">
-            <i class="icon-plus-sign icon-white"></i>
-        </span>
+        <span class="text-info">Facets</span>
+        <button popover-placement="right"
+                popover="Here you can select the facets to return. A few basic types are available. Use the Facets screen to do more advanced stuff with facets."
+                class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
+
     </div>
     <div class="span10">
+        <span class="btn btn-info btn-mini" ng-click="openDialog()" title="Add new Facet">
+            <i class="icon-plus-sign icon-white"></i>
+        </span>
         <span ng-repeat="facet in facets">{{facet.field}} ({{facet.facetType}})
             <span class="btn btn-mini" ng-click="removeFacetField(facet.field)" title="Remove facet Field">
                 <i class="icon-remove-sign"></i>
@@ -52,22 +80,43 @@
 </div>
 
 <form novalidate class="form-search">
-    <div class="row-fluid" style="padding-bottom: 5px">
-        <div class="span2"><p class="text-info">Search for:</p></div>
+    <div class="row-fluid">
+        <div class="span2">
+            <span class="text-info">Query configuration</span>
+            <button popover-placement="right"
+                    popover="Here you can configure some additional items on the query. You can change the default OR searching to AND searching and even PHRASE
+                    searching. All queries use the Match query type. If you want to do more advanced queries using search by field for instance use another part of this application.
+                    If you select the explain option you'll learn more about the scoring of the returned results. When selecting highlighting we also show the highlighted fields."
+                    class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
+
+        </div>
         <div class="span10">
-            <input type="text" class="input-medium search-query" ng-model="search.term" ng-change=""/>
-            <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query">Query <i
-                    class="icon-search icon-white"></i></span>
-            <span class="btn btn-info" ng-click="changeQuery()" title="Check Query"><i
+            <span class="btn btn-info btn-mini" ng-click="changeQuery()" title="Check Query"><i
                     class="icon-check icon-white"></i></span>
-            <span class="btn btn-info" ng-click="resetQuery()" title="Reset all choices"><i
+            <span class="btn btn-info btn-mini" ng-click="resetQuery()" title="Reset all choices"><i
                     class="icon-refresh icon-white"></i></span>
+            <span class="text-info">Query Type</span>
+            <label class="radio">
+                <input type="radio" ng-model="search.type" value="or">OR
+            </label>
+            <label class="radio">
+                <input type="radio" ng-model="search.type" value="and">AND
+            </label>
+            <label class="radio">
+                <input type="radio" ng-model="search.type" value="phrase">PHRASE
+            </label>
+            <span class="text-info">    Use explain:</span>
+            <label class="checkbox"><input type="checkbox" ng-model="search.explain"/></label>
+            <span class="text-info">, Use highlighting:</span>
+            <label class="checkbox"><input type="checkbox" ng-model="search.highlight"/></label>
         </div>
     </div>
-    <div class="row-fluid">
-        <div class="span12">
-            <span class="text-info">Use explain:</span>
-            <label class="checkbox"><input type="checkbox" ng-model="search.explain"/></label>
+    <div class="row-fluid" style="padding-bottom: 5px">
+        <div class="span12 alert alert-info">
+            <span class="text-info offset1">Search for:</span>
+            <input type="text" class="input-medium search-query span4" ng-model="search.term" ng-change=""/>
+                    <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query">Query <i
+                            class="icon-search icon-white"></i></span>
         </div>
     </div>
 </form>
@@ -142,10 +191,16 @@
         </table>
     </div>
     <div class="span4">
-        <table class="table table-condensed">
+        <table class="table table-condensed" ng-hide="search.highlight">
             <tr ng-repeat="(key,value) in doc.fields">
                 <th>{{key}}</th>
                 <td>{{value}}</td>
+            </tr>
+        </table>
+        <table class="table table-condensed" ng-show="search.highlight">
+            <tr ng-repeat="(key,value) in doc.highlight">
+                <th>{{key}}</th>
+                <td><p ng-repeat="item in value">{{item}}</p></td>
             </tr>
         </table>
     </div>

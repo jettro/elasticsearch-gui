@@ -10,7 +10,7 @@
 
 <div class="row-fluid">
     <div class="span2"><span class="text-info">Available indexes:</span>
-        <button popover-placement="right"
+        <button type="button" popover-placement="right"
                 popover="Here you can select the index that we query over. If you select nothing, we query over all data"
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
     </div>
@@ -23,7 +23,7 @@
 
 <div class="row-fluid">
     <div class="span2"><span class="text-info">Available types:</span>
-        <button popover-placement="right"
+        <button type="button" popover-placement="right"
                 popover="Here you can select the type of documents that we query over. If you select nothing, all types are used for the query.
                 Beware, if you select a type that is not available in the chosen index you see nothing."
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
@@ -38,7 +38,7 @@
 <div class="row-fluid" style="padding-bottom: 5px">
     <form class="form-horizontal">
         <div class="span2"><span class="text-info">Available Fields:</span>
-            <button popover-placement="right"
+            <button type="button" popover-placement="right"
                     popover="Here you can select the fields that we obtain and that we show on screen. If you select nothing, we also show nothing
                     on the screen. When the highlight checkbox is checked we use highlighting when showing the fields."
                     class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
@@ -62,7 +62,7 @@
 <div class="row-fluid">
     <div class="span2">
         <span class="text-info">Facets</span>
-        <button popover-placement="right"
+        <button type="button" popover-placement="right"
                 popover="Here you can select the facets to return. A few basic types are available. Use the Facets screen to do more advanced stuff with facets."
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
 
@@ -79,11 +79,11 @@
     </div>
 </div>
 
-<form novalidate class="form-search">
+<form novalidate class="form-search" ng-submit="executeQuery()">
     <div class="row-fluid">
         <div class="span2">
             <span class="text-info">Query configuration</span>
-            <button popover-placement="right"
+            <button type="button" popover-placement="right"
                     popover="Here you can configure some additional items on the query. You can change the default OR searching to AND searching and even PHRASE
                     searching. All queries use the Match query type. If you want to do more advanced queries using search by field for instance use another part of this application.
                     If you select the explain option you'll learn more about the scoring of the returned results. When selecting highlighting we also show the highlighted fields."
@@ -114,9 +114,9 @@
     <div class="row-fluid" style="padding-bottom: 5px">
         <div class="span12 alert alert-info">
             <span class="text-info offset1">Search for:</span>
-            <input type="text" class="input-medium search-query span4" ng-model="search.term" ng-change=""/>
-                    <span class="btn btn-primary" ng-click="executeQuery()" title="Execute query">Query <i
-                            class="icon-search icon-white"></i></span>
+            <input type="text" class="input-medium search-query span4" ng-model="search.term"/>
+            <button type="submit" class="btn btn-primary" title="Execute query">Query <i
+                    class="icon-search icon-white"></i></button>
         </div>
     </div>
 </form>

@@ -2,7 +2,7 @@
     <div class="span12">
         <div class="alert">
             <p>This page is about providing a very basic search and check the query that is created. This way you
-                can learn about creating queries and the result of those query against the data in your ElasticSearch
+                can learn about creating queries and the result of those query against the data in your Elasticsearch
                 instance.</p>
         </div>
     </div>
@@ -16,7 +16,7 @@
     </div>
     <div class="span10">
         <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
-            <div class="btn btn-mini" ng-click="chooseIndex(key)" ng-repeat="(key,value) in indices">{{key}}</div>
+            <div class="btn btn-mini" ng-click="chooseIndex(key)" ng-repeat="index in indices">{{index}}</div>
         </div>
     </div>
 </div>

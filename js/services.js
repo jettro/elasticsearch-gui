@@ -11,7 +11,11 @@ serviceModule.factory('elastic', ['$http', function (http) {
     function ElasticService(http) {
         this.indexes = function (callback) {
             http.get('/_status').success(function (data) {
-                callback(data.indices);
+                var indices = [];
+                for (var index in data.indices) {
+                    indices.push(index);
+                }
+                callback(indices);
             });
         };
 
@@ -33,8 +37,8 @@ serviceModule.factory('elastic', ['$http', function (http) {
             http.get('/_mapping').success(function (data) {
                 var myTypes = [];
                 var myFields = [];
-                for (var index in data) { // wateenjuweeltje
-                    for (var type in data[index]) { // blog-item
+                for (var index in data) {
+                    for (var type in data[index]) {
                         if (myTypes.indexOf(type) == -1) {
                             myTypes.push(type);
                             var properties = data[index][type].properties;

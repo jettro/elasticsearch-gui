@@ -1,6 +1,7 @@
 'use strict';
 
 /* Controllers */
+var host = 'http://localhost:9200';
 
 function DashboardCtrl($scope, $http) {
     $http.get('/_cluster/health').success(function (data) {
@@ -22,6 +23,97 @@ function StatsCtrl() {
 
 }
 
+function FacetsCtrl($scope, $dialog, ejsResource, elastic) {
+    $scope.indices = [];
+    $scope.types = [];
+    $scope.fields = [];
+    $scope.results = [];
+
+    var ejs = ejsResource(host);
+
+    /* Functions to retrieve values used to created the query */
+    $scope.loadIndices = function () {
+        elastic.indexes(function (data) {
+            $scope.indices = data;
+        });
+    };
+
+    $scope.loadTypes = function () {
+        elastic.types(function (data) {
+            $scope.types = data;
+        });
+    };
+
+    $scope.loadFields = function () {
+        elastic.fields(function (data) {
+            $scope.fields = data;
+        });
+    };
+
+    $scope.openDialog = function () {
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/facet.html',
+            controller: 'FacetDialogCtrl',
+            resolve: {fields: angular.copy($scope.fields)}};
+        var d = $dialog.dialog(opts);
+        d.open().then(function (result) {
+            if (result) {
+                $scope.facet = result;
+            }
+        });
+    };
+
+    $scope.executeQuery = function () {
+        var request = createQuery();
+        request.doSearch(function (results) {
+            $scope.results = results.facets;
+        });
+
+    };
+
+    function createQuery() {
+        var request = ejs.Request();
+        request.query(ejs.MatchAllQuery());
+        request.size(0);
+
+        var facet = $scope.facet;
+        if (facet.facetType === 'term') {
+            var termsFacet = ejs.TermsFacet(facet.field);
+            termsFacet.field(facet.field);
+            request.facet(termsFacet);
+        } else if (facet.facetType === 'range') {
+            var rangeFacet = ejs.RangeFacet(facet.field);
+            for (var j = 0; j < facet.ranges.length; j++) {
+                var range = facet.ranges[j];
+                if (range[0] == undefined) {
+                    rangeFacet.addUnboundedTo(range[1]);
+                } else if (range[1] == undefined) {
+                    rangeFacet.addUnboundedFrom(range[0]);
+                } else {
+                    rangeFacet.addRange(range[0], range[1]);
+                }
+            }
+            rangeFacet.field(facet.field);
+            request.facet(rangeFacet);
+        } else if (facet.facetType === 'datehistogram') {
+            var dateHistogramFacet = ejs.DateHistogramFacet(facet.field + 'Facet');
+            dateHistogramFacet.field(facet.field);
+            dateHistogramFacet.interval(facet.interval);
+            request.facet(dateHistogramFacet);
+        }
+        return request;
+    }
+
+
+    $scope.loadIndices();
+    $scope.loadTypes();
+    $scope.loadFields();
+}
+FacetsCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
+
 function QueryCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.indices = [];
     $scope.types = [];
@@ -38,7 +130,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.facets = [];
     $scope.facetResults = [];
 
-    var ejs = ejsResource();
+    var ejs = ejsResource('http://localhost:9200');
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
@@ -218,7 +310,9 @@ function NavbarCtrl($scope) {
     var items = $scope.items = [
         {title: 'Home', link: 'dashboard'},
         {title: 'Queries', link: 'query'},
-        {title: 'Statistics', link: 'stats'}
+        {title: 'Facets', link: 'facets'},
+        {title: 'Statistics', link: 'stats'},
+        {title: 'About', link: 'about'}
     ];
 
     this.select = $scope.select = function (item) {

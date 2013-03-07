@@ -151,66 +151,68 @@
 </div>
 
 <h3>Results</h3>
-<table class="table table-condensed">
-    <tr>
-        <th>Total hits</th>
-        <td>{{queryResults.total}}</td>
-    </tr>
-    <tr>
-        <th>Max score</th>
-        <td>{{queryResults.max_score}}</td>
-    </tr>
-</table>
-<div class="row-fluid" ng-repeat="doc in queryResults.hits">
-    <div class="span4">
-        <table class="table table-condensed">
-            <tr>
-                <th>Index</th>
-                <td>{{doc._index}}</td>
-            </tr>
-            <tr>
-                <th>Type</th>
-                <td>{{doc._type}}</td>
-            </tr>
-            <tr>
-                <th>ID</th>
-                <td>{{doc._id}}</td>
-            </tr>
-            <tr>
-                <th>Score</th>
-                <td>{{doc._score}}</td>
-            </tr>
-            <tr>
-                <th>Shard</th>
-                <td>{{doc._shard}}</td>
-            </tr>
-            <tr>
-                <th>Node</th>
-                <td>{{doc._node}}</td>
-            </tr>
-        </table>
-    </div>
-    <div class="span4">
-        <table class="table table-condensed" ng-hide="search.highlight">
-            <tr ng-repeat="(key,value) in doc.fields">
-                <th>{{key}}</th>
-                <td>{{value}}</td>
-            </tr>
-        </table>
-        <table class="table table-condensed" ng-show="search.highlight">
-            <tr ng-repeat="(key,value) in doc.highlight">
-                <th>{{key}}</th>
-                <td><p ng-repeat="item in value">{{item}}</p></td>
-            </tr>
-        </table>
-    </div>
-    <div class="span4">
-        <h3 ng-hide="!search.explain">Explanation</h3>
+<div class="row-fluid">
+    <div class="span12">Total hits "{{queryResults.total}}", Max score "{{queryResults.max_score}}"</div>
+</div>
 
-        <p>{{doc._explanation}}</p>
+<div class="row-fluid">
+    <div class="span2">
+        <span class="text-info">Index</span>
+    </div>
+    <div class="span2">
+        <span class="text-info">Type</span>
+    </div>
+    <div class="span3">
+        <span class="text-info">ID</span>
+    </div>
+    <div class="span1">
+        <span class="text-info">Score</span>
+    </div>
+    <div class="span2">
+        <span class="text-info">Shard</span>
+    </div>
+    <div class="span2">
+        <span class="text-info">Node</span>
     </div>
 </div>
 
+<div ng-repeat="doc in queryResults.hits">
+    <div class="row-fluid" ng-click="doc.showDetails = !doc.showDetails" style="cursor:pointer;">
+        <div class="span2">{{doc._index}}</div>
+        <div class="span2">{{doc._type}}</div>
+        <div class="span3">{{doc._id}}</div>
+        <div class="span1">{{doc._score}}</div>
+        <div class="span2">{{doc._shard}}</div>
+        <div class="span2">{{doc._node}}</div>
+    </div>
+    <div class="row-fluid" ng-show="doc.showDetails">
+        <div class="span12">
+            <div class="alert">
+                <div class="row-fluid">
+                    <div class="span8">
+                        <table class="table table-condensed" ng-hide="search.highlight">
+                            <tr ng-repeat="(key,value) in doc.fields">
+                                <th>{{key}}</th>
+                                <td>{{value}}</td>
+                            </tr>
+                        </table>
+                        <table class="table table-condensed" ng-show="search.highlight">
+                            <tr ng-repeat="(key,value) in doc.highlight">
+                                <th>{{key}}</th>
+                                <td><p ng-repeat="item in value">{{item}}</p></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="span4">
+                        <h3 ng-show="search.explain">Explanation</h3>
+
+                        <p>{{doc._explanation}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script>
     $('.chooseIndexBtn').button();
     $('.chooseTypeBtn').button();

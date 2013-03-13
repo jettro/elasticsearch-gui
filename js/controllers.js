@@ -66,10 +66,18 @@ function FacetsCtrl($scope, $dialog, ejsResource, elastic) {
         });
     };
 
+    function getValue(data) {
+        for (var key in data) {
+            if (data.hasOwnProperty(key)) {
+                return data[key];
+            }
+        }
+    }
+
     $scope.executeQuery = function () {
         var request = createQuery();
         request.doSearch(function (results) {
-            $scope.results = results.facets;
+            $scope.results = getValue(results.facets);
         });
 
     };

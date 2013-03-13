@@ -51,3 +51,15 @@ body {
 code {
     font-size: 80%;
 }
+
+/* Graphs */
+.bar.rect {
+    fill: #058dc7;
+    stroke: none;
+}
+
+.bar.text {
+    fill: #000;
+    stroke: none;
+    font-size: 12px;
+}

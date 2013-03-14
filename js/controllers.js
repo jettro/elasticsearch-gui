@@ -111,6 +111,11 @@ function FacetsCtrl($scope, $dialog, ejsResource, elastic) {
             dateHistogramFacet.field(facet.field);
             dateHistogramFacet.interval(facet.interval);
             request.facet(dateHistogramFacet);
+        } else if (facet.facetType === 'histogram') {
+            var histogramFacet = ejs.HistogramFacet(facet.field + 'Facet');
+            histogramFacet.field(facet.field);
+            histogramFacet.interval(facet.interval);
+            request.facet(histogramFacet);
         }
         return request;
     }
@@ -289,6 +294,11 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
                 dateHistogramFacet.field(facet.field);
                 dateHistogramFacet.interval(facet.interval);
                 request.facet(dateHistogramFacet);
+            } else if (facet.facetType === 'histogram') {
+                var histogramFacet = ejs.HistogramFacet(facet.field + 'Facet');
+                histogramFacet.field(facet.field);
+                histogramFacet.interval(facet.interval);
+                request.facet(histogramFacet);
             }
         }
 
@@ -341,23 +351,24 @@ function NavbarCtrl($scope) {
 
 function FacetDialogCtrl($scope, dialog, fields) {
     $scope.fields = fields;
-    $scope.facetTypes = ["Term", "Range", "DateHistogram"];
+    $scope.facetTypes = ["Term", "Range", "Histogram", "DateHistogram"];
     $scope.ranges = [];
     $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
     $scope.interval = "";
 
     $scope.close = function (result) {
         var dialogResult = {};
+        dialogResult.field = $scope.dialog.field;
         if ($scope.dialog.facettype === 'Term') {
-            dialogResult.field = $scope.dialog.field;
             dialogResult.facetType = 'term';
         } else if ($scope.dialog.facettype === 'Range') {
-            dialogResult.field = $scope.dialog.field;
             dialogResult.facetType = 'range';
             dialogResult.ranges = $scope.ranges;
         } else if ($scope.dialog.facettype === 'DateHistogram') {
-            dialogResult.field = $scope.dialog.field;
             dialogResult.facetType = 'datehistogram';
+            dialogResult.interval = $scope.interval;
+        } else if ($scope.dialog.facettype === 'Histogram') {
+            dialogResult.facetType = 'histogram';
             dialogResult.interval = $scope.interval;
         }
         dialog.close(dialogResult);

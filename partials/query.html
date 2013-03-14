@@ -142,9 +142,14 @@
             <span ng-repeat="entry in value.entries"> {{entry.time}} ({{entry.count}})</span>
         </div>
     </div>
-    <div ng-show="value._type === 'ranges'">
+    <div ng-show="value._type === 'histogram'">
         <div>
-            <p>TODO</p>
+            <span ng-repeat="entry in value.entries"> {{entry.key}} ({{entry.count}})</span>
+        </div>
+    </div>
+    <div ng-show="value._type === 'range'">
+        <div>
+            <span ng-repeat="range in value.ranges">{{range.from}}-{{range.to}} ({{range.total_count}})</span>
         </div>
     </div>
 

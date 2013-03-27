@@ -93,3 +93,11 @@ serviceModule.factory('configuration', ['$rootScope', 'localStorage', function (
 
     return new LocalStorageService(localStorage);
 }]);
+
+serviceModule.factory('serverConfig', ['$location', function ($location) {
+    function ServerConfig(location) {
+        this.host = location.protocol() + "://" + location.host() + ":" + location.port();
+    }
+
+    return new ServerConfig($location);
+}]);

@@ -1,8 +1,6 @@
 'use strict';
 
 /* Controllers */
-var host = 'http://localhost:9200';
-
 function DashboardCtrl($scope, $http, elastic) {
     $http.get('/_cluster/health').success(function (data) {
         $scope.health = data;
@@ -24,15 +22,18 @@ function NodeInfoCtrl($scope, $http, $routeParams) {
     });
 }
 
-function HomeCtrl($scope, $http, elastic, configuration, ejsResource) {
+function HomeCtrl($scope, $http, elastic, configuration, ejsResource, serverConfig) {
     $scope.isCollapsed = true;
     $scope.configure = configuration;
     $scope.fields = [];
     $scope.clusterName = "";
     $scope.search = {};
+    $scope.search.advanced = {};
+    $scope.search.advanced.searchFields = [];
+
     $scope.results = [];
 
-    var ejs = ejsResource('http://localhost:9200');
+    var ejs = ejsResource(serverConfig.host);
 
     $scope.init = function () {
         elastic.fields(function (data) {
@@ -53,7 +54,7 @@ function HomeCtrl($scope, $http, elastic, configuration, ejsResource) {
     };
 
     $scope.doSearch = function () {
-        if (!($scope.configure.title)) {
+        if ((!($scope.configure.title)) || (!($scope.configure.description))) {
             console.log("Hmm, you should configure more");
             return;
         }
@@ -62,29 +63,53 @@ function HomeCtrl($scope, $http, elastic, configuration, ejsResource) {
         var queryFields = [];
         queryFields.push($scope.configure.title);
         queryFields.push($scope.configure.description);
-
         request.fields(queryFields);
-        var matchQuery = ejs.MatchQuery("_all", $scope.search.simple);
+
+        var matchQuery;
+        if ($scope.search.doAdvanced) {
+            matchQuery = ejs.BoolQuery();
+            for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
+                var searchField = $scope.search.advanced.searchFields[i];
+                matchQuery.must(ejs.MatchQuery(searchField.field, searchField.text));
+            }
+        } else {
+            matchQuery = ejs.MatchQuery("_all", $scope.search.simple);
+        }
         request.query(matchQuery);
+
         request.doSearch(function (results) {
             $scope.results = results.hits;
         });
+    };
+
+    $scope.addSearchField = function () {
+        var searchField = {};
+        searchField.field = $scope.search.advanced.newField;
+        searchField.text = $scope.search.advanced.newText;
+        $scope.search.advanced.searchFields.push(searchField);
+    };
+
+    $scope.removeSearchField = function (searchField) {
+        var i = $scope.search.advanced.searchFields.indexOf(searchField);
+        if (i > -1) {
+            $scope.search.advanced.searchFields.splice(i, 1);
+        }
 
     }
 }
-HomeCtrl.$inject = ['$scope', '$http', 'elastic', 'configuration', 'ejsResource'];
+HomeCtrl.$inject = ['$scope', '$http', 'elastic', 'configuration', 'ejsResource', 'serverConfig'];
 
 function StatsCtrl() {
 
 }
 
-function GraphCtrl($scope, $dialog, ejsResource, elastic) {
+function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
     $scope.results = [];
 
-    var ejs = ejsResource(host);
+    var ejs = ejsResource(serverConfig.host);
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
@@ -180,9 +205,9 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.loadTypes();
     $scope.loadFields();
 }
-GraphCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
+GraphCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig']
 
-function QueryCtrl($scope, $dialog, ejsResource, elastic) {
+function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
@@ -198,7 +223,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.facets = [];
     $scope.facetResults = [];
 
-    var ejs = ejsResource('http://localhost:9200');
+    var ejs = ejsResource(serverConfig.host);
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
@@ -374,10 +399,11 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic) {
         } else {
             theArray.push(theChoice);
         }
-    };
+    }
+
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
+QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig']
 
 function NavbarCtrl($scope) {
     var items = $scope.items = [

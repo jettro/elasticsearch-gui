@@ -21,14 +21,43 @@
     </div>
 </div>
 <div class="row-fluid">
-    <div class="span9 offset3">
+    <div class="span3">
+        <label class="checkbox">
+            <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
+        </label>
+    </div>
+    <div class="span9" ng-hide="search.doAdvanced">
         <form class="form-inline">
             <input class="search-query" type="search" ng-model="search.simple" autofocus="true"
                    placeholder="Type your search string"/>
             <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search</button>
             <label class="checkbox">
-                <input class="checkbox" type="checkbox" ng-model="search.details"> Details
+                <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
             </label>
+        </form>
+    </div>
+    <div class="span9" ng-show="search.doAdvanced">
+        <form class="form-inline">
+            <div>
+                <label>Choose field</label>
+                <select ng-model="search.advanced.newField">
+                    <option ng-repeat="field in fields">{{field}}</option>
+                </select>
+                <label>Enter text</label>
+                <input class="search-query" type="search" ng-model="search.advanced.newText" autofocus="true"
+                       placeholder="Type your search string"/>
+                <button class="btn btn-info" ng-click="addSearchField()"><i class="icon-plus-sign icon-white"></i> Add
+                </button>
+            </div>
+            <div>
+                <div ng-repeat="searchField in search.advanced.searchFields">
+                    {{searchField.field}} = {{searchField.text}} <span style="cursor:pointer;"
+                                                                       ng-click="removeSearchField(searchField)"><i
+                        class="icon-remove-sign"></i></span>
+                </div>
+                <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search
+                </button>
+            </div>
         </form>
     </div>
 </div>

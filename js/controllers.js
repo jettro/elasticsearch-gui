@@ -22,7 +22,7 @@ function NodeInfoCtrl($scope, $http, $routeParams) {
     });
 }
 
-function HomeCtrl($scope, $http, elastic, configuration, ejsResource, serverConfig) {
+function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, facetBuilder, $dialog, queryStorage) {
     $scope.isCollapsed = true;
     $scope.configure = configuration;
     $scope.fields = [];
@@ -30,8 +30,10 @@ function HomeCtrl($scope, $http, elastic, configuration, ejsResource, serverConf
     $scope.search = {};
     $scope.search.advanced = {};
     $scope.search.advanced.searchFields = [];
+    $scope.search.facets = [];
 
     $scope.results = [];
+    $scope.facets = [];
 
     var ejs = ejsResource(serverConfig.host);
 
@@ -77,8 +79,11 @@ function HomeCtrl($scope, $http, elastic, configuration, ejsResource, serverConf
         }
         request.query(matchQuery);
 
+        facetBuilder.build($scope.search.facets, ejs, request);
+
         request.doSearch(function (results) {
             $scope.results = results.hits;
+            $scope.facets = results.facets;
         });
     };
 
@@ -94,10 +99,50 @@ function HomeCtrl($scope, $http, elastic, configuration, ejsResource, serverConf
         if (i > -1) {
             $scope.search.advanced.searchFields.splice(i, 1);
         }
+    };
 
+    $scope.openDialog = function () {
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/facet.html',
+            controller: 'FacetDialogCtrl',
+            resolve: {fields: angular.copy($scope.fields)}};
+        var d = $dialog.dialog(opts);
+        d.open().then(function (result) {
+            if (result) {
+                $scope.search.facets.push(result);
+            }
+        });
+    };
+
+    $scope.removeFacetField = function (data) {
+        var found = -1;
+        for (var i = 0; i < $scope.search.facets.length; i++) {
+            var currentFacet = $scope.search.facets[i];
+            if (currentFacet.field === data) {
+                found = i;
+                break;
+            }
+        }
+        if (found > -1) {
+            $scope.facets.splice(found, 1);
+        }
+        $scope.changeQuery();
+    };
+
+    $scope.saveQuery = function () {
+        queryStorage.saveQuery(angular.copy($scope.search));
+    };
+
+    $scope.loadQuery = function () {
+        queryStorage.loadQuery(function (data) {
+            $scope.search = angular.copy(data);
+        });
     }
 }
-HomeCtrl.$inject = ['$scope', '$http', 'elastic', 'configuration', 'ejsResource', 'serverConfig'];
+HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'ejsResource', 'serverConfig', 'facetBuilder', '$dialog', 'queryStorage'];
 
 function StatsCtrl() {
 
@@ -207,7 +252,7 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
 }
 GraphCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig']
 
-function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
+function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBuilder) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
@@ -349,39 +394,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
             request.query(ejs.MatchAllQuery());
         }
 
-        for (var i = 0; i < $scope.facets.length; i++) {
-            var facet = $scope.facets[i];
-            if (facet.facetType === 'term') {
-                var termsFacet = ejs.TermsFacet(facet.field);
-                termsFacet.field(facet.field);
-                request.facet(termsFacet);
-            } else if (facet.facetType === 'range') {
-                var rangeFacet = ejs.RangeFacet(facet.field);
-                for (var j = 0; j < facet.ranges.length; j++) {
-                    var range = facet.ranges[j];
-                    if (range[0] == undefined) {
-                        rangeFacet.addUnboundedTo(range[1]);
-                    } else if (range[1] == undefined) {
-                        rangeFacet.addUnboundedFrom(range[0]);
-                    } else {
-                        rangeFacet.addRange(range[0], range[1]);
-                    }
-                }
-                rangeFacet.field(facet.field);
-                request.facet(rangeFacet);
-            } else if (facet.facetType === 'datehistogram') {
-                var dateHistogramFacet = ejs.DateHistogramFacet(facet.field + 'Facet');
-                dateHistogramFacet.field(facet.field);
-                dateHistogramFacet.interval(facet.interval);
-                request.facet(dateHistogramFacet);
-            } else if (facet.facetType === 'histogram') {
-                var histogramFacet = ejs.HistogramFacet(facet.field + 'Facet');
-                histogramFacet.field(facet.field);
-                histogramFacet.interval(facet.interval);
-                request.facet(histogramFacet);
-            }
-        }
-
+        facetBuilder.build($scope.facets, ejs, request);
 
         request.explain($scope.search.explain);
         if ($scope.search.highlight) {
@@ -403,7 +416,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
 
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig']
+QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig', 'facetBuilder'];
 
 function NavbarCtrl($scope) {
     var items = $scope.items = [

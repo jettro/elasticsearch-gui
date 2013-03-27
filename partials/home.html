@@ -1,7 +1,7 @@
 <div class="row-fluid" ng-init="init()">
     <div class="span12">
         <div class="alert alert-info">
-            <span class="btn btn-link" ng-click="isCollapsed = !isCollapsed">Configure: {{clusterName}}  <i
+            <span class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><i class="icon-cog"></i>Configure: {{clusterName}}  <i
                     class="icon-chevron-down" ng-show="isCollapsed"></i><i class="icon-chevron-left"
                                                                            ng-hide="isCollapsed"></i></span>
 
@@ -25,6 +25,19 @@
         <label class="checkbox">
             <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
         </label>
+
+        <div>
+            <span>Facets</span>
+        <span class="btn btn-info btn-mini" ng-click="openDialog()" title="Add new Facet">
+            <i class="icon-plus-sign icon-white"></i>
+        </span>
+        </div>
+        <div ng-repeat="facet in search.facets">{{facet.field}} ({{facet.facetType}})
+            <span class="btn btn-mini" ng-click="removeFacetField(facet.field)" title="Remove facet Field">
+                <i class="icon-remove-sign"></i>
+            </span>
+        </div>
+
     </div>
     <div class="span9" ng-hide="search.doAdvanced">
         <form class="form-inline">
@@ -34,6 +47,8 @@
             <label class="checkbox">
                 <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
             </label>
+            <span class="btn btn-mini" ng-click="saveQuery()"><i class="icon-share"></i> save</span>
+            <span class="btn btn-mini" ng-click="loadQuery()"><i class="icon-download-alt"></i> load</span>
         </form>
     </div>
     <div class="span9" ng-show="search.doAdvanced">
@@ -55,15 +70,48 @@
                                                                        ng-click="removeSearchField(searchField)"><i
                         class="icon-remove-sign"></i></span>
                 </div>
-                <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search
-                </button>
+                <br/>
+
+                <div>
+                    <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search
+                    </button>
+                    <span class="btn btn-mini" ng-click="saveQuery()"><i class="icon-share"></i> save</span>
+                    <span class="btn btn-mini" ng-click="loadQuery()"><i class="icon-download-alt"></i> load</span>
+                </div>
             </div>
         </form>
     </div>
 </div>
 <div class="row-fluid">
+    <div class="span12">
+        <h3>Results</h3>
+    </div>
+</div>
+<div class="row-fluid">
     <div class="span3">
-        Facet stuff
+        <div ng-repeat="(key,value) in facets">
+            <div><strong>{{key}}</strong></div>
+            <div ng-show="value._type === 'terms'">
+                <div ng-repeat="term in value.terms">
+                    <span> {{term.term}} ({{term.count}})</span>
+                </div>
+            </div>
+            <div ng-show="value._type === 'date_histogram'">
+                <div ng-repeat="entry in value.entries">
+                    <span> {{entry.time}} ({{entry.count}})</span>
+                </div>
+            </div>
+            <div ng-show="value._type === 'histogram'">
+                <div ng-repeat="entry in value.entries">
+                    <span> {{entry.key}} ({{entry.count}})</span>
+                </div>
+            </div>
+            <div ng-show="value._type === 'range'">
+                <div ng-repeat="range in value.ranges">
+                    <span>{{range.from}}-{{range.to}} ({{range.total_count}})</span>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="span9">
         <div ng-repeat="result in results.hits">

@@ -1,0 +1,1 @@
+http://www.elasticsearch.org/guide/reference/index-modules/analysis/

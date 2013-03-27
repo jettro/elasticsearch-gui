@@ -1,0 +1,49 @@
+<div class="row-fluid" ng-init="init()">
+    <div class="span12">
+        <div class="alert alert-info">
+            <span class="btn btn-link" ng-click="isCollapsed = !isCollapsed">Configure: {{clusterName}}  <i
+                    class="icon-chevron-down" ng-show="isCollapsed"></i><i class="icon-chevron-left"
+                                                                           ng-hide="isCollapsed"></i></span>
+
+            <div collapse="isCollapsed">
+                <form>
+                    <label>Titel</label>
+                    <select ng-model="configure.title">
+                        <option ng-repeat="field in fields">{{field}}</option>
+                    </select>
+                    <label>Description</label>
+                    <select ng-model="configure.description">
+                        <option ng-repeat="field in fields">{{field}}</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span9 offset3">
+        <form class="form-inline">
+            <input class="search-query" type="search" ng-model="search.simple" autofocus="true"
+                   placeholder="Type your search string"/>
+            <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search</button>
+            <label class="checkbox">
+                <input class="checkbox" type="checkbox" ng-model="search.details"> Details
+            </label>
+        </form>
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span3">
+        Facet stuff
+    </div>
+    <div class="span9">
+        <div ng-repeat="result in results.hits">
+            <div><span class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
+                                                                                        ng-show="search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>
+            </div>
+            <div class="well-small">
+                {{result.fields[configure.description]}}
+            </div>
+        </div>
+    </div>
+</div>

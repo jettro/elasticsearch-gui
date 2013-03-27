@@ -1,7 +1,7 @@
 <div class="row-fluid">
     <div class="span6">
         <h2>Basic cluster information</h2>
-        <table class="table">
+        <table class="table table-condensed">
             <tr>
                 <th>Cluster name</th>
                 <td>{{health.cluster_name}}</td>
@@ -33,6 +33,22 @@
             <tr>
                 <th>Unassigned shards</th>
                 <td>{{health.unassigned_shards}}</td>
+            </tr>
+        </table>
+        <h2>Indexes information</h2>
+        <table class="table table-condensed">
+            <tr>
+                <th>Index</th>
+                <th>Size</th>
+                <th>#docs</th>
+                <th>#shards</th>
+            </tr>
+            <tr ng-repeat="(key,value) in indices">
+                <td>{{key}}</td>
+                <td>{{value.index.primary_size}}</td>
+                <td>{{value.docs.num_docs}}</td>
+                <td>{{value.shards.size()}}</td>
+
             </tr>
         </table>
     </div>

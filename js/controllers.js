@@ -3,14 +3,19 @@
 /* Controllers */
 var host = 'http://localhost:9200';
 
-function DashboardCtrl($scope, $http) {
+function DashboardCtrl($scope, $http, elastic) {
     $http.get('/_cluster/health').success(function (data) {
         $scope.health = data;
     });
     $http.get('/_nodes').success(function (data) {
         $scope.nodes = data.nodes;
     });
+
+    elastic.indexesDetails(function (data) {
+        $scope.indices = data;
+    });
 }
+DashboardCtrl.$inject = ['$scope', '$http', 'elastic']
 
 function NodeInfoCtrl($scope, $http, $routeParams) {
     var nodeId = $routeParams.nodeId;
@@ -19,11 +24,61 @@ function NodeInfoCtrl($scope, $http, $routeParams) {
     });
 }
 
+function HomeCtrl($scope, $http, elastic, configuration, ejsResource) {
+    $scope.isCollapsed = true;
+    $scope.configure = configuration;
+    $scope.fields = [];
+    $scope.clusterName = "";
+    $scope.search = {};
+    $scope.results = [];
+
+    var ejs = ejsResource('http://localhost:9200');
+
+    $scope.init = function () {
+        elastic.fields(function (data) {
+            $scope.fields = data;
+            if (!$scope.configure.title) {
+                if ($scope.fields.indexOf("title") > -1) {
+                    $scope.configure.title = "title";
+                }
+            }
+
+            if (!$scope.configure.description & $scope.fields.indexOf("description") > -1) {
+                $scope.configure.title = "description";
+            }
+        });
+        elastic.clusterName(function (data) {
+            $scope.clusterName = data;
+        });
+    };
+
+    $scope.doSearch = function () {
+        if (!($scope.configure.title)) {
+            console.log("Hmm, you should configure more");
+            return;
+        }
+
+        var request = ejs.Request();
+        var queryFields = [];
+        queryFields.push($scope.configure.title);
+        queryFields.push($scope.configure.description);
+
+        request.fields(queryFields);
+        var matchQuery = ejs.MatchQuery("_all", $scope.search.simple);
+        request.query(matchQuery);
+        request.doSearch(function (results) {
+            $scope.results = results.hits;
+        });
+
+    }
+}
+HomeCtrl.$inject = ['$scope', '$http', 'elastic', 'configuration', 'ejsResource'];
+
 function StatsCtrl() {
 
 }
 
-function FacetsCtrl($scope, $dialog, ejsResource, elastic) {
+function GraphCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
@@ -125,7 +180,7 @@ function FacetsCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.loadTypes();
     $scope.loadFields();
 }
-FacetsCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
+GraphCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
 
 function QueryCtrl($scope, $dialog, ejsResource, elastic) {
     $scope.indices = [];
@@ -326,9 +381,10 @@ QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic']
 
 function NavbarCtrl($scope) {
     var items = $scope.items = [
-        {title: 'Home', link: 'dashboard'},
+        {title: 'Home', link: 'home'},
+        {title: 'Dashboard', link: 'dashboard'},
         {title: 'Queries', link: 'query'},
-        {title: 'Facets', link: 'facets'},
+        {title: 'Graphs', link: 'graph'},
         {title: 'Statistics', link: 'stats'},
         {title: 'About', link: 'about'}
     ];

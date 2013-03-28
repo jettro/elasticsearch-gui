@@ -93,12 +93,16 @@
             <div><strong>{{key}}</strong></div>
             <div ng-show="value._type === 'terms'">
                 <div ng-repeat="term in value.terms">
-                    <span> {{term.term}} ({{term.count}})</span>
+                    <span ng-show="checkSelectedFacet(key,term.term)">{{term.term}} ({{term.count}}) <i
+                            style="cursor:pointer;" class="icon-remove"
+                            ng-click="removeFilter(key,term.term)"></i></span>
+                    <span ng-hide="checkSelectedFacet(key,term.term)" class="btn btn-mini btn-link"
+                          ng-click="addFilter(key,term.term)">{{term.term}} ({{term.count}})</span>
                 </div>
             </div>
             <div ng-show="value._type === 'date_histogram'">
                 <div ng-repeat="entry in value.entries">
-                    <span> {{entry.time}} ({{entry.count}})</span>
+                    <span class="btn btn-mini btn-link"> {{entry.time}} ({{entry.count}})</span>
                 </div>
             </div>
             <div ng-show="value._type === 'histogram'">

@@ -31,6 +31,8 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
     $scope.search.advanced = {};
     $scope.search.advanced.searchFields = [];
     $scope.search.facets = [];
+    $scope.search.selectedFacets = [];
+
 
     $scope.results = [];
     $scope.facets = [];
@@ -77,9 +79,25 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         } else {
             matchQuery = ejs.MatchQuery("_all", $scope.search.simple);
         }
-        request.query(matchQuery);
+
+        var theQuery = matchQuery;
+        if ($scope.search.selectedFacets && $scope.search.selectedFacets.length > 0) {
+            var selectedFacets = $scope.search.selectedFacets;
+            var termFilters = [];
+            for (var i = 0; i < selectedFacets.length; i++) {
+                termFilters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
+            }
+//            var andFilter = ejs.AndFilter([ejs.TermsFilter("categories","groovy and grails"),ejs.TermsFilter("keywords","groovy")])
+            var andFilter = ejs.AndFilter(termFilters);
+
+            theQuery = ejs.FilteredQuery(matchQuery, andFilter);
+        }
+
+        request.query(theQuery);
 
         facetBuilder.build($scope.search.facets, ejs, request);
+
+        console.log(request.toString());
 
         request.doSearch(function (results) {
             $scope.results = results.hits;
@@ -127,9 +145,8 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             }
         }
         if (found > -1) {
-            $scope.facets.splice(found, 1);
+            $scope.search.facets.splice(found, 1);
         }
-        $scope.changeQuery();
     };
 
     $scope.saveQuery = function () {
@@ -140,6 +157,40 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         queryStorage.loadQuery(function (data) {
             $scope.search = angular.copy(data);
         });
+    };
+
+    $scope.addFilter = function (key, value) {
+        if (!$scope.search.selectedFacets) {
+            $scope.search.selectedFacets = [];
+        }
+        $scope.search.selectedFacets.push({"key": key, "value": value});
+        $scope.doSearch();
+    };
+
+    $scope.checkSelectedFacet = function (key, value) {
+        if (!$scope.search.selectedFacets) {
+            return false;
+        }
+        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
+            var selectedFacet = $scope.search.selectedFacets;
+            if (selectedFacet[i].key === key && selectedFacet[i].value === value) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    $scope.removeFilter = function (key, value) {
+        if (!$scope.search.selectedFacets) {
+            return;
+        }
+        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
+            var selectedFacet = $scope.search.selectedFacets;
+            if (selectedFacet[i].key === key && selectedFacet[i].value === value) {
+                $scope.search.selectedFacets.splice(i, 1);
+            }
+        }
+        $scope.doSearch();
     }
 }
 HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'ejsResource', 'serverConfig', 'facetBuilder', '$dialog', 'queryStorage'];

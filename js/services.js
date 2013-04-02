@@ -53,16 +53,26 @@ serviceModule.factory('elastic', ['$http', function (http) {
                             myTypes.push(type);
                             var properties = data[index][type].properties;
                             for (var field in properties) {
-                                if (myFields.indexOf(field) == -1) {
-                                    myFields.push(field);
-                                }
+                                handleSubfields(properties[field], field, myFields);
                             }
                         }
                     }
                 }
                 callback(myFields);
             });
+        }
 
+        function handleSubfields(field, fieldName, myFields) {
+            if (field.hasOwnProperty("properties")) {
+                for (var subField in field.properties) {
+                    var newField = fieldName + "." + subField;
+                    handleSubfields(field.properties[subField], newField, myFields);
+                }
+            } else {
+                if (myFields.indexOf(fieldName) == -1) {
+                    myFields.push(fieldName);
+                }
+            }
         }
     }
 

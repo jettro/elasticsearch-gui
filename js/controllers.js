@@ -64,40 +64,49 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         }
 
         var request = ejs.Request();
+
         var queryFields = [];
         queryFields.push($scope.configure.title);
         queryFields.push($scope.configure.description);
         request.fields(queryFields);
 
-        var matchQuery;
+        var executedQuery;
         if ($scope.search.doAdvanced) {
-            matchQuery = ejs.BoolQuery();
+            executedQuery = ejs.BoolQuery();
             for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
                 var searchField = $scope.search.advanced.searchFields[i];
-                matchQuery.must(ejs.MatchQuery(searchField.field, searchField.text));
+
+                var multi = searchField.field.split('.');
+                var possibleNestedQuery;
+                var matchQuery = ejs.MatchQuery(searchField.field, searchField.text);
+                if (multi.length > 1) {
+                    possibleNestedQuery = ejs.NestedQuery(multi.slice(0, -1).join('.'));
+                    possibleNestedQuery.query(matchQuery);
+                    executedQuery.must();
+                } else {
+                    possibleNestedQuery = matchQuery;
+                }
+
+                executedQuery.must(possibleNestedQuery);
             }
         } else {
-            matchQuery = ejs.MatchQuery("_all", $scope.search.simple);
+            executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
         }
 
-        var theQuery = matchQuery;
         if ($scope.search.selectedFacets && $scope.search.selectedFacets.length > 0) {
             var selectedFacets = $scope.search.selectedFacets;
             var termFilters = [];
             for (var i = 0; i < selectedFacets.length; i++) {
                 termFilters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
             }
-//            var andFilter = ejs.AndFilter([ejs.TermsFilter("categories","groovy and grails"),ejs.TermsFilter("keywords","groovy")])
             var andFilter = ejs.AndFilter(termFilters);
 
-            theQuery = ejs.FilteredQuery(matchQuery, andFilter);
+            executedQuery = ejs.FilteredQuery(executedQuery, andFilter);
         }
 
-        request.query(theQuery);
+        request.query(executedQuery);
 
         facetBuilder.build($scope.search.facets, ejs, request);
-
-        console.log(request.toString());
 
         request.doSearch(function (results) {
             $scope.results = results.hits;

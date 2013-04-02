@@ -34,7 +34,7 @@ serviceModule.factory('elastic', ['$http', function (http) {
                 var myTypes = [];
                 for (var index in data) {
                     for (var type in data[index]) {
-                        if (myTypes.indexOf(type) == -1) {
+                        if (myTypes.indexOf(type) == -1 && type != "_default_") {
                             myTypes.push(type);
                         }
                     }
@@ -49,7 +49,7 @@ serviceModule.factory('elastic', ['$http', function (http) {
                 var myFields = [];
                 for (var index in data) {
                     for (var type in data[index]) {
-                        if (myTypes.indexOf(type) == -1) {
+                        if (myTypes.indexOf(type) == -1 && type != "_default_") {
                             myTypes.push(type);
                             var properties = data[index][type].properties;
                             for (var field in properties) {

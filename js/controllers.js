@@ -48,7 +48,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
                 }
             }
 
-            if (!$scope.configure.description & $scope.fields.indexOf("description") > -1) {
+            if (!$scope.configure.description && $scope.fields.indexOf("description") > -1) {
                 $scope.configure.title = "description";
             }
         });
@@ -70,39 +70,8 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         queryFields.push($scope.configure.description);
         request.fields(queryFields);
 
-        var executedQuery;
-        if ($scope.search.doAdvanced) {
-            executedQuery = ejs.BoolQuery();
-            for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
-                var searchField = $scope.search.advanced.searchFields[i];
-
-                var multi = searchField.field.split('.');
-                var possibleNestedQuery;
-                var matchQuery = ejs.MatchQuery(searchField.field, searchField.text);
-                if (multi.length > 1) {
-                    possibleNestedQuery = ejs.NestedQuery(multi.slice(0, -1).join('.'));
-                    possibleNestedQuery.query(matchQuery);
-                    executedQuery.must();
-                } else {
-                    possibleNestedQuery = matchQuery;
-                }
-
-                executedQuery.must(possibleNestedQuery);
-            }
-        } else {
-            executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
-        }
-
-        if ($scope.search.selectedFacets && $scope.search.selectedFacets.length > 0) {
-            var selectedFacets = $scope.search.selectedFacets;
-            var termFilters = [];
-            for (var i = 0; i < selectedFacets.length; i++) {
-                termFilters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
-            }
-            var andFilter = ejs.AndFilter(termFilters);
-
-            executedQuery = ejs.FilteredQuery(executedQuery, andFilter);
-        }
+        var executedQuery = searchPart();
+        executedQuery = filterChosenFacetPart(executedQuery);
 
         request.query(executedQuery);
 
@@ -200,6 +169,48 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             }
         }
         $scope.doSearch();
+    }
+
+    function searchPart() {
+        var executedQuery;
+        if ($scope.search.doAdvanced) {
+            executedQuery = ejs.BoolQuery();
+            for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
+                var searchField = $scope.search.advanced.searchFields[i];
+
+                var multi = searchField.field.split('.');
+                var possibleNestedQuery;
+                var matchQuery = ejs.MatchQuery(searchField.field, searchField.text);
+                if (multi.length > 1) {
+                    possibleNestedQuery = ejs.NestedQuery(multi.slice(0, -1).join('.'));
+                    possibleNestedQuery.query(matchQuery);
+                    executedQuery.must();
+                } else {
+                    possibleNestedQuery = matchQuery;
+                }
+
+                executedQuery.must(possibleNestedQuery);
+            }
+        } else {
+            executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
+        }
+        return executedQuery;
+    }
+
+    function filterChosenFacetPart(executedQuery) {
+        var changedQuery = executedQuery;
+        if ($scope.search.selectedFacets && $scope.search.selectedFacets.length > 0) {
+            // TODO make sure other facet types work as well
+            var selectedFacets = $scope.search.selectedFacets;
+            var termFilters = [];
+            for (var i = 0; i < selectedFacets.length; i++) {
+                termFilters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
+            }
+            var andFilter = ejs.AndFilter(termFilters);
+
+            changedQuery = ejs.FilteredQuery(executedQuery, andFilter);
+        }
+        return changedQuery;
     }
 }
 HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'ejsResource', 'serverConfig', 'facetBuilder', '$dialog', 'queryStorage'];

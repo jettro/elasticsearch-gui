@@ -58,11 +58,16 @@
             <tr>
                 <th>Node name</th>
                 <th>Version</th>
+                <th>Client</th>
                 <th>Actions</th>
             </tr>
             <tr ng-repeat="(key,value) in nodes">
                 <td>{{value.name}}</td>
                 <td>{{value.version}}</td>
+                <td ng-show="value.attributes.client">
+                    <i class="icon-ok"></i> (data: {{value.attributes.data}})
+                </td>
+                <td ng-hide="value.attributes.client"><i class="icon-remove"></i></td>
                 <td><a href="#/node/{{key}}">More info</a></td>
             </tr>
         </table>

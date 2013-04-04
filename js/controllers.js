@@ -43,12 +43,12 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         elastic.fields(function (data) {
             $scope.fields = data;
             if (!$scope.configure.title) {
-                if ($scope.fields.indexOf("title") > -1) {
+                if ($scope.fields.title) {
                     $scope.configure.title = "title";
                 }
             }
 
-            if (!$scope.configure.description && $scope.fields.indexOf("description") > -1) {
+            if (!$scope.configure.description && $scope.fields.description) {
                 $scope.configure.title = "description";
             }
         });
@@ -177,14 +177,13 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             executedQuery = ejs.BoolQuery();
             for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
                 var searchField = $scope.search.advanced.searchFields[i];
+                var fieldForSearch = $scope.fields[searchField.field];
 
-                var multi = searchField.field.split('.');
-                var possibleNestedQuery;
                 var matchQuery = ejs.MatchQuery(searchField.field, searchField.text);
-                if (multi.length > 1) {
-                    possibleNestedQuery = ejs.NestedQuery(multi.slice(0, -1).join('.'));
+                var possibleNestedQuery;
+                if (fieldForSearch.nestedPath) {
+                    possibleNestedQuery = ejs.NestedQuery(fieldForSearch.nestedPath);
                     possibleNestedQuery.query(matchQuery);
-                    executedQuery.must();
                 } else {
                     possibleNestedQuery = matchQuery;
                 }
@@ -194,6 +193,8 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         } else {
             executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
         }
+
+        console.log(executedQuery.toString());
         return executedQuery;
     }
 

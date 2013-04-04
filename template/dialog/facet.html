@@ -5,12 +5,13 @@
     <form>
         <fieldset>
             <label>Available Fields</label>
-            <select ng-model="dialog.field">
-                <option ng-repeat="field in fields">{{field}}</option>
+            <select ng-model="dialog.field" ng-options="key as value.forPrint for (key,value) in fields">
+                <option value="">-- chose field --</option>
             </select>
             <label>Facet types</label>
-            <select ng-model="dialog.facettype">
-                <option ng-repeat="facetType in facetTypes">{{facetType}}</option>
+            <select ng-model="dialog.facettype" ng-options="facetType for facetType in facetTypes">
+                <option value="">-- chose field --</option>
+                <!--<option ng-repeat="facetType in facetTypes">{{facetType}}</option>-->
             </select>
 
             <div ng-show="dialog.facettype == 'Term'">
@@ -43,5 +44,5 @@
     </form>
 </div>
 <div class="modal-footer">
-    <button ng-click="close(dialog)" class="btn btn-primary">Close</button>
+    <button ng-click="close(dialog)" class="btn btn-primary">Add</button>
 </div>

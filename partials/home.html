@@ -8,12 +8,11 @@
             <div collapse="isCollapsed">
                 <form>
                     <label>Titel</label>
-                    <select ng-model="configure.title">
-                        <option ng-repeat="field in fields">{{field}}</option>
+                    <select ng-model="configure.title" ng-options="key as value.forPrint for (key,value) in fields">
                     </select>
                     <label>Description</label>
-                    <select ng-model="configure.description">
-                        <option ng-repeat="field in fields">{{field}}</option>
+                    <select ng-model="configure.description"
+                            ng-options="key as value.forPrint for (key,value) in fields">
                     </select>
                 </form>
             </div>
@@ -55,8 +54,9 @@
         <form class="form-inline">
             <div>
                 <label>Choose field</label>
-                <select ng-model="search.advanced.newField">
-                    <option ng-repeat="field in fields">{{field}}</option>
+                <select ng-model="search.advanced.newField"
+                        ng-options="key as value.forPrint for (key,value) in fields">
+                    <option value="">-- chose field --</option>
                 </select>
                 <label>Enter text</label>
                 <input class="search-query" type="search" ng-model="search.advanced.newText" autofocus="true"

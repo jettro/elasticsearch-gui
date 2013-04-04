@@ -46,31 +46,37 @@ serviceModule.factory('elastic', ['$http', function (http) {
         this.fields = function (callback) {
             http.get('/_mapping').success(function (data) {
                 var myTypes = [];
-                var myFields = [];
+                var myFields = {};
                 for (var index in data) {
                     for (var type in data[index]) {
                         if (myTypes.indexOf(type) == -1 && type != "_default_") {
                             myTypes.push(type);
                             var properties = data[index][type].properties;
                             for (var field in properties) {
-                                handleSubfields(properties[field], field, myFields);
+                                handleSubfields(properties[field], field, myFields, undefined);
                             }
                         }
                     }
                 }
                 callback(myFields);
             });
-        }
+        };
 
-        function handleSubfields(field, fieldName, myFields) {
+        function handleSubfields(field, fieldName, myFields, nestedPath) {
             if (field.hasOwnProperty("properties")) {
+                var nested = (field.type == "nested");
+                if (nested) {
+                    nestedPath = fieldName;
+                }
                 for (var subField in field.properties) {
                     var newField = fieldName + "." + subField;
-                    handleSubfields(field.properties[subField], newField, myFields);
+                    handleSubfields(field.properties[subField], newField, myFields, nestedPath);
                 }
             } else {
-                if (myFields.indexOf(fieldName) == -1) {
-                    myFields.push(fieldName);
+                if (!myFields[fieldName]) {
+                    myFields[fieldName] = field;
+                    myFields[fieldName].nestedPath = nestedPath;
+                    myFields[fieldName].forPrint = fieldName + " (" + field.type + ", " + nestedPath + ")";
                 }
             }
         }

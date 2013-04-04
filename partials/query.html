@@ -44,8 +44,8 @@
                     class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
         </div>
         <div class="span10">
-            <select ng-model="queryFactory.addField">
-                <option ng-repeat="field in fields">{{field}}</option>
+            <select ng-model="queryFactory.addField" ng-options="key as value.forPrint for (key,value) in fields">
+                <option value="">-- chose field --</option>
             </select>
             <span class="btn btn-info btn-mini" ng-click="addQueryField()" title="Add query Field">
                 <i class="icon-plus-sign icon-white"></i>

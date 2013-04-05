@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html ng-app>
+<head>
+    <title></title>
+    <script src="../lib/angular/angular-1.1.3.min.js"></script>
+
+    <script language="JavaScript">
+
+        function recurseTree(tree, newKey, value) {
+            var newKeys = newKey.split(".");
+
+            if (newKeys.length > 1) {
+                if (!tree.hasOwnProperty(newKeys[0])) {
+                    tree[newKeys[0]] = {};
+                }
+                recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value);
+            } else {
+                if (!tree.hasOwnProperty(newKey)) {
+                    tree[newKey] = value;
+                }
+            }
+        }
+
+        var testT = {};
+        recurseTree(testT, "comments.author.name", "jettro");
+        recurseTree(testT, "comments.author.link", "http://www.coenradie.com");
+        recurseTree(testT, "comments.content", "This is the content of the comment");
+        console.log(testT);
+    </script>
+</head>
+<body>
+
+</body>
+</html>

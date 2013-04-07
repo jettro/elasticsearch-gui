@@ -173,7 +173,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
 
     function searchPart() {
         var executedQuery;
-        if ($scope.search.doAdvanced) {
+        if ($scope.search.doAdvanced && $scope.search.advanced.searchFields.length > 0) {
             var tree = {};
             for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
                 var searchField = $scope.search.advanced.searchFields[i];
@@ -186,8 +186,10 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             }
             executedQuery = constructQuery(tree);
 
-        } else {
+        } else if ($scope.search.simple && $scope.search.simple.length > 0) {
             executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
+        } else {
+            executedQuery = ejs.MatchAllQuery();
         }
 
         console.log(executedQuery.toString());

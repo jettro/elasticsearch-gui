@@ -174,22 +174,18 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
     function searchPart() {
         var executedQuery;
         if ($scope.search.doAdvanced) {
-            executedQuery = ejs.BoolQuery();
+            var tree = {};
             for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
                 var searchField = $scope.search.advanced.searchFields[i];
                 var fieldForSearch = $scope.fields[searchField.field];
-
-                var matchQuery = ejs.MatchQuery(searchField.field, searchField.text);
-                var possibleNestedQuery;
+                recurseTree(tree, searchField.field, searchField.text);
                 if (fieldForSearch.nestedPath) {
-                    possibleNestedQuery = ejs.NestedQuery(fieldForSearch.nestedPath);
-                    possibleNestedQuery.query(matchQuery);
-                } else {
-                    possibleNestedQuery = matchQuery;
+                    defineNestedPathInTree(tree, fieldForSearch.nestedPath, fieldForSearch.nestedPath);
                 }
-
-                executedQuery.must(possibleNestedQuery);
+                console.log(tree);
             }
+            executedQuery = constructQuery(tree);
+
         } else {
             executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
         }
@@ -197,6 +193,59 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         console.log(executedQuery.toString());
         return executedQuery;
     }
+
+    function constructQuery(tree) {
+        var props = Object.getOwnPropertyNames(tree);
+        var theQuery = ejs.BoolQuery();
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            if (tree[prop] instanceof Object) {
+                theQuery.must(constructQuery(tree[prop]));
+            } else if (!(prop.substring(0, 1) === "_")) {
+                var fieldName = prop;
+                if (tree._nested) {
+                    fieldName = tree._nested + "." + fieldName;
+                }
+                theQuery.must(ejs.MatchQuery(fieldName, tree[prop]));
+            }
+        }
+
+        var returnQuery;
+        if (tree._nested) {
+            returnQuery = ejs.NestedQuery(tree._nested);
+            returnQuery.query(theQuery);
+        } else {
+            returnQuery = theQuery;
+        }
+
+        return returnQuery;
+    }
+
+    function defineNestedPathInTree(tree, path, nestedPath) {
+        var pathItems = path.split(".");
+        if (pathItems.length > 1) {
+            defineNestedPathInTree(tree[pathItems[0]], pathItems.splice(1).join("."), nestedPath);
+        } else {
+            tree[path]._nested = nestedPath;
+        }
+
+    }
+
+    function recurseTree(tree, newKey, value) {
+        var newKeys = newKey.split(".");
+
+        if (newKeys.length > 1) {
+            if (!tree.hasOwnProperty(newKeys[0])) {
+                tree[newKeys[0]] = {};
+            }
+            recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value);
+        } else {
+            if (!tree.hasOwnProperty(newKey)) {
+                tree[newKey] = value;
+            }
+        }
+    }
+
 
     function filterChosenFacetPart(executedQuery) {
         var changedQuery = executedQuery;

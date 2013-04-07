@@ -76,7 +76,7 @@ serviceModule.factory('elastic', ['$http', function (http) {
                 if (!myFields[fieldName]) {
                     myFields[fieldName] = field;
                     myFields[fieldName].nestedPath = nestedPath;
-                    myFields[fieldName].forPrint = fieldName + " (" + field.type + ", " + nestedPath + ")";
+                    myFields[fieldName].forPrint = fieldName + " (" + field.type + ")";
                 }
             }
         }

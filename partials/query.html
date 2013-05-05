@@ -14,7 +14,7 @@
                 popover="Here you can select the index that we query over. If you select nothing, we query over all data"
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
     </div>
-    <div class="span10">
+    <div class="span9">
         <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
             <div class="btn btn-mini" ng-click="chooseIndex(index)" ng-repeat="index in indices">{{index}}</div>
         </div>
@@ -28,7 +28,7 @@
                 Beware, if you select a type that is not available in the chosen index you see nothing."
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
     </div>
-    <div class="span10">
+    <div class="span9">
         <div id="chooseTypeBtn" class="btn-group" data-toggle="buttons-checkbox">
             <div class="btn btn-mini" ng-click="chooseType(type)" ng-repeat="type in types">{{type}}</div>
         </div>
@@ -43,7 +43,7 @@
                     on the screen. When the highlight checkbox is checked we use highlighting when showing the fields."
                     class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
         </div>
-        <div class="span10">
+        <div class="span9">
             <select ng-model="queryFactory.addField" ng-options="key as value.forPrint for (key,value) in fields">
                 <option value="">-- chose field --</option>
             </select>
@@ -67,7 +67,7 @@
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
 
     </div>
-    <div class="span10">
+    <div class="span9">
         <span class="btn btn-info btn-mini" ng-click="openDialog()" title="Add new Facet">
             <i class="icon-plus-sign icon-white"></i>
         </span>
@@ -90,7 +90,7 @@
                     class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
 
         </div>
-        <div class="span10">
+        <div class="span9">
             <span class="btn btn-info btn-mini" ng-click="changeQuery()" title="Check Query"><i
                     class="icon-check icon-white"></i></span>
             <span class="btn btn-info btn-mini" ng-click="resetQuery()" title="Reset all choices"><i
@@ -176,7 +176,7 @@
     <div class="span2">
         <span class="text-info">Shard</span>
     </div>
-    <div class="span2">
+    <div class="span1">
         <span class="text-info">Node</span>
     </div>
 </div>
@@ -188,7 +188,7 @@
         <div class="span3">{{doc._id}}</div>
         <div class="span1">{{doc._score}}</div>
         <div class="span2">{{doc._shard}}</div>
-        <div class="span2">{{doc._node}}</div>
+        <div class="span1">{{doc._node}}</div>
     </div>
     <div class="row-fluid" ng-show="doc.showDetails">
         <div class="span12">

@@ -1,38 +1,66 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" ng-app="myApp">
 <head>
     <meta charset="utf-8">
-    <title>AngularJS Elasticsearch Client</title>
-    <link rel="stylesheet" href="css/bootstrap-2.3.1.min.css">
-    <link rel="stylesheet" href="css/app.css"/>
+    <title>Bootstrap, from Twitter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="css/bootstrap-2.3.1.min.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+
+        @media (max-width: 980px) {
+            /* Enable use of floated navbar text */
+            .navbar-text.pull-right {
+                float: none;
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+    </style>
+    <link href="css/bootstrap-responsive-2.3.1.min.css" rel="stylesheet">
+
 </head>
+
 <body>
-<!-- Part 1: Wrap all page content here -->
-<div id="wrap">
-    <div ng-controller="NavbarCtrl">
-        <navbar heading="Elasticsearch GUI"/>
+
+<div ng-controller="NavbarCtrl">
+    <navbar heading="Elasticsearch GUI"/>
+</div>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span12" ng-view>
+        </div>
     </div>
 
-    <div class="container-fluid">
-        <div ng-view></div>
-        <div id="push"></div>
-    </div>
-</div>
-<div id="footer">
-    <div class="container">
+    <hr>
+
+    <footer>
         <p class="muted credit">Made possible by <a href="http://www.gridshore.nl">Jettro Coenradie</a> and <a
-                href="http://www.trifork.nl">Trifork Amsterdam</a>. {{ 'Version v%VERSION%.' | interpolate }}</p>
-    </div>
-</div>
+                href="http://www.trifork.nl">Trifork Amsterdam</a>. {{ 'Version v%VERSION%.' | interpolate }}
+        </p>
 
-<!-- In production use:
-<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.2/angular.min.js"></script>
--->
+    </footer>
+
+</div>
+<!--/.fluid-container-->
+
+<!-- Le javascript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="lib/jquery/jquery-1.8.2.min.js"></script>
+<script src="lib/bootstrap/bootstrap-2.3.1.min.js"></script>
+
 <script src="lib/angular/angular-1.1.3.min.js"></script>
 <script src="lib/angular/ui-bootstrap-0.1.0.min.js"></script>
 <script src="lib/angular/dangle.min.js"></script>
-<script src="lib/jquery/jquery-1.8.2.min.js"></script>
-<script src="lib/bootstrap/bootstrap-2.3.1.min.js"></script>
 <script src="lib/elasticsearch/elastic.min.js"></script>
 <script src="lib/elasticsearch/elastic-angular-client.min.js"></script>
 <script src="lib/d3/d3.v3.min.js"></script>
@@ -42,5 +70,6 @@
 <script src="js/controllers.js"></script>
 <script src="js/filters.js"></script>
 <script src="js/directives.js"></script>
+
 </body>
 </html>

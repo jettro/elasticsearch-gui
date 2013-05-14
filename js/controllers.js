@@ -105,7 +105,9 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             backdropClick: true,
             templateUrl: 'template/dialog/facet.html',
             controller: 'FacetDialogCtrl',
-            resolve: {fields: angular.copy($scope.fields)}};
+            resolve: {fields: function () {
+                return angular.copy($scope.fields)
+            } }};
         var d = $dialog.dialog(opts);
         d.open().then(function (result) {
             if (result) {
@@ -336,7 +338,9 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
             backdropClick: true,
             templateUrl: 'template/dialog/facet.html',
             controller: 'FacetDialogCtrl',
-            resolve: {fields: angular.copy($scope.fields)}};
+            resolve: {fields: function () {
+                return angular.copy($scope.fields)
+            } }};
         var d = $dialog.dialog(opts);
         d.open().then(function (result) {
             if (result) {
@@ -519,7 +523,9 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
             backdropClick: true,
             templateUrl: 'template/dialog/facet.html',
             controller: 'FacetDialogCtrl',
-            resolve: {fields: angular.copy($scope.fields)}};
+            resolve: {fields: function () {
+                return angular.copy($scope.fields)
+            } }};
         var d = $dialog.dialog(opts);
         d.open().then(function (result) {
             if (result) {

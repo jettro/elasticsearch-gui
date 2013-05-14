@@ -156,7 +156,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             }
         }
         return false;
-    }
+    };
 
     $scope.removeFilter = function (key, value) {
         if (!$scope.search.selectedFacets) {
@@ -169,7 +169,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             }
         }
         $scope.doSearch();
-    }
+    };
 
     function searchPart() {
         var executedQuery;

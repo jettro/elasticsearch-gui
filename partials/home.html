@@ -102,7 +102,7 @@
             </div>
             <div ng-show="value._type === 'date_histogram'">
                 <div ng-repeat="entry in value.entries">
-                    <span class="btn btn-mini btn-link"> {{entry.time}} ({{entry.count}})</span>
+                    <span class="btn btn-mini btn-link"> {{entry.time | date:'medium'}} ({{entry.count}})</span>
                 </div>
             </div>
             <div ng-show="value._type === 'histogram'">
@@ -117,7 +117,7 @@
             </div>
         </div>
     </div>
-    <div class="span9">
+    <div class="span8">
         <div ng-repeat="result in results.hits">
             <div><span class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
                                                                                         ng-show="search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>

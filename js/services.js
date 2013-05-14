@@ -73,6 +73,17 @@ serviceModule.factory('elastic', ['$http', function (http) {
                     handleSubfields(field.properties[subField], newField, myFields, nestedPath);
                 }
             } else {
+                if (field.type === "multi_field") {
+                    for (var multiField in field.fields) {
+                        var multiFieldName = fieldName + "." + multiField;
+                        // TODO jettro : fix the nested documents with multi_fields
+                        if (!myFields[multiFieldName] && fieldName !== multiField) {
+                            myFields[multiFieldName] = field.fields[multiField];
+                            myFields[multiFieldName].nestedPath = nestedPath;
+                            myFields[multiFieldName].forPrint = multiFieldName + " (" + field.type + ")";
+                        }
+                    }
+                }
                 if (!myFields[fieldName]) {
                     myFields[fieldName] = field;
                     myFields[fieldName].nestedPath = nestedPath;

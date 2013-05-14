@@ -167,12 +167,12 @@ serviceModule.factory('facetBuilder', function () {
                     rangeFacet.field(facet.field);
                     request.facet(rangeFacet);
                 } else if (facet.facetType === 'datehistogram') {
-                    var dateHistogramFacet = ejs.DateHistogramFacet(facet.field + 'Facet');
+                    var dateHistogramFacet = ejs.DateHistogramFacet(facet.field);
                     dateHistogramFacet.field(facet.field);
                     dateHistogramFacet.interval(facet.interval);
                     request.facet(dateHistogramFacet);
                 } else if (facet.facetType === 'histogram') {
-                    var histogramFacet = ejs.HistogramFacet(facet.field + 'Facet');
+                    var histogramFacet = ejs.HistogramFacet(facet.field);
                     histogramFacet.field(facet.field);
                     histogramFacet.interval(facet.interval);
                     request.facet(histogramFacet);

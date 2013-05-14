@@ -13,7 +13,7 @@ function DashboardCtrl($scope, $http, elastic) {
         $scope.indices = data;
     });
 }
-DashboardCtrl.$inject = ['$scope', '$http', 'elastic']
+DashboardCtrl.$inject = ['$scope', '$http', 'elastic'];
 
 function NodeInfoCtrl($scope, $http, $routeParams) {
     var nodeId = $routeParams.nodeId;
@@ -33,6 +33,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
     $scope.search.facets = [];
     $scope.search.selectedFacets = [];
 
+    $scope.configError = "";
 
     $scope.results = [];
     $scope.facets = [];
@@ -59,10 +60,10 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
 
     $scope.doSearch = function () {
         if ((!($scope.configure.title)) || (!($scope.configure.description))) {
-            console.log("Hmm, you should configure more");
-            return;
+            $scope.configError = "Please configure the title and description in the configuration at the top of the page.";
+        } else {
+            $scope.configError = "";
         }
-
         var request = ejs.Request();
 
         var queryFields = [];
@@ -251,18 +252,48 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
 
     function filterChosenFacetPart(executedQuery) {
         var changedQuery = executedQuery;
+
         if ($scope.search.selectedFacets && $scope.search.selectedFacets.length > 0) {
-            // TODO make sure other facet types work as well
             var selectedFacets = $scope.search.selectedFacets;
-            var termFilters = [];
+            var filters = [];
             for (var i = 0; i < selectedFacets.length; i++) {
-                termFilters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
+                var facet = determineFacet(selectedFacets[i].key);
+                var facetType = facet.facetType;
+                if (facetType === "term") {
+                    filters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
+                } else if (facetType === "datehistogram") {
+                    // TODO jettro, what are we going to do here ??
+                } else if (facetType === "histogram") {
+                    var rangeFilter = ejs.RangeFilter(selectedFacets[i].key);
+                    rangeFilter.from(selectedFacets[i].value);
+                    rangeFilter.to(selectedFacets[i].value + facet.interval);
+                    filters.push(rangeFilter);
+                }
             }
-            var andFilter = ejs.AndFilter(termFilters);
+            var andFilter = ejs.AndFilter(filters);
 
             changedQuery = ejs.FilteredQuery(executedQuery, andFilter);
         }
         return changedQuery;
+    }
+
+    function determineFacet(key) {
+        for (var i = 0; i < $scope.search.facets.length; i++) {
+            var currentFacet = $scope.search.facets[i];
+            if (currentFacet.field === key) {
+                return currentFacet;
+            }
+        }
+    }
+
+    $scope.obtainFacetByKey = function (key) {
+        for (var i = 0; i < $scope.search.facets.length; i++) {
+            var currentFacet = $scope.search.facets[i];
+            if (currentFacet.field === key) {
+                return currentFacet;
+            }
+        }
+        return null;
     }
 }
 HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'ejsResource', 'serverConfig', 'facetBuilder', '$dialog', 'queryStorage'];

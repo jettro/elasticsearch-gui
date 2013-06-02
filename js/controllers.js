@@ -131,11 +131,11 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
     };
 
     $scope.saveQuery = function () {
-        queryStorage.saveQuery(angular.copy($scope.search));
+        queryStorage.saveSearch(angular.copy($scope.search));
     };
 
     $scope.loadQuery = function () {
-        queryStorage.loadQuery(function (data) {
+        queryStorage.loadSearch(function (data) {
             $scope.search = angular.copy(data);
         });
     };
@@ -410,34 +410,44 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
 }
 GraphCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig']
 
-function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBuilder) {
-    $scope.indices = [];
-    $scope.types = [];
+function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBuilder, queryStorage) {
     $scope.fields = [];
-
-    $scope.chosenIndices = [];
-    $scope.chosenTypes = [];
-    $scope.chosenFields = [];
-
     $scope.createdQuery = "";
+
     $scope.queryResults = [];
-    $scope.search = {};
-    $scope.queryFactory = {};
-    $scope.facets = [];
     $scope.facetResults = [];
+    $scope.queryFactory = {};
+    $scope.query = {};
+
+    $scope.query.chosenFields = [];
+    $scope.query.facets = [];
+    $scope.query.indices = {};
+    $scope.query.types = {};
 
     var ejs = ejsResource(serverConfig.host);
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
         elastic.indexes(function (data) {
-            $scope.indices = data;
+            if (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $scope.query.indices[data[i]] = {"name": data[i], "state": false};
+                }
+            } else {
+                $scope.query.indices = {};
+            }
         });
     };
 
     $scope.loadTypes = function () {
         elastic.types(function (data) {
-            $scope.types = data;
+            if (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $scope.query.types[data[i]] = {"name": data[i], "state": false};
+                }
+            } else {
+                $scope.query.types = {};
+            }
         });
     };
 
@@ -448,43 +458,33 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
     };
 
     /* Function to change the input for the query to be executed */
-    $scope.chooseIndex = function (index) {
-        toggleChoice($scope.chosenIndices, index);
-        $scope.changeQuery();
-    };
-
-    $scope.chooseType = function (type) {
-        toggleChoice($scope.chosenTypes, type);
-        $scope.changeQuery();
-    };
-
     $scope.addQueryField = function () {
-        var i = $scope.chosenFields.indexOf($scope.queryFactory.addField);
+        var i = $scope.query.chosenFields.indexOf($scope.queryFactory.addField);
         if (i == -1) {
-            $scope.chosenFields.push($scope.queryFactory.addField);
+            $scope.query.chosenFields.push($scope.queryFactory.addField);
         }
         $scope.changeQuery();
     };
 
     $scope.removeQueryField = function (data) {
-        var i = $scope.chosenFields.indexOf(data);
+        var i = $scope.query.chosenFields.indexOf(data);
         if (i > -1) {
-            $scope.chosenFields.splice(i, 1);
+            $scope.query.chosenFields.splice(i, 1);
         }
         $scope.changeQuery();
     };
 
     $scope.removeFacetField = function (data) {
         var found = -1;
-        for (var i = 0; i < $scope.facets.length; i++) {
-            var currentFacet = $scope.facets[i];
+        for (var i = 0; i < $scope.query.facets.length; i++) {
+            var currentFacet = $scope.query.facets[i];
             if (currentFacet.field === data) {
                 found = i;
                 break;
             }
         }
         if (found > -1) {
-            $scope.facets.splice(found, 1);
+            $scope.query.facets.splice(found, 1);
         }
         $scope.changeQuery();
     };
@@ -504,12 +504,12 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
         $scope.loadIndices();
         $scope.loadTypes();
         $scope.loadFields();
-        $scope.search.term = "";
-        $scope.chosenIndices = [];
-        $scope.chosenTypes = [];
-        $scope.chosenFields = [];
+        $scope.query.term = "";
+        $scope.query.chosenIndices = [];
+        $scope.query.chosenTypes = [];
+        $scope.query.chosenFields = [];
         $scope.changeQuery();
-        $scope.search.type = "or";
+        $scope.query.type = "or";
     };
 
     $scope.changeQuery = function () {
@@ -529,37 +529,63 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
         var d = $dialog.dialog(opts);
         d.open().then(function (result) {
             if (result) {
-                $scope.facets.push(result);
+                $scope.query.facets.push(result);
                 $scope.changeQuery();
             }
         });
     };
 
+    $scope.saveQuery = function () {
+        queryStorage.saveQuery(angular.copy($scope.query));
+        console.log($scope.query);
+    };
+
+    $scope.loadQuery = function () {
+        queryStorage.loadQuery(function (data) {
+            $scope.query = angular.copy(data);
+            $scope.changeQuery();
+            console.log($scope.query);
+        });
+    };
+
+
     function createQuery() {
         var request = ejs.Request();
-        request.indices($scope.chosenIndices);
-        request.types($scope.chosenTypes);
-        if ($scope.chosenFields.length > 0) {
-            request.fields($scope.chosenFields);
+        var chosenIndices = [];
+        angular.forEach($scope.query.indices, function (value) {
+            if (value.state) {
+                chosenIndices.push(value.name);
+            }
+        });
+        request.indices(chosenIndices);
+        var chosenTypes = [];
+        angular.forEach($scope.query.types, function (value) {
+            if (value.state) {
+                chosenTypes.push(value.name);
+            }
+        });
+        request.types(chosenTypes);
+        if ($scope.query.chosenFields.length > 0) {
+            request.fields($scope.query.chosenFields);
         }
-        if ($scope.search.term.length > 0) {
-            var matchQuery = ejs.MatchQuery("_all", $scope.search.term);
-            if ($scope.search.type === 'phrase') {
+        if ($scope.query.term.length > 0) {
+            var matchQuery = ejs.MatchQuery("_all", $scope.query.term);
+            if ($scope.query.type === 'phrase') {
                 matchQuery.type('phrase');
             } else {
-                matchQuery.operator($scope.search.type);
+                matchQuery.operator($scope.query.type);
             }
             request.query(matchQuery);
         } else {
             request.query(ejs.MatchAllQuery());
         }
 
-        facetBuilder.build($scope.facets, ejs, request);
+        facetBuilder.build($scope.query.facets, ejs, request);
 
-        request.explain($scope.search.explain);
-        if ($scope.search.highlight) {
+        request.explain($scope.query.explain);
+        if ($scope.query.highlight) {
             var highlight = ejs.Highlight();
-            highlight.fields($scope.chosenFields);
+            highlight.fields($scope.query.chosenFields);
             request.highlight(highlight);
         }
         return request;
@@ -576,7 +602,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
 
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig', 'facetBuilder'];
+QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig', 'facetBuilder', 'queryStorage'];
 
 function NavbarCtrl($scope, $timeout, elastic) {
     $scope.statusCluster = {};

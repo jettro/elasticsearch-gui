@@ -15,9 +15,12 @@
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
     </div>
     <div class="span9">
-        <div id="chooseIndexBtn" class="btn-group" data-toggle="buttons-checkbox">
-            <div class="btn btn-mini" ng-click="chooseIndex(index)" ng-repeat="index in indices">{{index}}</div>
+        <div id="chooseIndexBtn" class="btn-group">
+            <button type="button" class="btn btn-mini" ng-model="index.state" ng-repeat="index in query.indices"
+                    btn-checkbox>{{index.name}}
+            </button>
         </div>
+        <div>{{indices}}</div>
     </div>
 </div>
 
@@ -29,8 +32,10 @@
                 class="btn btn-mini btn-link"><i class="icon-question-sign"></i></button>
     </div>
     <div class="span9">
-        <div id="chooseTypeBtn" class="btn-group" data-toggle="buttons-checkbox">
-            <div class="btn btn-mini" ng-click="chooseType(type)" ng-repeat="type in types">{{type}}</div>
+        <div id="chooseTypeBtn" class="btn-group">
+            <button type="button" class="btn btn-mini" ng-model="type.state" ng-repeat="type in query.types"
+                    btn-checkbox>{{type.name}}
+            </button>
         </div>
     </div>
 </div>
@@ -50,7 +55,7 @@
             <span class="btn btn-info btn-mini" ng-click="addQueryField()" title="Add query Field">
                 <i class="icon-plus-sign icon-white"></i>
             </span>
-            <span ng-repeat="field in chosenFields">{{field}}
+            <span ng-repeat="field in query.chosenFields">{{field}}
                 <span class="btn btn-mini" ng-click="removeQueryField(field)" title="Remove query Field">
                     <i class="icon-remove-sign"></i>
                 </span>
@@ -71,7 +76,7 @@
         <span class="btn btn-info btn-mini" ng-click="openDialog()" title="Add new Facet">
             <i class="icon-plus-sign icon-white"></i>
         </span>
-        <span ng-repeat="facet in facets">{{facet.field}} ({{facet.facetType}})
+        <span ng-repeat="facet in query.facets">{{facet.field}} ({{facet.facetType}})
             <span class="btn btn-mini" ng-click="removeFacetField(facet.field)" title="Remove facet Field">
                 <i class="icon-remove-sign"></i>
             </span>
@@ -97,26 +102,28 @@
                     class="icon-refresh icon-white"></i></span>
             <span class="text-info">Query Type</span>
             <label class="radio">
-                <input type="radio" ng-model="search.type" value="or">OR
+                <input type="radio" ng-model="query.type" value="or">OR
             </label>
             <label class="radio">
-                <input type="radio" ng-model="search.type" value="and">AND
+                <input type="radio" ng-model="query.type" value="and">AND
             </label>
             <label class="radio">
-                <input type="radio" ng-model="search.type" value="phrase">PHRASE
+                <input type="radio" ng-model="query.type" value="phrase">PHRASE
             </label>
             <span class="text-info">    Use explain:</span>
-            <label class="checkbox"><input type="checkbox" ng-model="search.explain"/></label>
+            <label class="checkbox"><input type="checkbox" ng-model="query.explain"/></label>
             <span class="text-info">, Use highlighting:</span>
-            <label class="checkbox"><input type="checkbox" ng-model="search.highlight"/></label>
+            <label class="checkbox"><input type="checkbox" ng-model="query.highlight"/></label>
         </div>
     </div>
     <div class="row-fluid" style="padding-bottom: 5px">
         <div class="span12 alert alert-info">
             <span class="text-info offset1">Search for:</span>
-            <input type="text" class="input-medium search-query span4" ng-model="search.term"/>
+            <input type="text" class="input-medium search-query span4" ng-model="query.term"/>
             <button type="submit" class="btn btn-primary" title="Execute query">Query <i
                     class="icon-search icon-white"></i></button>
+            <span class="btn" ng-click="saveQuery()"><i class="icon-share"></i> save</span>
+            <span class="btn" ng-click="loadQuery()"><i class="icon-download-alt"></i> load</span>
         </div>
     </div>
 </form>
@@ -195,13 +202,13 @@
             <div class="alert">
                 <div class="row-fluid">
                     <div class="span8">
-                        <table class="table table-condensed" ng-hide="search.highlight">
+                        <table class="table table-condensed" ng-hide="query.highlight">
                             <tr ng-repeat="(key,value) in doc.fields">
                                 <th>{{key}}</th>
                                 <td>{{value}}</td>
                             </tr>
                         </table>
-                        <table class="table table-condensed" ng-show="search.highlight">
+                        <table class="table table-condensed" ng-show="query.highlight">
                             <tr ng-repeat="(key,value) in doc.highlight">
                                 <th>{{key}}</th>
                                 <td><p ng-repeat="item in value">{{item}}</p></td>
@@ -209,7 +216,7 @@
                         </table>
                     </div>
                     <div class="span4">
-                        <h3 ng-show="search.explain">Explanation</h3>
+                        <h3 ng-show="query.explain">Explanation</h3>
 
                         <p>{{doc._explanation}}</p>
                     </div>

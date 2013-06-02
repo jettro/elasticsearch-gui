@@ -1,15 +1,19 @@
-<div class="navbar navbar-inverse navbar-fixed-top">
+<div class="navbar navbar-inverse navbar-fixed-top" xmlns="http://www.w3.org/1999/html">
     <div class="navbar-inner">
         <div class="container-fluid">
             <a class="brand" href="#">{{heading}}</a>
 
             <div class="nav-collapse collapse">
+                <p class="navbar-text pull-right">
+                    <span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span>
+                </p>
                 <ul class="nav">
                     <li ng-repeat="item in items" ng-class="{active: item.selected}">
                         <a href="#/{{item.link}}">{{item.title}}</a>
                     </li>
                 </ul>
             </div>
+
         </div>
     </div>
 </div>

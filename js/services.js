@@ -6,9 +6,20 @@ serviceModule.value('version', '0.1');
 
 serviceModule.factory('elastic', ['$http', function (http) {
     function ElasticService(http) {
+        var statussus = {"green": "success", "yellow": "warning", "red": "error"};
+
+        this.clusterStatus = function (callback) {
+            http({method: 'GET', url: '/_cluster/health'}).success(function (data) {
+                var numClients = data.number_of_nodes - data.number_of_data_nodes;
+                var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
+                callback(msg, statussus[data.status]);
+            }).error(function (data) {
+                        callback("No connection", "error");
+                    });
+        };
 
         this.clusterName = function (callback) {
-            http.get('/_cluster/state').success(function (data) {
+            http.get('/_cluster/health').success(function (data) {
                 callback(data.cluster_name);
             });
         };

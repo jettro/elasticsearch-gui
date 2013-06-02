@@ -578,7 +578,9 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
 }
 QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig', 'facetBuilder'];
 
-function NavbarCtrl($scope) {
+function NavbarCtrl($scope, $timeout, elastic) {
+    $scope.statusCluster = {};
+
     var items = $scope.items = [
         {title: 'Home', link: 'home'},
         {title: 'Dashboard', link: 'dashboard'},
@@ -602,7 +604,17 @@ function NavbarCtrl($scope) {
             }
         });
     };
+
+    $timeout(function checkCluster() {
+        elastic.clusterStatus(function (message, status) {
+            $scope.statusCluster.message = message;
+            $scope.statusCluster.state = status;
+            console.log(message + status);
+        });
+        $timeout(checkCluster, 5000);
+    }, 1000);
 }
+NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic'];
 
 function FacetDialogCtrl($scope, dialog, fields) {
     $scope.fields = fields;

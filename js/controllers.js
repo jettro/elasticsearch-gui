@@ -537,14 +537,12 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
 
     $scope.saveQuery = function () {
         queryStorage.saveQuery(angular.copy($scope.query));
-        console.log($scope.query);
     };
 
     $scope.loadQuery = function () {
         queryStorage.loadQuery(function (data) {
             $scope.query = angular.copy(data);
             $scope.changeQuery();
-            console.log($scope.query);
         });
     };
 

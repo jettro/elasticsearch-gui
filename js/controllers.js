@@ -609,7 +609,6 @@ function NavbarCtrl($scope, $timeout, elastic) {
         elastic.clusterStatus(function (message, status) {
             $scope.statusCluster.message = message;
             $scope.statusCluster.state = status;
-            console.log(message + status);
         });
         $timeout(checkCluster, 5000);
     }, 1000);

@@ -40,19 +40,19 @@ serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function
         };
 
         this.clusterHealth = function (callback) {
-            http.get('/_cluster/health').success(function (data) {
+            http.get(serverUrl + '/_cluster/health').success(function (data) {
                 callback(data);
             });
         };
 
         this.clusterNodes = function (callback) {
-            http.get('/_nodes').success(function (data) {
+            http.get(serverUrl + '/_nodes').success(function (data) {
                 callback(data.nodes);
             });
         };
 
         this.nodeInfo = function (nodeId, callback) {
-            http.get('/_nodes/' + nodeId + '?all=true').success(function (data) {
+            http.get(serverUrl + '/_nodes/' + nodeId + '?all=true').success(function (data) {
                 callback(data.nodes[nodeId]);
             });
         };

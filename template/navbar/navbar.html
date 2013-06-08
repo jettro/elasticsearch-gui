@@ -1,19 +1,31 @@
-<div class="navbar navbar-inverse navbar-fixed-top" xmlns="http://www.w3.org/1999/html">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="brand" href="#">{{heading}}</a>
+<div xmlns="http://www.w3.org/1999/html">
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="brand" href="#">{{heading}}</a>
 
-            <div class="nav-collapse collapse">
-                <p class="navbar-text pull-right">
-                    <span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span>
-                </p>
-                <ul class="nav">
-                    <li ng-repeat="item in items" ng-class="{active: item.selected}">
-                        <a href="#/{{item.link}}">{{item.title}}</a>
-                    </li>
-                </ul>
+                <div class="nav-collapse collapse">
+                    <div class="pull-right">
+                        <a class="btn btn-mini" ng-click="toggleConfigureServerUrl()"><i class="icon-cog"></i></a>
+                        <span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span>
+                    </div>
+                    <ul class="nav">
+                        <li ng-repeat="item in items" ng-class="{active: item.selected}">
+                            <a href="#/{{item.link}}">{{item.title}}</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
-
+        </div>
+    </div>
+    <div class="row-fluid" ng-show="configureServerUrl">
+        <div class="span11">
+            <div class=" pull-right">
+                <form class="form-horizontal" ng-submit="changeServerUrl()" name="changeServer">
+                    <input type="url" ng-model="serverUrl" autofocus="true"/>
+                    <button class="btn" type="submit">Change</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>

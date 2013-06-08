@@ -1,28 +1,33 @@
 'use strict';
 
 /* Controllers */
-function DashboardCtrl($scope, $http, elastic) {
-    $http.get('/_cluster/health').success(function (data) {
+function DashboardCtrl($scope, elastic) {
+    $scope.health = {};
+    $scope.nodes = [];
+
+    elastic.clusterHealth(function (data) {
         $scope.health = data;
     });
-    $http.get('/_nodes').success(function (data) {
-        $scope.nodes = data.nodes;
+
+    elastic.clusterNodes(function (data) {
+        $scope.nodes = data;
     });
 
     elastic.indexesDetails(function (data) {
         $scope.indices = data;
     });
 }
-DashboardCtrl.$inject = ['$scope', '$http', 'elastic'];
+DashboardCtrl.$inject = ['$scope', 'elastic'];
 
-function NodeInfoCtrl($scope, $http, $routeParams) {
+function NodeInfoCtrl($scope, elastic, $routeParams) {
     var nodeId = $routeParams.nodeId;
-    $http.get('/_nodes/' + nodeId + '?all=true').success(function (data) {
-        $scope.nodes = data.nodes[$routeParams.nodeId];
+    elastic.nodeInfo(nodeId, function (data) {
+        $scope.nodes = data;
     });
 }
+NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, facetBuilder, $dialog, queryStorage) {
+function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, queryStorage) {
     $scope.isCollapsed = true;
     $scope.configure = configuration;
     $scope.fields = [];
@@ -37,8 +42,6 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
 
     $scope.results = [];
     $scope.facets = [];
-
-    var ejs = ejsResource(serverConfig.host);
 
     $scope.init = function () {
         elastic.fields(function (data) {
@@ -64,7 +67,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         } else {
             $scope.configError = "";
         }
-        var request = ejs.Request();
+        var request = elastic.obtainEjsResource().Request();
 
         var queryFields = [];
         queryFields.push($scope.configure.title);
@@ -76,7 +79,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
 
         request.query(executedQuery);
 
-        facetBuilder.build($scope.search.facets, ejs, request);
+        facetBuilder.build($scope.search.facets, elastic.obtainEjsResource(), request);
 
         request.doSearch(function (results) {
             $scope.results = results.hits;
@@ -190,9 +193,9 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            executedQuery = ejs.MatchQuery("_all", $scope.search.simple);
+            executedQuery = elastic.obtainEjsResource().MatchQuery("_all", $scope.search.simple);
         } else {
-            executedQuery = ejs.MatchAllQuery();
+            executedQuery = elastic.obtainEjsResource().MatchAllQuery();
         }
 
         console.log(executedQuery.toString());
@@ -201,7 +204,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
 
     function constructQuery(tree) {
         var props = Object.getOwnPropertyNames(tree);
-        var theQuery = ejs.BoolQuery();
+        var theQuery = elastic.obtainEjsResource().BoolQuery();
         for (var i = 0; i < props.length; i++) {
             var prop = props[i];
             if (tree[prop] instanceof Object) {
@@ -211,13 +214,13 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
                 if (tree._nested) {
                     fieldName = tree._nested + "." + fieldName;
                 }
-                theQuery.must(ejs.MatchQuery(fieldName, tree[prop]));
+                theQuery.must(elastic.obtainEjsResource().MatchQuery(fieldName, tree[prop]));
             }
         }
 
         var returnQuery;
         if (tree._nested) {
-            returnQuery = ejs.NestedQuery(tree._nested);
+            returnQuery = elastic.obtainEjsResource().NestedQuery(tree._nested);
             returnQuery.query(theQuery);
         } else {
             returnQuery = theQuery;
@@ -262,7 +265,7 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
                 var facet = determineFacet(selectedFacets[i].key);
                 var facetType = facet.facetType;
                 if (facetType === "term") {
-                    filters.push(ejs.TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
+                    filters.push(elastic.obtainEjsResource().TermsFilter(selectedFacets[i].key, selectedFacets[i].value));
                 } else if (facetType === "datehistogram") {
                     // TODO jettro, what are we going to do here ??
                 } else if (facetType === "histogram") {
@@ -272,9 +275,9 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
                     filters.push(rangeFilter);
                 }
             }
-            var andFilter = ejs.AndFilter(filters);
+            var andFilter = elastic.obtainEjsResource().AndFilter(filters);
 
-            changedQuery = ejs.FilteredQuery(executedQuery, andFilter);
+            changedQuery = elastic.obtainEjsResource().FilteredQuery(executedQuery, andFilter);
         }
         return changedQuery;
     }
@@ -298,19 +301,17 @@ function HomeCtrl($scope, elastic, configuration, ejsResource, serverConfig, fac
         return null;
     }
 }
-HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'ejsResource', 'serverConfig', 'facetBuilder', '$dialog', 'queryStorage'];
+HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$dialog', 'queryStorage'];
 
 function StatsCtrl() {
 
 }
 
-function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
+function GraphCtrl($scope, $dialog, elastic) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
     $scope.results = [];
-
-    var ejs = ejsResource(serverConfig.host);
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
@@ -366,17 +367,17 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
     };
 
     function createQuery() {
-        var request = ejs.Request();
-        request.query(ejs.MatchAllQuery());
+        var request = elastic.obtainEjsResource().Request();
+        request.query(elastic.obtainEjsResource().MatchAllQuery());
         request.size(0);
 
         var facet = $scope.facet;
         if (facet.facetType === 'term') {
-            var termsFacet = ejs.TermsFacet(facet.field);
+            var termsFacet = elastic.obtainEjsResource().TermsFacet(facet.field);
             termsFacet.field(facet.field);
             request.facet(termsFacet);
         } else if (facet.facetType === 'range') {
-            var rangeFacet = ejs.RangeFacet(facet.field);
+            var rangeFacet = elastic.obtainEjsResource().RangeFacet(facet.field);
             for (var j = 0; j < facet.ranges.length; j++) {
                 var range = facet.ranges[j];
                 if (range[0] == undefined) {
@@ -390,12 +391,12 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
             rangeFacet.field(facet.field);
             request.facet(rangeFacet);
         } else if (facet.facetType === 'datehistogram') {
-            var dateHistogramFacet = ejs.DateHistogramFacet(facet.field + 'Facet');
+            var dateHistogramFacet = elastic.obtainEjsResource().DateHistogramFacet(facet.field + 'Facet');
             dateHistogramFacet.field(facet.field);
             dateHistogramFacet.interval(facet.interval);
             request.facet(dateHistogramFacet);
         } else if (facet.facetType === 'histogram') {
-            var histogramFacet = ejs.HistogramFacet(facet.field + 'Facet');
+            var histogramFacet = elastic.obtainEjsResource().HistogramFacet(facet.field + 'Facet');
             histogramFacet.field(facet.field);
             histogramFacet.interval(facet.interval);
             request.facet(histogramFacet);
@@ -408,9 +409,9 @@ function GraphCtrl($scope, $dialog, ejsResource, elastic, serverConfig) {
     $scope.loadTypes();
     $scope.loadFields();
 }
-GraphCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig']
+GraphCtrl.$inject = ['$scope', '$dialog', 'elastic'];
 
-function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBuilder, queryStorage) {
+function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
 
@@ -423,8 +424,6 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
     $scope.query.facets = [];
     $scope.query.indices = {};
     $scope.query.types = {};
-
-    var ejs = ejsResource(serverConfig.host);
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
@@ -548,7 +547,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
 
 
     function createQuery() {
-        var request = ejs.Request();
+        var request = elastic.obtainEjsResource().Request();
         var chosenIndices = [];
         angular.forEach($scope.query.indices, function (value) {
             if (value.state) {
@@ -567,7 +566,7 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
             request.fields($scope.query.chosenFields);
         }
         if ($scope.query.term.length > 0) {
-            var matchQuery = ejs.MatchQuery("_all", $scope.query.term);
+            var matchQuery = elastic.obtainEjsResource().MatchQuery("_all", $scope.query.term);
             if ($scope.query.type === 'phrase') {
                 matchQuery.type('phrase');
             } else {
@@ -575,14 +574,14 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
             }
             request.query(matchQuery);
         } else {
-            request.query(ejs.MatchAllQuery());
+            request.query(elastic.obtainEjsResource().MatchAllQuery());
         }
 
-        facetBuilder.build($scope.query.facets, ejs, request);
+        facetBuilder.build($scope.query.facets, elastic.obtainEjsResource(), request);
 
         request.explain($scope.query.explain);
         if ($scope.query.highlight) {
-            var highlight = ejs.Highlight();
+            var highlight = elastic.obtainEjsResource().Highlight();
             highlight.fields($scope.query.chosenFields);
             request.highlight(highlight);
         }
@@ -600,10 +599,12 @@ function QueryCtrl($scope, $dialog, ejsResource, elastic, serverConfig, facetBui
 
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', '$dialog', 'ejsResource', 'elastic', 'serverConfig', 'facetBuilder', 'queryStorage'];
+QueryCtrl.$inject = ['$scope', '$dialog', 'elastic', 'facetBuilder', 'queryStorage'];
 
 function NavbarCtrl($scope, $timeout, elastic) {
     $scope.statusCluster = {};
+    $scope.serverUrl = elastic.obtainServerAddress();
+    $scope.configureServerUrl = false;
 
     var items = $scope.items = [
         {title: 'Home', link: 'home'},
@@ -627,6 +628,14 @@ function NavbarCtrl($scope, $timeout, elastic) {
                 $scope.select(item);
             }
         });
+    };
+
+    $scope.toggleConfigureServerUrl = function () {
+        $scope.configureServerUrl = !$scope.configureServerUrl;
+    };
+
+    $scope.changeServerUrl = function () {
+        elastic.changeServerAddress($scope.serverUrl);
     };
 
     $timeout(function checkCluster() {

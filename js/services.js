@@ -4,12 +4,27 @@
 var serviceModule = angular.module('myApp.services', []);
 serviceModule.value('version', '0.1');
 
-serviceModule.factory('elastic', ['$http', function (http) {
-    function ElasticService(http) {
+serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function (http,serverConfig,ejsResource) {
+    function ElasticService(http, serverConfig, ejsResource) {
+        var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
+        var resource = ejsResource(serverUrl);
+
+        this.changeServerAddress = function (serverAddress) {
+            serverUrl = serverAddress;
+            resource = ejsResource(serverUrl);
+        };
+
+        this.obtainServerAddress = function () {
+            return serverUrl;
+        };
+
+        this.obtainEjsResource = function() {
+            return resource;
+        };
 
         this.clusterStatus = function (callback) {
-            http({method: 'GET', url: '/_cluster/health'}).success(function (data) {
+            http({method: 'GET', url: serverUrl + '/_cluster/health'}).success(function (data) {
                 var numClients = data.number_of_nodes - data.number_of_data_nodes;
                 var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
                 callback(msg, statussus[data.status]);
@@ -19,13 +34,31 @@ serviceModule.factory('elastic', ['$http', function (http) {
         };
 
         this.clusterName = function (callback) {
-            http.get('/_cluster/health').success(function (data) {
+            http.get(serverUrl + '/_cluster/health').success(function (data) {
                 callback(data.cluster_name);
             });
         };
 
+        this.clusterHealth = function (callback) {
+            http.get('/_cluster/health').success(function (data) {
+                callback(data);
+            });
+        };
+
+        this.clusterNodes = function (callback) {
+            http.get('/_nodes').success(function (data) {
+                callback(data.nodes);
+            });
+        };
+
+        this.nodeInfo = function (nodeId, callback) {
+            http.get('/_nodes/' + nodeId + '?all=true').success(function (data) {
+                callback(data.nodes[nodeId]);
+            });
+        };
+
         this.indexes = function (callback) {
-            http.get('/_status').success(function (data) {
+            http.get(serverUrl + '/_status').success(function (data) {
                 var indices = [];
                 for (var index in data.indices) {
                     indices.push(index);
@@ -35,13 +68,13 @@ serviceModule.factory('elastic', ['$http', function (http) {
         };
 
         this.indexesDetails = function (callback) {
-            http.get('/_status').success(function (data) {
+            http.get(serverUrl + '/_status').success(function (data) {
                 callback(data.indices);
             });
         };
 
         this.types = function (callback) {
-            http.get('/_mapping').success(function (data) {
+            http.get(serverUrl + '/_mapping').success(function (data) {
                 var myTypes = [];
                 for (var index in data) {
                     for (var type in data[index]) {
@@ -55,7 +88,7 @@ serviceModule.factory('elastic', ['$http', function (http) {
         };
 
         this.fields = function (callback) {
-            http.get('/_mapping').success(function (data) {
+            http.get(serverUrl + '/_mapping').success(function (data) {
                 var myTypes = [];
                 var myFields = {};
                 for (var index in data) {
@@ -104,7 +137,7 @@ serviceModule.factory('elastic', ['$http', function (http) {
         }
     }
 
-    return new ElasticService(http);
+    return new ElasticService(http,serverConfig,ejsResource);
 }]);
 
 serviceModule.factory('configuration', ['$rootScope', 'localStorage', function ($rootScope, localStorage) {

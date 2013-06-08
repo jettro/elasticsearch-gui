@@ -630,10 +630,6 @@ function NavbarCtrl($scope, $timeout, elastic) {
         });
     };
 
-    $scope.toggleConfigureServerUrl = function () {
-        $scope.configureServerUrl = !$scope.configureServerUrl;
-    };
-
     $scope.changeServerUrl = function () {
         elastic.changeServerAddress($scope.serverUrl);
     };

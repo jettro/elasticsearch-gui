@@ -6,7 +6,8 @@
 
                 <div class="nav-collapse collapse">
                     <div class="pull-right">
-                        <a class="btn btn-mini" ng-click="toggleConfigureServerUrl()"><i class="icon-cog"></i></a>
+                        <a class="btn btn-mini" ng-click="configureServerUrl = !configureServerUrl"><i
+                                class="icon-cog"></i></a>
                         <span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span>
                     </div>
                     <ul class="nav">

@@ -37,7 +37,7 @@
         </span>
         </div>
         <div ng-repeat="facet in search.facets">{{facet.field}} ({{facet.facetType}})
-            <span class="btn btn-mini" ng-click="removeFacetField(facet.field)" title="Remove facet Field">
+            <span class="btn btn-mini" ng-click="removeFacetField($index)" title="Remove facet Field">
                 <i class="icon-remove-sign"></i>
             </span>
         </div>
@@ -72,7 +72,7 @@
             <div>
                 <div ng-repeat="searchField in search.advanced.searchFields">
                     {{searchField.field}} = {{searchField.text}} <span style="cursor:pointer;"
-                                                                       ng-click="removeSearchField(searchField)"><i
+                                                                       ng-click="removeSearchField($index)"><i
                         class="icon-remove-sign"></i></span>
                 </div>
                 <br/>

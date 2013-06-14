@@ -94,11 +94,8 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
         $scope.search.advanced.searchFields.push(searchField);
     };
 
-    $scope.removeSearchField = function (searchField) {
-        var i = $scope.search.advanced.searchFields.indexOf(searchField);
-        if (i > -1) {
-            $scope.search.advanced.searchFields.splice(i, 1);
-        }
+    $scope.removeSearchField = function (index) {
+        $scope.search.advanced.searchFields.splice(index, 1);
     };
 
     $scope.openDialog = function () {
@@ -119,18 +116,8 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
         });
     };
 
-    $scope.removeFacetField = function (data) {
-        var found = -1;
-        for (var i = 0; i < $scope.search.facets.length; i++) {
-            var currentFacet = $scope.search.facets[i];
-            if (currentFacet.field === data) {
-                found = i;
-                break;
-            }
-        }
-        if (found > -1) {
-            $scope.search.facets.splice(found, 1);
-        }
+    $scope.removeFacetField = function (index) {
+        $scope.search.facets.splice(index, 1);
     };
 
     $scope.saveQuery = function () {
@@ -465,26 +452,13 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
         $scope.changeQuery();
     };
 
-    $scope.removeQueryField = function (data) {
-        var i = $scope.query.chosenFields.indexOf(data);
-        if (i > -1) {
-            $scope.query.chosenFields.splice(i, 1);
-        }
+    $scope.removeQueryField = function (index) {
+        $scope.query.chosenFields.splice(index, 1);
         $scope.changeQuery();
     };
 
-    $scope.removeFacetField = function (data) {
-        var found = -1;
-        for (var i = 0; i < $scope.query.facets.length; i++) {
-            var currentFacet = $scope.query.facets[i];
-            if (currentFacet.field === data) {
-                found = i;
-                break;
-            }
-        }
-        if (found > -1) {
-            $scope.query.facets.splice(found, 1);
-        }
+    $scope.removeFacetField = function (index) {
+        $scope.query.facets.splice(index, 1);
         $scope.changeQuery();
     };
 
@@ -586,15 +560,6 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
             request.highlight(highlight);
         }
         return request;
-    }
-
-    function toggleChoice(theArray, theChoice) {
-        var i = theArray.indexOf(theChoice);
-        if (i > -1) {
-            theArray.splice(i, 1);
-        } else {
-            theArray.push(theChoice);
-        }
     }
 
     $scope.resetQuery();

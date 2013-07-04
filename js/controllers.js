@@ -43,6 +43,18 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
     $scope.results = [];
     $scope.facets = [];
 
+    // initialize pagination
+    $scope.currentPage = 1;
+    $scope.maxSize = 5;
+    $scope.numPages = 0;
+    $scope.pageSize = 10;
+
+    $scope.changePage = function (pageNo) {
+        $scope.currentPage = pageNo;
+        $scope.doSearch();
+    };
+
+
     $scope.init = function () {
         elastic.fields(function (data) {
             $scope.fields = data;
@@ -77,6 +89,9 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
         var executedQuery = searchPart();
         executedQuery = filterChosenFacetPart(executedQuery);
 
+        request.size($scope.pageSize);
+        request.from(($scope.currentPage - 1) * $scope.pageSize);
+
         request.query(executedQuery);
 
         facetBuilder.build($scope.search.facets, elastic.obtainEjsResource(), request);
@@ -84,6 +99,7 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
         request.doSearch(function (results) {
             $scope.results = results.hits;
             $scope.facets = results.facets;
+            $scope.numPages = Math.ceil(results.hits.total/$scope.pageSize);
         });
     };
 

@@ -131,7 +131,8 @@
             </div>
         </div>
     </div>
-    <div class="span8">
+    <div class="span8" ng-show="numPages>0">
+        <pagination rotate="false" num-pages="numPages" current-page="currentPage" max-size="maxSize" class="pagination-mini" boundary-links="true" on-select-page="changePage(page)"></pagination>
         <div ng-repeat="result in results.hits">
             <div><span class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
                                                                                         ng-show="search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>

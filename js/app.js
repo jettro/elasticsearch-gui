@@ -5,12 +5,11 @@ var myApp = angular.module('myApp', ['myApp.filters', 'myApp.services', 'elastic
         config(['$routeProvider', function ($routeProvider) {
             $routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: DashboardCtrl});
             $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: NodeInfoCtrl});
-            $routeProvider.when('/stats', {templateUrl: 'partials/stats.html', controller: StatsCtrl});
+            $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: SearchCtrl});
             $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: QueryCtrl});
             $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: GraphCtrl});
             $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
-            $routeProvider.when('/home', {templateUrl: 'partials/home.html', controller: HomeCtrl});
-            $routeProvider.otherwise({redirectTo: '/home'});
+            $routeProvider.otherwise({redirectTo: '/dashboard'});
         }]);
 
 myApp.value('localStorage', window.localStorage);

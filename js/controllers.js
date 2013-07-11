@@ -27,7 +27,7 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, queryStorage) {
+function SearchCtrl($scope, elastic, configuration, facetBuilder, $dialog, queryStorage) {
     $scope.isCollapsed = true;
     $scope.configure = configuration;
     $scope.fields = [];
@@ -304,11 +304,7 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
         return null;
     }
 }
-HomeCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$dialog', 'queryStorage'];
-
-function StatsCtrl() {
-
-}
+SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$dialog', 'queryStorage'];
 
 function GraphCtrl($scope, $dialog, elastic) {
     $scope.indices = [];
@@ -616,11 +612,10 @@ function NavbarCtrl($scope, $timeout, elastic) {
     $scope.configureServerUrl = false;
 
     var items = $scope.items = [
-        {title: 'Home', link: 'home'},
         {title: 'Dashboard', link: 'dashboard'},
+        {title: 'Search', link: 'search'},
         {title: 'Queries', link: 'query'},
         {title: 'Graphs', link: 'graph'},
-        {title: 'Statistics', link: 'stats'},
         {title: 'About', link: 'about'}
     ];
 

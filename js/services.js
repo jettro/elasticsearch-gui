@@ -4,7 +4,7 @@
 var serviceModule = angular.module('myApp.services', []);
 serviceModule.value('version', '0.2');
 
-serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function (http,serverConfig,ejsResource) {
+serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', function (http, serverConfig, ejsResource) {
     function ElasticService(http, serverConfig, ejsResource) {
         var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
@@ -19,7 +19,7 @@ serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function
             return serverUrl;
         };
 
-        this.obtainEjsResource = function() {
+        this.obtainEjsResource = function () {
             return resource;
         };
 
@@ -73,8 +73,12 @@ serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function
             });
         };
 
-        this.types = function (callback) {
-            http.get(serverUrl + '/_mapping').success(function (data) {
+        this.types = function (selectedIndex, callback) {
+            var url = serverUrl;
+            if (selectedIndex.length > 0) {
+                url += "/" + selectedIndex.toString();
+            }
+            http.get(url + '/_mapping').success(function (data) {
                 var myTypes = [];
                 for (var index in data) {
                     for (var type in data[index]) {
@@ -87,17 +91,35 @@ serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function
             });
         };
 
-        this.fields = function (callback) {
-            http.get(serverUrl + '/_mapping').success(function (data) {
+        this.fields = function (selectedIndex, selectedType, callback) {
+            var url = serverUrl;
+            if (selectedIndex.length > 0) {
+                url += "/" + selectedIndex.toString();
+            }
+            if (selectedType.length > 0) {
+                if (!selectedIndex.length > 0) {
+                    url += "/*";
+                }
+                url += "/" + selectedType.toString();
+            }
+            http.get(url + '/_mapping').success(function (data) {
                 var myTypes = [];
                 var myFields = {};
                 for (var index in data) {
-                    for (var type in data[index]) {
-                        if (myTypes.indexOf(type) == -1 && type != "_default_") {
-                            myTypes.push(type);
-                            var properties = data[index][type].properties;
-                            for (var field in properties) {
-                                handleSubfields(properties[field], field, myFields, undefined);
+                    if (index == selectedType) {
+                        myTypes.push(index);
+                        var properties = data[index].properties;
+                        for (var field in properties) {
+                            handleSubfields(properties[field], field, myFields, undefined);
+                        }
+                    } else {
+                        for (var type in data[index]) {
+                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
+                                myTypes.push(type);
+                                var properties = data[index][type].properties;
+                                for (var field in properties) {
+                                    handleSubfields(properties[field], field, myFields, undefined);
+                                }
                             }
                         }
                     }
@@ -137,7 +159,7 @@ serviceModule.factory('elastic', ['$http','serverConfig','ejsResource', function
         }
     }
 
-    return new ElasticService(http,serverConfig,ejsResource);
+    return new ElasticService(http, serverConfig, ejsResource);
 }]);
 
 serviceModule.factory('configuration', ['$rootScope', 'localStorage', function ($rootScope, localStorage) {
@@ -191,8 +213,8 @@ serviceModule.factory('queryStorage', ['localStorage', function (localStorage) {
 
 serviceModule.factory('serverConfig', ['$location', function ($location) {
     function ServerConfig(location) {
-        if (location.host()=='www.gridshore.nl') {
-            this.host="http://localhost:9200";
+        if (location.host() == 'www.gridshore.nl') {
+            this.host = "http://localhost:9200";
         } else {
             this.host = location.protocol() + "://" + location.host() + ":" + location.port();
         }

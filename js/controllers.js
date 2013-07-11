@@ -56,7 +56,7 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
 
 
     $scope.init = function () {
-        elastic.fields(function (data) {
+        elastic.fields([], [], function (data) {
             $scope.fields = data;
             if (!$scope.configure.title) {
                 if ($scope.fields.title) {
@@ -99,7 +99,7 @@ function HomeCtrl($scope, elastic, configuration, facetBuilder, $dialog, querySt
         request.doSearch(function (results) {
             $scope.results = results.hits;
             $scope.facets = results.facets;
-            $scope.numPages = Math.ceil(results.hits.total/$scope.pageSize);
+            $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
         });
     };
 
@@ -330,7 +330,7 @@ function GraphCtrl($scope, $dialog, elastic) {
     };
 
     $scope.loadFields = function () {
-        elastic.fields(function (data) {
+        elastic.fields([], [], function (data) {
             $scope.fields = data;
         });
     };
@@ -428,13 +428,21 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
     $scope.query.indices = {};
     $scope.query.types = {};
 
+    $scope.unbind = {};
+    $scope.unbind.indicesScope = function () {
+    };
+    $scope.unbind.typesScope = function () {
+    };
+
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
+        $scope.unbind.indicesScope();
         elastic.indexes(function (data) {
             if (data) {
                 for (var i = 0; i < data.length; i++) {
                     $scope.query.indices[data[i]] = {"name": data[i], "state": false};
                 }
+                $scope.unbind.indicesScope = $scope.$watch('query.indices', $scope.loadTypes, true);
             } else {
                 $scope.query.indices = {};
             }
@@ -442,11 +450,20 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
     };
 
     $scope.loadTypes = function () {
-        elastic.types(function (data) {
+        $scope.query.types = {};
+        var selectedIndices = [];
+        angular.forEach($scope.query.indices, function (index) {
+            if (index.state) {
+                selectedIndices.push(index.name);
+            }
+        });
+        $scope.unbind.typesScope();
+        elastic.types(selectedIndices, function (data) {
             if (data) {
                 for (var i = 0; i < data.length; i++) {
                     $scope.query.types[data[i]] = {"name": data[i], "state": false};
                 }
+                $scope.unbind.typesScope = $scope.$watch('query.types', $scope.loadFields, true);
             } else {
                 $scope.query.types = {};
             }
@@ -454,7 +471,20 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
     };
 
     $scope.loadFields = function () {
-        elastic.fields(function (data) {
+        var selectedIndices = [];
+        angular.forEach($scope.query.indices, function (index) {
+            if (index.state) {
+                selectedIndices.push(index.name);
+            }
+        });
+
+        var selectedTypes = [];
+        angular.forEach($scope.query.types, function (type) {
+            if (type.state) {
+                selectedTypes.push(type.name);
+            }
+        });
+        elastic.fields(selectedIndices, selectedTypes, function (data) {
             $scope.fields = data;
         });
     };
@@ -491,8 +521,6 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
 
     $scope.resetQuery = function () {
         $scope.loadIndices();
-        $scope.loadTypes();
-        $scope.loadFields();
         $scope.query.term = "";
         $scope.query.chosenIndices = [];
         $scope.query.chosenTypes = [];

@@ -1,17 +1,15 @@
-This project is very basic stuff and very much work in progress. So use at own risk.
+# Introduction
+Welcome to the Gui plugin for elasticsearch. Using this plugin you can explore your elasticsearch index. This plugin gives you a few different ways to start exploring. There is a way to search the repository in a way you would do it on a web site. You can enter keywords, do advanced search, use facets. Another way to explore the index is focussed on learning the structure of the actual executed query. You can enter a number of items to include in the query. You can enter fields, facets, highlighting, limit the indexes, limit the types. Finally there is a way to show some of the data in a graph.
 
-The goal for this project is to create a new plugin for elastic search that helps you to gain information about the
-system. I am working on the dynamic query creation. Some of the features:
-- Select the index(es) to query
-- Select the type(s) to query
-- Select the fields to show
-- Select the fields for term facets
+# Installation
+## local installation
+You can install the plugin in your own elasticsearch instance using the following command in the elasticsearch folder:
+```
+[~/elasticsearch] $ bin/plugin --install jettro/elasticsearch-gui 
+```
+Next you can browse to you elasticsearch instance: http://localhost:9200/_plugin/gui/index.html
+## use deployed installation
+Since we use mainly JavaScript, it is possible to connect to a remote elasticsearch instance. To facilitate this, elasticsearch returns a specific html header.
 
-
-If you do feel adventurous, copy this to the plugin folder of your elasticsearch installation in a folder with your
-chosen name and within that folder _site. Than you can browse to:
-http://<server>:<port>/_plugin/<the_name>/index.html
-
-That should do the trick. If you have questions or problems, use the ticket system.
-
-bin/elasticsearch -f -Des.config=/Users/jcoenradie/javalibs/elasticsearch/projects/gridshore/config/elasticsearch.yml
+That way you can use my installed version of the plugin to connect to your local elasticsearch instance. You can find it at the following url:
+[Remote installed plugin @gridshore](http://www.gridshore.nl/esgui)

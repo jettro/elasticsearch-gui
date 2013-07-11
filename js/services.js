@@ -106,6 +106,10 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
                 var myTypes = [];
                 var myFields = {};
                 for (var index in data) {
+                    /*
+                     * Structure of result with one index is different from the other results. usually you first
+                     * get the index, in this special case you immediately get the type.
+                     */
                     if (index == selectedType) {
                         myTypes.push(index);
                         var properties = data[index].properties;
@@ -130,7 +134,7 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
 
         function handleSubfields(field, fieldName, myFields, nestedPath) {
             if (field.hasOwnProperty("properties")) {
-                var nested = (field.type == "nested");
+                var nested = (field.type == "nested" | field.type == "object");
                 if (nested) {
                     nestedPath = fieldName;
                 }

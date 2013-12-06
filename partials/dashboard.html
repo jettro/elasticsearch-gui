@@ -57,13 +57,16 @@
                 <th>Size</th>
                 <th>#docs</th>
                 <th>#shards</th>
+                <th>Actions</th>
             </tr>
             <tr ng-repeat="(key,value) in indices">
                 <td>{{key}}</td>
                 <td>{{value.index.primary_size}}</td>
                 <td>{{value.docs.num_docs}}</td>
                 <td>{{value.shards.size()}}</td>
-
+                <td><span confirmed-click="removeIndex(key)"
+                          ng-confirm-click="Do you want to remove the index {{key}}"
+                          class="btn btn-small" title="Remove index"><i class="icon-remove-sign"></i></span></td>
             </tr>
         </table>
     </div>

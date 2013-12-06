@@ -13,9 +13,19 @@ function DashboardCtrl($scope, elastic) {
         $scope.nodes = data;
     });
 
-    elastic.indexesDetails(function (data) {
-        $scope.indices = data;
-    });
+    $scope.removeIndex = function (index) {
+        elastic.removeIndex(index, function () {
+            indexDetails();
+        });
+    };
+
+    function indexDetails() {
+        elastic.indexesDetails(function (data) {
+            $scope.indices = data;
+        });
+    }
+
+    indexDetails();
 }
 DashboardCtrl.$inject = ['$scope', 'elastic'];
 

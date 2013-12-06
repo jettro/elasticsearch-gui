@@ -67,6 +67,12 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
             });
         };
 
+        this.removeIndex = function (index, callback) {
+            http.delete(serverUrl + "/" + index).success(function (data) {
+                callback();
+            });
+        };
+
         this.indexesDetails = function (callback) {
             http.get(serverUrl + '/_status').success(function (data) {
                 callback(data.indices);

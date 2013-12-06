@@ -27,7 +27,7 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function SearchCtrl($scope, elastic, configuration, facetBuilder, $dialog, queryStorage) {
+function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true;
     $scope.configure = configuration;
     $scope.fields = [];
@@ -124,11 +124,13 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $dialog, query
             resolve: {fields: function () {
                 return angular.copy($scope.fields)
             } }};
-        var d = $dialog.dialog(opts);
-        d.open().then(function (result) {
+        var modalInstance = $modal.open(opts);
+        modalInstance.result.then(function (result) {
             if (result) {
                 $scope.search.facets.push(result);
             }
+        }, function () {
+            console.log('Modal dismissed at: ' + new Date());
         });
     };
 
@@ -304,9 +306,9 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $dialog, query
         return null;
     }
 }
-SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$dialog', 'queryStorage'];
+SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$modal', 'queryStorage'];
 
-function GraphCtrl($scope, $dialog, elastic) {
+function GraphCtrl($scope, $modal, elastic) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
@@ -341,8 +343,8 @@ function GraphCtrl($scope, $dialog, elastic) {
             resolve: {fields: function () {
                 return angular.copy($scope.fields)
             } }};
-        var d = $dialog.dialog(opts);
-        d.open().then(function (result) {
+        var d = $modal.open(opts);
+        d.result.then(function (result) {
             if (result) {
                 $scope.facet = result;
             }
@@ -408,9 +410,9 @@ function GraphCtrl($scope, $dialog, elastic) {
     $scope.loadTypes();
     $scope.loadFields();
 }
-GraphCtrl.$inject = ['$scope', '$dialog', 'elastic'];
+GraphCtrl.$inject = ['$scope', '$modal', 'elastic'];
 
-function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
+function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
 
@@ -539,8 +541,8 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
             resolve: {fields: function () {
                 return angular.copy($scope.fields)
             } }};
-        var d = $dialog.dialog(opts);
-        d.open().then(function (result) {
+        var d = $modal.open(opts);
+        d.result.then(function (result) {
             if (result) {
                 $scope.query.facets.push(result);
                 $scope.changeQuery();
@@ -604,7 +606,7 @@ function QueryCtrl($scope, $dialog, elastic, facetBuilder, queryStorage) {
 
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', '$dialog', 'elastic', 'facetBuilder', 'queryStorage'];
+QueryCtrl.$inject = ['$scope', '$modal', 'elastic', 'facetBuilder', 'queryStorage'];
 
 function NavbarCtrl($scope, $timeout, elastic) {
     $scope.statusCluster = {};
@@ -648,7 +650,7 @@ function NavbarCtrl($scope, $timeout, elastic) {
 }
 NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic'];
 
-function FacetDialogCtrl($scope, dialog, fields) {
+function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;
     $scope.facetTypes = ["Term", "Range", "Histogram", "DateHistogram"];
     $scope.ranges = [];
@@ -657,23 +659,23 @@ function FacetDialogCtrl($scope, dialog, fields) {
 
     $scope.close = function (result) {
         var dialogResult = {};
-        dialogResult.field = $scope.dialog.field;
-        if ($scope.dialog.facettype === 'Term') {
+        dialogResult.field = result.field;
+        if (result.facettype === 'Term') {
             dialogResult.facetType = 'term';
-        } else if ($scope.dialog.facettype === 'Range') {
+        } else if (result.facettype === 'Range') {
             dialogResult.facetType = 'range';
             dialogResult.ranges = $scope.ranges;
-        } else if ($scope.dialog.facettype === 'DateHistogram') {
+        } else if (result.facettype === 'DateHistogram') {
             dialogResult.facetType = 'datehistogram';
             dialogResult.interval = $scope.interval;
-        } else if ($scope.dialog.facettype === 'Histogram') {
+        } else if (result.facettype === 'Histogram') {
             dialogResult.facetType = 'histogram';
             dialogResult.interval = $scope.interval;
         }
-        dialog.close(dialogResult);
+        $modalInstance.close(dialogResult);
     };
 
-    $scope.addRangeField = function () {
-        $scope.ranges.push([$scope.dialog.range.from, $scope.dialog.range.to]);
+    $scope.addRangeField = function (data) {
+        $scope.ranges.push([data.range.from, data.range.to]);
     }
 }

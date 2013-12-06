@@ -11,7 +11,6 @@
             <label>Facet types</label>
             <select ng-model="dialog.facettype" ng-options="facetType for facetType in facetTypes">
                 <option value="">-- chose field --</option>
-                <!--<option ng-repeat="facetType in facetTypes">{{facetType}}</option>-->
             </select>
 
             <div ng-show="dialog.facettype == 'Term'">
@@ -26,7 +25,7 @@
                 <input type="number" ng-model="dialog.range.from"/>
                 <label>to</label>
                 <input type="number" ng-model="dialog.range.to"/>
-                <span class="btn btn-info btn-mini" ng-click="addRangeField()" title="Add range Field">
+                <span class="btn btn-info btn-mini" ng-click="addRangeField(dialog)" title="Add range Field">
                     <i class="icon-plus-sign icon-white"></i>
                 </span>
             </div>

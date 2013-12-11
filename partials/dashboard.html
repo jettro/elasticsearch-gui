@@ -90,11 +90,12 @@
             </tr>
         </table>
         <h2>Site plugins per node</h2>
-        <ul>
-            <li ng-repeat="plugin in plugins">
-                <a href="{{plugin.url}}" target="_blank">{{plugin.url}}</a>
-            </li>
-        </ul>
+        <dl ng-repeat="node in plugins">
+            <dt>{{node.name}}</dt>
+            <dd ng-repeat="plugin in node.plugins">
+                <a href="{{plugin.url}}" target="_blank">{{plugin.name}}</a>
+            </dd>
+        </dl>
 
     </div>
 </div>

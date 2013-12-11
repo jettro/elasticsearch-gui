@@ -53,19 +53,23 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
 
         this.plugins = function (callback) {
             http.get(serverUrl + '/_nodes?plugin=true').success(function(data) {
-                var plugins = [];
+                var nodes = [];
                 angular.forEach(data.nodes, function (node,node_id) {
+                    var siteNode = {};
+                    siteNode.name = node.name;
+                    siteNode.plugins = [];
                     var httpAddress = node.http_address.substring(6,node.http_address.length-1);
                     angular.forEach(node.plugins, function(plugin) {
                         if (plugin.site) {
                             var sitePlugin = {};
                             sitePlugin.url = 'http://'+ httpAddress + plugin.url;
                             sitePlugin.name = plugin.name;
-                            plugins.push(sitePlugin);
+                            siteNode.plugins.push(sitePlugin);
                         }
                     })
+                    nodes.push(siteNode);
                 });
-                callback(plugins);
+                callback(nodes);
             });
         };
 

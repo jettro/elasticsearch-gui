@@ -4,6 +4,7 @@
 function DashboardCtrl($scope, elastic) {
     $scope.health = {};
     $scope.nodes = [];
+    $scope.plugins = [];
 
     elastic.clusterHealth(function (data) {
         $scope.health = data;
@@ -12,6 +13,10 @@ function DashboardCtrl($scope, elastic) {
     elastic.clusterNodes(function (data) {
         $scope.nodes = data;
     });
+
+    elastic.plugins(function(data) {
+        $scope.plugins = data;
+    })
 
     $scope.removeIndex = function (index) {
         elastic.removeIndex(index, function () {

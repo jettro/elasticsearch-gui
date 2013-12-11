@@ -89,5 +89,12 @@
                 <td><a href="#/node/{{key}}">More info</a></td>
             </tr>
         </table>
+        <h2>Site plugins per node</h2>
+        <ul>
+            <li ng-repeat="plugin in plugins">
+                <a href="{{plugin.url}}" target="_blank">{{plugin.url}}</a>
+            </li>
+        </ul>
+
     </div>
 </div>

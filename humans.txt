@@ -1,0 +1,17 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+
+    Jettro Coenradie -- Owner and Developer -- @gridshore
+
+# THANKS
+
+    Luca Cavanna
+
+# TECHNOLOGY COLOPHON
+
+    Elasticsearch
+    Twitter Bootstrap
+    AngularJS
+    HTML5, CSS3

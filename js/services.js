@@ -2,7 +2,7 @@
 
 /* Services */
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '0.3');
+serviceModule.value('version', '0.4');
 
 serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', function (http, serverConfig, ejsResource) {
     function ElasticService(http, serverConfig, ejsResource) {
@@ -96,6 +96,7 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         };
 
         this.indexesDetails = function (callback) {
+            // Moet hier iets doen met /_cluster/state in combinatie met  /_status
             http.get(serverUrl + '/_status').success(function (data) {
                 callback(data.indices);
             });

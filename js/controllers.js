@@ -24,6 +24,18 @@ function DashboardCtrl($scope, elastic) {
         });
     };
 
+    $scope.openIndex = function (index) {
+        elastic.openIndex(index, function () {
+            indexDetails();
+        });
+    };
+
+    $scope.closeIndex = function (index) {
+        elastic.closeIndex(index, function () {
+            indexDetails();
+        });
+    };
+
     function indexDetails() {
         elastic.indexesDetails(function (data) {
             $scope.indices = data;

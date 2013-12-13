@@ -59,14 +59,21 @@
                 <th>#shards</th>
                 <th>Actions</th>
             </tr>
-            <tr ng-repeat="(key,value) in indices">
-                <td>{{key}}</td>
-                <td>{{value.index.primary_size}}</td>
-                <td>{{value.docs.num_docs}}</td>
-                <td>{{value.shards.size()}}</td>
-                <td><span confirmed-click="removeIndex(key)"
-                          ng-confirm-click="Do you want to remove the index {{key}}"
-                          class="btn btn-small" title="Remove index"><i class="icon-remove-sign"></i></span></td>
+            <tr ng-repeat="index in indices">
+                <td>{{index.name}}</td>
+                <td>{{index.size}}</td>
+                <td>{{index.numDocs}}</td>
+                <td>{{index.numShards}}</td>
+                <td><span confirmed-click="removeIndex(index.name)"
+                          ng-confirm-click="Do you want to remove the index {{index.key}}"
+                          class="btn btn-small" title="Remove index"><i class="icon-trash"></i></span>
+                    <span confirmed-click="openIndex(index.name)" ng-hide="index.state"
+                          ng-confirm-click="Do you want to open the index {{index.key}}"
+                          class="btn btn-small" title="Open index"><i class="icon-play"></i></span>
+                    <span confirmed-click="closeIndex(index.name)" ng-show="index.state"
+                          ng-confirm-click="Do you want to close the index {{index.key}}"
+                          class="btn btn-small" title="Close index"><i class="icon-stop"></i></span>
+                </td>
             </tr>
         </table>
     </div>

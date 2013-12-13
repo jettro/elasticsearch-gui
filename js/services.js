@@ -95,10 +95,39 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
             });
         };
 
+        this.openIndex = function (index, callback) {
+            http.post(serverUrl + "/" + index + "/_open").success(function (data) {
+                callback();
+            });
+        };
+
+        this.closeIndex = function (index, callback) {
+            http.post(serverUrl + "/" + index + "/_close").success(function (data) {
+                callback();
+            });
+        };
+
         this.indexesDetails = function (callback) {
-            // Moet hier iets doen met /_cluster/state in combinatie met  /_status
-            http.get(serverUrl + '/_status').success(function (data) {
-                callback(data.indices);
+            http.get(serverUrl + '/_status').success(function (statusData) {
+                var indexesStatus = statusData.indices;
+                http.get(serverUrl + '/_cluster/state?filter_routing_table=true&filter_nodes=true&filter_blocks=true').success(function(stateData) {
+                    var indexesState = stateData.metadata.indices;
+                    var indices = [];
+                    angular.forEach(indexesState, function(value,key) {
+                        var newIndex = {};
+                        newIndex.name = key;
+                        newIndex.numShards = value.settings['index.number_of_shards'];
+                        if (value.state === 'open') {
+                            newIndex.size = indexesStatus[key].index.size;
+                            newIndex.numDocs = indexesStatus[key].docs.num_docs;
+                            newIndex.state = true;
+                        } else {
+                            newIndex.state = false;
+                        }
+                        indices.push(newIndex);
+                    });
+                    callback(indices);
+                });
             });
         };
 

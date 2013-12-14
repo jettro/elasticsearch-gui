@@ -682,7 +682,6 @@ function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.facetTypes = ["Term", "Range", "Histogram", "DateHistogram"];
     $scope.ranges = [];
     $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
-    $scope.interval = "";
 
     $scope.close = function (result) {
         var dialogResult = {};
@@ -694,10 +693,10 @@ function FacetDialogCtrl($scope, $modalInstance, fields) {
             dialogResult.ranges = $scope.ranges;
         } else if (result.facettype === 'DateHistogram') {
             dialogResult.facetType = 'datehistogram';
-            dialogResult.interval = $scope.interval;
+            dialogResult.interval = result.interval;
         } else if (result.facettype === 'Histogram') {
             dialogResult.facetType = 'histogram';
-            dialogResult.interval = $scope.interval;
+            dialogResult.interval = result.interval;
         }
         $modalInstance.close(dialogResult);
     };

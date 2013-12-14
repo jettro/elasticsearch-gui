@@ -31,13 +31,12 @@
             </div>
             <div ng-show="dialog.facettype == 'DateHistogram'">
                 <label>Interval</label>
-                <select ng-model="interval">
-                    <option ng-repeat="anInterval in intervals">{{anInterval}}</option>
+                <select ng-model="dialog.interval" ng-options="anInterval for anInterval in intervals">
                 </select>
             </div>
             <div ng-show="dialog.facettype == 'Histogram'">
                 <label>Interval</label>
-                <input type="number" ng-model="interval"/>
+                <input type="number" ng-model="dialog.interval"/>
             </div>
         </fieldset>
     </form>

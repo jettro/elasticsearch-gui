@@ -445,6 +445,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
 
     $scope.queryResults = [];
     $scope.facetResults = [];
+    $scope.metaResults = {};
     $scope.queryFactory = {};
     $scope.query = {};
 
@@ -537,9 +538,23 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
     $scope.executeQuery = function () {
         $scope.changeQuery();
         var request = createQuery();
+        $scope.metaResults = {};
         request.doSearch(function (results) {
             $scope.queryResults = results.hits;
             $scope.facetResults = results.facets;
+            $scope.metaResults.totalShards = results._shards.total;
+            if (results._shards.failed > 0) {
+                $scope.metaResults.failedShards = results._shards.failed;
+                $scope.metaResults.errors = [];
+                angular.forEach(results._shards.failures, function(failure) {
+                    $scope.metaResults.errors.push(failure.index + " - " + failure.reason);
+                });
+                
+            }
+        }, function(errors) {
+            $scope.metaResults.failedShards = 1;
+            $scope.metaResults.errors = [];
+            $scope.metaResults.errors.push(errors.error);
         });
 
     };
@@ -630,6 +645,9 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         }
         return request;
     }
+    this.errorCallback = function(errors) {
+        console.log(errors);
+    };
 
     $scope.resetQuery();
 }

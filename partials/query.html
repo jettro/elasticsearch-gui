@@ -130,6 +130,15 @@
 <h3>Query</h3>
 <div class="well well-large">{{createdQuery}}</div>
 
+<div class="row-fluid" ng-show="metaResults.failedShards">
+    <div class="span12 alert alert-error">
+        <h3>Errors</h3>
+        <div ng-repeat="error in metaResults.errors">
+            <p>{{error}}</p>
+        </div>
+    </div>
+</div>
+
 <h3>Facet results</h3>
 <div ng-repeat="(key,value) in facetResults">
     <div><strong>{{key}} - {{value._type}}</strong></div>

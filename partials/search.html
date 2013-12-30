@@ -1,108 +1,112 @@
-<div class="row-fluid" ng-init="init()">
-    <div class="span12">
+<div class="row" ng-init="init()">
+    <div class="col-md-12">
         <div class="alert alert-info">
-            <span class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><i class="icon-cog"></i>Configure: {{clusterName}}  <i
-                    class="icon-chevron-down" ng-show="isCollapsed"></i><i class="icon-chevron-left"
-                                                                           ng-hide="isCollapsed"></i></span>
-
+            <p>Using this page you can query your indexes like a search box on a website would do. First you need to
+                configure the titel and description of your search results. You can store and load a search. You can also do an advanced search, this way you can select fields and query based on those fields.</p>
+            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><spam class="glyphicon glyphicon-cog"></span>  Configure: {{clusterName}}  <span
+                    class="glyphicon glyphicon-chevron-down" ng-show="isCollapsed"></span><span class="glyphicon glyphicon-chevron-left" ng-hide="isCollapsed"></span></button>
             <div collapse="isCollapsed">
-                <form>
-                    <label>Titel</label>
-                    <select ng-model="configure.title" ng-options="key as value.forPrint for (key,value) in fields">
-                    </select>
-                    <label>Description</label>
-                    <select ng-model="configure.description"
-                            ng-options="key as value.forPrint for (key,value) in fields">
-                    </select>
+                <form role="form">
+                    <div class="form-group">
+                        <label>Titel</label>
+                        <select class="form-control" ng-model="configure.title" 
+                                ng-options="key as value.forPrint for (key,value) in fields">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <select class="form-control" ng-model="configure.description"
+                                ng-options="key as value.forPrint for (key,value) in fields">
+                        </select>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-<div class="row-fluid">
-    <div class="span12" ng-show="configError">
+<div class="row">
+    <div class="col-md-12" ng-show="configError">
         <div class="alert alert-error">{{configError}}</div>
     </div>
 </div>
-<div class="row-fluid">
-    <div class="span3">
+<div class="row">
+    <div class="col-md-3">
         <label class="checkbox">
             <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
         </label>
 
         <div>
             <span>Facets</span>
-        <span class="btn btn-info btn-mini" ng-click="openDialog()" title="Add new Facet">
-            <i class="icon-plus-sign icon-white"></i>
-        </span>
+        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Facet">
+            <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
+        </button>
         </div>
         <div ng-repeat="facet in search.facets">{{facet.field}} ({{facet.facetType}})
-            <span class="btn btn-mini" ng-click="removeFacetField($index)" title="Remove facet Field">
-                <i class="icon-remove-sign"></i>
-            </span>
+            <button class="btn btn-link" ng-click="removeFacetField($index)" title="Remove facet Field">
+                <span class="glyphicon glyphicon-remove"></span>
+            </button>
         </div>
 
     </div>
-    <div class="span9" ng-hide="search.doAdvanced">
+    <div class="col-md-9" ng-hide="search.doAdvanced">
         <form class="form-inline">
-            <input class="search-query" type="search" ng-model="search.simple" autofocus="true"
-                   placeholder="Type your search string"/>
-            <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search</button>
+            <div class="col-xs-4">
+                <input class="form-control" type="search" ng-model="search.simple" autofocus="true"
+                       placeholder="Type your search string"/>
+            </div>
+            <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
             <label class="checkbox">
                 <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
             </label>
-            <span class="btn btn-mini" ng-click="saveQuery()"><i class="icon-share"></i> save</span>
-            <span class="btn btn-mini" ng-click="loadQuery()"><i class="icon-download-alt"></i> load</span>
+            <button class="btn btn-sm" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
+            <button class="btn btn-sm" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
         </form>
     </div>
-    <div class="span9" ng-show="search.doAdvanced">
+    <div class="col-md-9" ng-show="search.doAdvanced">
         <form class="form-inline">
             <div>
                 <label>Choose field</label>
-                <select ng-model="search.advanced.newField"
+                <select class="form-control" ng-model="search.advanced.newField"
                         ng-options="key as value.forPrint for (key,value) in fields">
                     <option value="">-- chose field --</option>
                 </select>
                 <label>Enter text</label>
-                <input class="search-query" type="search" ng-model="search.advanced.newText" autofocus="true"
-                       placeholder="Type your search string"/>
-                <button class="btn btn-info" ng-click="addSearchField()"><i class="icon-plus-sign icon-white"></i> Add
-                </button>
+                <div class="col-xs-4">
+                    <input class="form-control" type="search" ng-model="search.advanced.newText" autofocus="true"
+                           placeholder="Type your search string"/>
+                </div>
+                <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
             </div>
             <div>
                 <div ng-repeat="searchField in search.advanced.searchFields">
-                    {{searchField.field}} = {{searchField.text}} <span style="cursor:pointer;"
-                                                                       ng-click="removeSearchField($index)"><i
-                        class="icon-remove-sign"></i></span>
+                    {{searchField.field}} = {{searchField.text}} <button class="btn btn-link" ng-click="removeSearchField($index)"><span
+                        class="glyphicon glyphicon-remove"></span></button>
                 </div>
                 <br/>
 
                 <div>
-                    <button class="btn btn-primary" ng-click="doSearch()"><i class="icon-search icon-white"></i> Search
-                    </button>
-                    <span class="btn btn-mini" ng-click="saveQuery()"><i class="icon-share"></i> save</span>
-                    <span class="btn btn-mini" ng-click="loadQuery()"><i class="icon-download-alt"></i> load</span>
+                    <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
+                    <button class="btn btn-sm" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
+                    <button class="btn btn-sm" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
-<div class="row-fluid">
-    <div class="span12">
+<div class="row">
+    <div class="col-md-12">
         <h3>Results</h3>
     </div>
 </div>
-<div class="row-fluid">
-    <div class="span3">
+<div class="row">
+    <div class="col-md-3">
         <div ng-repeat="(key,value) in facets">
             <div><strong>{{key}}</strong></div>
             <div ng-show="value._type === 'terms'">
                 <div ng-repeat="term in value.terms">
-                    <span ng-show="checkSelectedFacet(key,term.term)">{{term.term}} ({{term.count}}) <i
-                            style="cursor:pointer;" class="icon-remove"
-                            ng-click="removeFilter(key,term.term)"></i></span>
-                    <span ng-hide="checkSelectedFacet(key,term.term)" class="btn btn-mini btn-link"
-                          ng-click="addFilter(key,term.term)">{{term.term}} ({{term.count}})</span>
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,term.term)" ng-click="removeFilter(key,term.term)">{{term.term}} ({{term.count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedFacet(key,term.term)" class="btn btn-link"
+                          ng-click="addFilter(key,term.term)">{{term.term}} ({{term.count}})</button>
                 </div>
             </div>
             <div ng-show="value._type === 'date_histogram'">
@@ -117,11 +121,10 @@
             </div>
             <div ng-show="value._type === 'histogram'">
                 <div ng-repeat="entry in value.entries">
-                    <span ng-show="checkSelectedFacet(key,entry.key)"> {{entry.key}}-{{entry.key+obtainFacetByKey(key).interval}} ({{entry.count}}) <i
-                            style="cursor:pointer;" class="icon-remove"
-                            ng-click="removeFilter(key,entry.key)"></i></span>
-                    <span ng-hide="checkSelectedFacet(key,entry.key)" class="btn btn-mini btn-link"
-                          ng-click="addFilter(key,entry.key)">{{entry.key}}-{{entry.key+obtainFacetByKey(key).interval}} ({{entry.count}})</span>
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,entry.key)" ng-click="removeFilter(key,entry.key)"> {{entry.key}}-{{entry.key+obtainFacetByKey(key).interval}} ({{entry.count}}) <span
+                            class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedFacet(key,entry.key)" class="btn btn-link"
+                          ng-click="addFilter(key,entry.key)">{{entry.key}}-{{entry.key+obtainFacetByKey(key).interval}} ({{entry.count}})</button>
                 </div>
             </div>
             <div ng-show="value._type === 'range'">
@@ -131,9 +134,9 @@
             </div>
         </div>
     </div>
-    <div class="span8" ng-show="numPages>0">
-        <pagination rotate="false" num-pages="numPages" current-page="currentPage" max-size="maxSize"
-                    class="pagination-mini" boundary-links="true" on-select-page="changePage(page)"></pagination>
+    <div class="col-md-8" ng-show="totalItems>0">
+        <pagination total-items="totalItems" page="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" num-pages="numPages" on-select-page="changePage(page)"></pagination>
+        
         <div ng-repeat="result in results.hits">
             <div><span class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
                                                                                         ng-show="search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>
@@ -142,5 +145,7 @@
                 {{result.fields[configure.description]}}
             </div>
         </div>
+        <br/>
+        <pre>Page: {{currentPage}} / {{numPages}}</pre>
     </div>
 </div>

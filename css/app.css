@@ -1,7 +1,7 @@
 /* Sticky footer styles
 -------------------------------------------------- */
 body {
-    padding-top: 50px;
+    padding-top: 70px;
     padding-bottom: 40px;
 }
 
@@ -13,7 +13,7 @@ body {
         padding-right: 5px;
     }
 }
-
+.nav, .pagination, .carousel a { cursor: pointer; }
 /* Custom page CSS
 -------------------------------------------------- */
 

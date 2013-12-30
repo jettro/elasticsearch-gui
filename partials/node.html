@@ -1,76 +1,82 @@
-<div class="row-fluid">
-    <div class="span12">
-        <h2>Node information</h2>
-
-        <table class="table table-condensed">
-            <tr>
-                <th># Processors</th>
-                <td>{{nodes.os.available_processors}}
-            </tr>
-            <tr>
-                <th>CPU</th>
-                <td>
-                    <table class="table table-condensed">
-                        <tr ng-repeat="(key,value) in nodes.os.cpu">
-                            <th>{{key}}</th>
-                            <td>{{value}}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <th>Total Memory</th>
-                <td>{{nodes.os.mem.total}}
-            </tr>
-            <tr>
-                <th>Swap Memory</th>
-                <td>{{nodes.os.swap.total}}
-            </tr>
-            <tr>
-                <th>Process</th>
-                <td>
-                    <table class="table table-condensed">
-                        <tr ng-repeat="(key,value) in nodes.process">
-                            <th>{{key}}</th>
-                            <td>{{value}}</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <th>JVM</th>
-                <td>
-                    <table class="table table-condensed">
-                        <tr>
-                            <th>Java version</th>
-                            <td>{{nodes.jvm.version}}</td>
-                        </tr>
-                        <tr>
-                            <th>VM version</th>
-                            <td>{{nodes.jvm.vm_version}}</td>
-                        </tr>
-                        <tr>
-                            <th>VM name</th>
-                            <td>{{nodes.jvm.vm_name}}</td>
-                        </tr>
-                        <tr>
-                            <th>VM vendor</th>
-                            <td>{{nodes.jvm.vm_vendor}}</td>
-                        </tr>
-                        <tr>
-                            <th>Memory</th>
-                            <td>
-                                <table class="table table-condensed">
-                                    <tr ng-repeat="(key,value) in nodes.jvm.mem">
-                                        <th>{{key}}</th>
-                                        <td>{{value}}</td>
-                                    </tr>
-                                </table>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+<div class="row">
+    <div class="col-md-12">
+        <a class="btn btn-primary" href="#/dashboard">Back</a>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Node information</h3>
+            </div>
+            <table class="table table-condensed">
+                <thead></thead>
+                <tbody>
+                <tr>
+                    <th># Processors</th>
+                    <td>{{nodes.os.available_processors}}
+                </tr>
+                <tr>
+                    <th>CPU</th>
+                    <td>
+                        <table class="table table-condensed">
+                            <tr ng-repeat="(key,value) in nodes.os.cpu track by $index">
+                                <th>{{key}}</th>
+                                <td>{{value}}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Total Memory</th>
+                    <td>{{nodes.os.mem.total}}
+                </tr>
+                <tr>
+                    <th>Swap Memory</th>
+                    <td>{{nodes.os.swap.total}}
+                </tr>
+                <tr>
+                    <th>Process</th>
+                    <td>
+                        <table class="table table-condensed">
+                            <tr ng-repeat="(key,value) in nodes.process">
+                                <th>{{key}}</th>
+                                <td>{{value}}</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+                    <th>JVM</th>
+                    <td>
+                        <table class="table table-condensed">
+                            <tr>
+                                <th>Java version</th>
+                                <td>{{nodes.jvm.version}}</td>
+                            </tr>
+                            <tr>
+                                <th>VM version</th>
+                                <td>{{nodes.jvm.vm_version}}</td>
+                            </tr>
+                            <tr>
+                                <th>VM name</th>
+                                <td>{{nodes.jvm.vm_name}}</td>
+                            </tr>
+                            <tr>
+                                <th>VM vendor</th>
+                                <td>{{nodes.jvm.vm_vendor}}</td>
+                            </tr>
+                            <tr>
+                                <th>Memory</th>
+                                <td>
+                                    <table class="table table-condensed">
+                                        <tr ng-repeat="(key,value) in nodes.jvm.mem track by $index">
+                                            <th>{{key}}</th>
+                                            <td>{{value}}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </tbody>
     </div>
 </div>

@@ -75,6 +75,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     $scope.maxSize = 5;
     $scope.numPages = 0;
     $scope.pageSize = 10;
+    $scope.totalItems = 0;
 
     $scope.changePage = function (pageNo) {
         $scope.currentPage = pageNo;
@@ -98,6 +99,14 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         elastic.clusterName(function (data) {
             $scope.clusterName = data;
         });
+    };
+
+    $scope.restartSearch = function() {
+        $scope.currentPage = 1;
+        $scope.numPages = 0;
+        $scope.pageSize = 10;
+        $scope.totalItems = 0;
+        $scope.doSearch();        
     };
 
     $scope.doSearch = function () {
@@ -127,6 +136,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             $scope.results = results.hits;
             $scope.facets = results.facets;
             $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
+            $scope.totalItems = results.hits.total;
         });
     };
 

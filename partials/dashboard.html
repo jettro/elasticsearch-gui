@@ -35,15 +35,15 @@
                         <td>{{index.size}}</td>
                         <td>{{index.numDocs}}</td>
                         <td>{{index.numShards}}</td>
-                        <td><span confirmed-click="removeIndex(index.name)"
+                        <td><button confirmed-click="removeIndex(index.name)"
                                   ng-confirm-click="Do you want to remove the index {{index.key}}"
-                                  class="btn btn-sm glyphicon glyphicon-trash" title="Remove index"></span>
-                            <span confirmed-click="openIndex(index.name)" ng-hide="index.state"
+                                  class="btn btn-link" title="Remove index"><span class=" glyphicon glyphicon-trash"></span></button>
+                            <button confirmed-click="openIndex(index.name)" ng-hide="index.state"
                                   ng-confirm-click="Do you want to open the index {{index.key}}"
-                                  class="btn btn-sm glyphicon glyphicon-play-circle" title="Open index"></span>
-                            <span confirmed-click="closeIndex(index.name)" ng-show="index.state"
+                                  class="btn btn-link" title="Open index"><span class=" glyphicon glyphicon-play-circle"></span></button>
+                            <button confirmed-click="closeIndex(index.name)" ng-show="index.state"
                                   ng-confirm-click="Do you want to close the index {{index.key}}"
-                                  class="btn btn-sm glyphicon glyphicon-eject" title="Close index"></span>
+                                  class="btn btn-link" title="Close index"><span class="glyphicon glyphicon-eject"></span></button>
                         </td>
                     </tr>
                 </tbody>

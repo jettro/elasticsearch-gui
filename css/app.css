@@ -14,6 +14,12 @@ body {
     }
 }
 .nav, .pagination, .carousel a { cursor: pointer; }
+
+.popover-content {
+    min-width: 280px;
+    max-width: 350px;
+}
+
 /* Custom page CSS
 -------------------------------------------------- */
 

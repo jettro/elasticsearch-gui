@@ -9,22 +9,22 @@ angular.module('myApp.directives', []).
                 elm.text(version);
             };
         }]).
-        // directive('navbar', ['$location', function ($location) {
-        //     return {
-        //         restrict: 'E',
-        //         transclude: true,
-        //         scope: {heading: '@'},
-        //         controller: 'NavbarCtrl',
-        //         templateUrl: 'template/navbar/navbar.html',
-        //         replace: true,
-        //         link: function ($scope, $element, $attrs, navbarCtrl) {
-        //             $scope.$location = $location;
-        //             $scope.$watch('$location.path()', function (locationPath) {
-        //                 navbarCtrl.selectByUrl(locationPath)
-        //             });
-        //         }
-        //     }
-        // }]).
+        directive('navbar', ['$location', function ($location) {
+            return {
+                restrict: 'E',
+                transclude: true,
+                scope: {heading: '@'},
+                controller: 'NavbarCtrl',
+                templateUrl: 'template/navbar/navbar.html',
+                replace: true,
+                link: function ($scope, $element, $attrs, navbarCtrl) {
+                    $scope.$location = $location;
+                    $scope.$watch('$location.path()', function (locationPath) {
+                        navbarCtrl.selectByUrl(locationPath)
+                    });
+                }
+            }
+        }]).
         directive('ngConfirmClick', [
             function () {
                 return {

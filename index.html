@@ -16,40 +16,8 @@
 
 <body>
 
-<div ng-controller="NavbarCtrl" ng-init="initNavBar()">
-    <!-- <navbar heading="Elasticsearch GUI"/> -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">Elasticsearch GUI</a>
-        </div>
-        <div class="collapse navbar-collapse" id="navbar-collapse">
-            <ul class="nav navbar-nav">
-                <li ng-repeat="item in items" ng-class="{active: item.selected}">
-                    <a href="#/{{item.link}}">{{item.title}}</a>
-                </li>
-            </ul>
-            <ul class="nav navbar-nav navbar-right">
-                <li><a class="btn btn-lg glyphicon glyphicon-cog" ng-click="configureServerUrl = !configureServerUrl"></a></li>
-                <li><p class="navbar-text"><span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span></p></li>
-            </ul>
-          </div>
-    </nav>
-    <div class="row" ng-show="configureServerUrl">
-        <div class="col-md-11">
-            <div class="pull-right">
-                <form class="form-horizontal" ng-submit="changeServerUrl()" name="changeServer">
-                    <input type="url" ng-model="serverUrl" autofocus="true"/>
-                    <button class="btn" type="submit">Change</button>
-                </form>
-            </div>
-        </div>
-    </div>
+<div>
+    <navbar heading="Elasticsearch GUI"/>
 </div>
 
 <div class="container">

@@ -713,6 +713,8 @@ function NavbarCtrl($scope, $timeout, elastic) {
             doCheckStatus();
         }, 5000); // wait 5 seconds before calling it again
     }
+
+    doCheckStatus();
 }
 NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic'];
 

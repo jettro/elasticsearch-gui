@@ -16,8 +16,40 @@
 
 <body>
 
-<div ng-controller="NavbarCtrl">
-    <navbar heading="Elasticsearch GUI"/>
+<div ng-controller="NavbarCtrl" ng-init="initNavBar()">
+    <!-- <navbar heading="Elasticsearch GUI"/> -->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">Elasticsearch GUI</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li ng-repeat="item in items" ng-class="{active: item.selected}">
+                    <a href="#/{{item.link}}">{{item.title}}</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li><a class="btn btn-lg glyphicon glyphicon-cog" ng-click="configureServerUrl = !configureServerUrl"></a></li>
+                <li><p class="navbar-text"><span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span></p></li>
+            </ul>
+          </div>
+    </nav>
+    <div class="row" ng-show="configureServerUrl">
+        <div class="col-md-11">
+            <div class="pull-right">
+                <form class="form-horizontal" ng-submit="changeServerUrl()" name="changeServer">
+                    <input type="url" ng-model="serverUrl" autofocus="true"/>
+                    <button class="btn" type="submit">Change</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="container">
@@ -41,9 +73,12 @@
 <!-- Le javascript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="lib/angular/angular-1.1.5.min.js"></script>
+<!-- <script src="lib/angular/angular-1.1.5.min.js"></script> -->
+<script src="lib/angular/angular-1.2.6.min.js"></script>
+<script src="lib/angular/angular-route-1.2.6.min.js"></script>
 <script src="lib/angular/ui-bootstrap-0.9.0.min.js"></script>
 <script src="lib/angular/dangle.min.js"></script>
+<script src="lib/elasticsearch/elasticsearch.angular-1.1.0.min.js"></script>
 <script src="lib/elasticsearch/elastic-1.1.1a.min.js"></script>
 <script src="lib/elasticsearch/elastic-angular-client-1.1.1.min.js"></script>
 <script src="lib/d3/d3.v3.min.js"></script>

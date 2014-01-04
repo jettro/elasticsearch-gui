@@ -2,17 +2,19 @@
 
 /* Services */
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '0.4');
+serviceModule.value('version', '0.9');
 
-serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', function (http, serverConfig, ejsResource) {
-    function ElasticService(http, serverConfig, ejsResource) {
+serviceModule.factory('elastic', ['serverConfig', 'ejsResource' ,'esFactory', function (serverConfig, ejsResource, esFactory) {
+    function ElasticService(serverConfig, ejsResource, esFactory) {
         var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var resource = ejsResource(serverUrl);
+        var es = esFactory({"host": serverUrl});
 
         this.changeServerAddress = function (serverAddress) {
             serverUrl = serverAddress;
             resource = ejsResource(serverUrl);
+            es = esFactory({"host": serverUrl})
         };
 
         this.obtainServerAddress = function () {
@@ -24,35 +26,39 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         };
 
         this.clusterStatus = function (callback) {
-            http({method: 'GET', url: serverUrl + '/_cluster/health'}).success(function (data) {
+            es.cluster.health({}).then(function(data) {
                 var numClients = data.number_of_nodes - data.number_of_data_nodes;
                 var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
-                callback(msg, statussus[data.status]);
-            }).error(function (data) {
-                        callback("No connection", "error");
-                    });
+                callback(msg, statussus[data.status]);                    
+            }, function(reason) {
+                console.log(reason);
+                callback("No connection", "error");
+            });
         };
 
         this.clusterName = function (callback) {
-            http.get(serverUrl + '/_cluster/health').success(function (data) {
+            es.cluster.health().then(function(data) {
                 callback(data.cluster_name);
             });
         };
 
         this.clusterHealth = function (callback) {
-            http.get(serverUrl + '/_cluster/health').success(function (data) {
+            var start = (new Date()).getTime();
+            es.cluster.health().then(function(data) {
                 callback(data);
+                var end = (new Date()).getTime();
+                console.log(end-start);
             });
         };
 
         this.clusterNodes = function (callback) {
-            http.get(serverUrl + '/_nodes').success(function (data) {
+            es.cluster.nodeInfo().then(function (data) {
                 callback(data.nodes);
             });
         };
 
         this.plugins = function (callback) {
-            http.get(serverUrl + '/_nodes?plugin=true').success(function(data) {
+            es.cluster.nodeInfo({"plugin":true}).then(function(data) {
                 var nodes = [];
                 angular.forEach(data.nodes, function (node,node_id) {
                     var siteNode = {};
@@ -74,13 +80,13 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         };
 
         this.nodeInfo = function (nodeId, callback) {
-            http.get(serverUrl + '/_nodes/' + nodeId + '?all=true').success(function (data) {
+            es.cluster.nodeInfo({"all":true,"nodeId":nodeId}).then(function (data) {
                 callback(data.nodes[nodeId]);
             });
         };
 
         this.indexes = function (callback) {
-            http.get(serverUrl + '/_status').success(function (data) {
+            es.indices.status({}).then(function (data) {
                 var indices = [];
                 for (var index in data.indices) {
                     indices.push(index);
@@ -90,27 +96,32 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         };
 
         this.removeIndex = function (index, callback) {
-            http.delete(serverUrl + "/" + index).success(function (data) {
+            es.indices.delete({"index":index}).then(function(data) {
                 callback();
             });
         };
 
         this.openIndex = function (index, callback) {
-            http.post(serverUrl + "/" + index + "/_open").success(function (data) {
+            es.indices.open({"index":index}).then(function(data) {
                 callback();
             });
         };
 
         this.closeIndex = function (index, callback) {
-            http.post(serverUrl + "/" + index + "/_close").success(function (data) {
+            es.indices.close({"index":index}).then(function(data) {
                 callback();
             });
         };
 
         this.indexesDetails = function (callback) {
-            http.get(serverUrl + '/_status').success(function (statusData) {
+            es.indices.status().then(function (statusData) {
                 var indexesStatus = statusData.indices;
-                http.get(serverUrl + '/_cluster/state?filter_routing_table=true&filter_nodes=true&filter_blocks=true').success(function(stateData) {
+                var stateFilter = {};
+                stateFilter.filterRoutingTable = true;
+                stateFilter.filterNodes = true;
+                stateFilter.filterBlocks = true;
+
+                es.cluster.state(stateFilter).then(function(stateData) {
                     var indexesState = stateData.metadata.indices;
                     var indices = [];
                     angular.forEach(indexesState, function(value,key) {
@@ -132,11 +143,11 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         };
 
         this.types = function (selectedIndex, callback) {
-            var url = serverUrl;
+            var mappingFilter = {};
             if (selectedIndex.length > 0) {
-                url += "/" + selectedIndex.toString();
+                mappingFilter.index = selectedIndex.toString();
             }
-            http.get(url + '/_mapping').success(function (data) {
+            es.indices.getMapping(mappingFilter).then(function (data) {
                 var myTypes = [];
                 for (var index in data) {
                     for (var type in data[index]) {
@@ -150,17 +161,17 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         };
 
         this.fields = function (selectedIndex, selectedType, callback) {
-            var url = serverUrl;
+            var mappingFilter = {};
             if (selectedIndex.length > 0) {
-                url += "/" + selectedIndex.toString();
+                mappingFilter.index = selectedIndex.toString();
             }
             if (selectedType.length > 0) {
-                if (!selectedIndex.length > 0) {
-                    url += "/*";
-                }
-                url += "/" + selectedType.toString();
+                // if (!selectedIndex.length > 0) {
+                //     url += "/*";
+                // }
+                mappingFilter.type = selectedType.toString();
             }
-            http.get(url + '/_mapping').success(function (data) {
+            es.indices.getMapping(mappingFilter).then(function (data) {
                 var myTypes = [];
                 var myFields = {};
                 for (var index in data) {
@@ -221,7 +232,7 @@ serviceModule.factory('elastic', ['$http', 'serverConfig', 'ejsResource', functi
         }
     }
 
-    return new ElasticService(http, serverConfig, ejsResource);
+    return new ElasticService(serverConfig, ejsResource, esFactory);
 }]);
 
 serviceModule.factory('configuration', ['$rootScope', 'localStorage', function ($rootScope, localStorage) {

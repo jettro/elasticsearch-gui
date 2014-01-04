@@ -6,18 +6,6 @@ function DashboardCtrl($scope, elastic) {
     $scope.nodes = [];
     $scope.plugins = [];
 
-    elastic.clusterHealth(function (data) {
-        $scope.health = data;
-    });
-
-    elastic.clusterNodes(function (data) {
-        $scope.nodes = data;
-    });
-
-    elastic.plugins(function(data) {
-        $scope.plugins = data;
-    })
-
     $scope.removeIndex = function (index) {
         elastic.removeIndex(index, function () {
             indexDetails();
@@ -42,7 +30,24 @@ function DashboardCtrl($scope, elastic) {
         });
     }
 
-    indexDetails();
+    function refreshData() {
+        elastic.clusterHealth(function (data) {
+            $scope.health = data;
+        });
+
+        elastic.clusterNodes(function (data) {
+            $scope.nodes = data;
+        });
+
+        elastic.plugins(function(data) {
+            $scope.plugins = data;
+        });
+    }
+
+    $scope.$on('$viewContentLoaded', function () {
+        indexDetails();
+        refreshData();
+    });
 }
 DashboardCtrl.$inject = ['$scope', 'elastic'];
 
@@ -695,13 +700,19 @@ function NavbarCtrl($scope, $timeout, elastic) {
         elastic.changeServerAddress($scope.serverUrl);
     };
 
-    $timeout(function checkCluster() {
+    $scope.initNavBar = function () {
+        doCheckStatus();
+    };
+
+    function doCheckStatus() {
         elastic.clusterStatus(function (message, status) {
             $scope.statusCluster.message = message;
             $scope.statusCluster.state = status;
-        });
-        $timeout(checkCluster, 5000);
-    }, 1000);
+        });        
+        $timeout(function() {
+            doCheckStatus();
+        }, 5000); // wait 5 seconds before calling it again
+    }
 }
 NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic'];
 

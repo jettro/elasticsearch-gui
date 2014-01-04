@@ -93,9 +93,9 @@
                         <td>{{value.name}}</td>
                         <td>{{value.version}}</td>
                         <td ng-show="value.attributes.client">
-                            <i class="glyphicon glyphicon-ok"></i> (data: {{value.attributes.data}})
+                            <span class="glyphicon glyphicon-ok"></span> (data: {{value.attributes.data}})
                         </td>
-                        <td ng-hide="value.attributes.client"><i class="glyphicon glyphicon-remove"></i></td>
+                        <td ng-hide="value.attributes.client"><span class="glyphicon glyphicon-remove"></span></td>
                         <td><a href="#/node/{{key}}">More info</a></td>
                     </tr>
                 </tbody>

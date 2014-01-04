@@ -554,7 +554,8 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         $scope.changeQuery();
         var request = createQuery();
         $scope.metaResults = {};
-        request.doSearch(function (results) {
+
+        elastic.doSearch(request,function (results) {
             $scope.queryResults = results.hits;
             $scope.facetResults = results.facets;
             $scope.metaResults.totalShards = results._shards.total;
@@ -566,12 +567,11 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
                 });
                 
             }
-        }, function(errors) {
+        },function(errors) {
             $scope.metaResults.failedShards = 1;
             $scope.metaResults.errors = [];
             $scope.metaResults.errors.push(errors.error);
         });
-
     };
 
     $scope.resetQuery = function () {
@@ -585,7 +585,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
     };
 
     $scope.changeQuery = function () {
-        $scope.createdQuery = createQuery().toString();
+        $scope.createdQuery = JSON.stringify(createQuery().body,null,2);
     };
 
     $scope.openDialog = function () {
@@ -620,45 +620,55 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
 
 
     function createQuery() {
-        var request = elastic.obtainEjsResource().Request();
+        var query = {};
+        query.index = "";
+        query.body = {};
+        query.body.query = {};
+        
         var chosenIndices = [];
         angular.forEach($scope.query.indices, function (value) {
             if (value.state) {
                 chosenIndices.push(value.name);
             }
         });
-        request.indices(chosenIndices);
+        query.index = chosenIndices.toString();
+
         var chosenTypes = [];
         angular.forEach($scope.query.types, function (value) {
             if (value.state) {
                 chosenTypes.push(value.name);
             }
         });
-        request.types(chosenTypes);
+        query.type = chosenTypes.toString();
+
         if ($scope.query.chosenFields.length > 0) {
-            request.fields($scope.query.chosenFields);
+            query.fields = $scope.query.chosenFields.toString();
         }
+
         if ($scope.query.term.length > 0) {
-            var matchQuery = elastic.obtainEjsResource().MatchQuery("_all", $scope.query.term);
+            var matchPart = {};
+            matchPart.query = $scope.query.term;
             if ($scope.query.type === 'phrase') {
-                matchQuery.type('phrase');
+                matchPart.type = "phrase";
             } else {
-                matchQuery.operator($scope.query.type);
+                matchPart.operator = $scope.query.type;
             }
-            request.query(matchQuery);
+            query.body.query.match = {"_all":matchPart};
         } else {
-            request.query(elastic.obtainEjsResource().MatchAllQuery());
+            query.body.query.matchAll = {};
         }
 
-        facetBuilder.build($scope.query.facets, elastic.obtainEjsResource(), request);
+        query.body.facets = facetBuilder.build($scope.query.facets);
 
-        request.explain($scope.query.explain);
+        query.body.explain = $scope.query.explain;
         if ($scope.query.highlight) {
-            var highlight = elastic.obtainEjsResource().Highlight();
-            highlight.fields($scope.query.chosenFields);
-            request.highlight(highlight);
+            var highlight = {"fields":{}};
+            angular.forEach($scope.query.chosenFields, function (value) {
+                highlight.fields[value] = {};    
+            });
+            query.body.highlight = highlight;
         }
-        return request;
+        return query;
     }
     this.errorCallback = function(errors) {
         console.log(errors);

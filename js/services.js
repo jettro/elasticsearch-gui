@@ -230,6 +230,14 @@ serviceModule.factory('elastic', ['serverConfig', 'ejsResource' ,'esFactory', fu
                 }
             }
         }
+
+        this.doSearch = function(query, resultCallback, errorCallback) {
+            es.search(query).then(function(results) {
+                resultCallback(results)
+            }, function(errors) {
+                errorCallback(errors)
+            });
+        };
     }
 
     return new ElasticService(serverConfig, ejsResource, esFactory);
@@ -298,39 +306,43 @@ serviceModule.factory('serverConfig', ['$location', function ($location) {
 
 serviceModule.factory('facetBuilder', function () {
     function FacetBuilder() {
-        this.build = function (facets, ejs, request) {
+        this.build = function (facets) {
+            var queryfacets = {};
+
             for (var i = 0; i < facets.length; i++) {
                 var facet = facets[i];
                 if (facet.facetType === 'term') {
-                    var termsFacet = ejs.TermsFacet(facet.field);
-                    termsFacet.field(facet.field);
-                    request.facet(termsFacet);
-                } else if (facet.facetType === 'range') {
-                    var rangeFacet = ejs.RangeFacet(facet.field);
-                    for (var j = 0; j < facet.ranges.length; j++) {
-                        var range = facet.ranges[j];
-                        if (range[0] == undefined) {
-                            rangeFacet.addUnboundedTo(range[1]);
-                        } else if (range[1] == undefined) {
-                            rangeFacet.addUnboundedFrom(range[0]);
-                        } else {
-                            rangeFacet.addRange(range[0], range[1]);
-                        }
-                    }
-                    rangeFacet.field(facet.field);
-                    request.facet(rangeFacet);
-                } else if (facet.facetType === 'datehistogram') {
-                    var dateHistogramFacet = ejs.DateHistogramFacet(facet.field);
-                    dateHistogramFacet.field(facet.field);
-                    dateHistogramFacet.interval(facet.interval);
-                    request.facet(dateHistogramFacet);
-                } else if (facet.facetType === 'histogram') {
-                    var histogramFacet = ejs.HistogramFacet(facet.field);
-                    histogramFacet.field(facet.field);
-                    histogramFacet.interval(facet.interval);
-                    request.facet(histogramFacet);
+                    queryfacets[facet.field] = {"terms":{"field":facet.field}};
+                    // var termsFacet = ejs.TermsFacet(facet.field);
+                    // termsFacet.field(facet.field);
+                    // request.facet(termsFacet);
+                // } else if (facet.facetType === 'range') {
+                //     var rangeFacet = ejs.RangeFacet(facet.field);
+                //     for (var j = 0; j < facet.ranges.length; j++) {
+                //         var range = facet.ranges[j];
+                //         if (range[0] == undefined) {
+                //             rangeFacet.addUnboundedTo(range[1]);
+                //         } else if (range[1] == undefined) {
+                //             rangeFacet.addUnboundedFrom(range[0]);
+                //         } else {
+                //             rangeFacet.addRange(range[0], range[1]);
+                //         }
+                //     }
+                //     rangeFacet.field(facet.field);
+                //     request.facet(rangeFacet);
+                // } else if (facet.facetType === 'datehistogram') {
+                //     var dateHistogramFacet = ejs.DateHistogramFacet(facet.field);
+                //     dateHistogramFacet.field(facet.field);
+                //     dateHistogramFacet.interval(facet.interval);
+                //     request.facet(dateHistogramFacet);
+                // } else if (facet.facetType === 'histogram') {
+                //     var histogramFacet = ejs.HistogramFacet(facet.field);
+                //     histogramFacet.field(facet.field);
+                //     histogramFacet.interval(facet.interval);
+                //     request.facet(histogramFacet);
                 }
             }
+            return queryfacets;
         }
     }
 

@@ -4,25 +4,19 @@
 var serviceModule = angular.module('myApp.services', []);
 serviceModule.value('version', '0.9');
 
-serviceModule.factory('elastic', ['serverConfig', 'ejsResource' ,'esFactory', function (serverConfig, ejsResource, esFactory) {
-    function ElasticService(serverConfig, ejsResource, esFactory) {
+serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverConfig, esFactory) {
+    function ElasticService(serverConfig, esFactory) {
         var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
-        var resource = ejsResource(serverUrl);
         var es = esFactory({"host": serverUrl});
 
         this.changeServerAddress = function (serverAddress) {
             serverUrl = serverAddress;
-            resource = ejsResource(serverUrl);
             es = esFactory({"host": serverUrl})
         };
 
         this.obtainServerAddress = function () {
             return serverUrl;
-        };
-
-        this.obtainEjsResource = function () {
-            return resource;
         };
 
         this.clusterStatus = function (callback) {
@@ -43,11 +37,8 @@ serviceModule.factory('elastic', ['serverConfig', 'ejsResource' ,'esFactory', fu
         };
 
         this.clusterHealth = function (callback) {
-            var start = (new Date()).getTime();
             es.cluster.health().then(function(data) {
                 callback(data);
-                var end = (new Date()).getTime();
-                console.log(end-start);
             });
         };
 
@@ -240,7 +231,7 @@ serviceModule.factory('elastic', ['serverConfig', 'ejsResource' ,'esFactory', fu
         };
     }
 
-    return new ElasticService(serverConfig, ejsResource, esFactory);
+    return new ElasticService(serverConfig, esFactory);
 }]);
 
 serviceModule.factory('configuration', ['$rootScope', 'localStorage', function ($rootScope, localStorage) {
@@ -313,33 +304,23 @@ serviceModule.factory('facetBuilder', function () {
                 var facet = facets[i];
                 if (facet.facetType === 'term') {
                     queryfacets[facet.field] = {"terms":{"field":facet.field}};
-                    // var termsFacet = ejs.TermsFacet(facet.field);
-                    // termsFacet.field(facet.field);
-                    // request.facet(termsFacet);
-                // } else if (facet.facetType === 'range') {
-                //     var rangeFacet = ejs.RangeFacet(facet.field);
-                //     for (var j = 0; j < facet.ranges.length; j++) {
-                //         var range = facet.ranges[j];
-                //         if (range[0] == undefined) {
-                //             rangeFacet.addUnboundedTo(range[1]);
-                //         } else if (range[1] == undefined) {
-                //             rangeFacet.addUnboundedFrom(range[0]);
-                //         } else {
-                //             rangeFacet.addRange(range[0], range[1]);
-                //         }
-                //     }
-                //     rangeFacet.field(facet.field);
-                //     request.facet(rangeFacet);
-                // } else if (facet.facetType === 'datehistogram') {
-                //     var dateHistogramFacet = ejs.DateHistogramFacet(facet.field);
-                //     dateHistogramFacet.field(facet.field);
-                //     dateHistogramFacet.interval(facet.interval);
-                //     request.facet(dateHistogramFacet);
-                // } else if (facet.facetType === 'histogram') {
-                //     var histogramFacet = ejs.HistogramFacet(facet.field);
-                //     histogramFacet.field(facet.field);
-                //     histogramFacet.interval(facet.interval);
-                //     request.facet(histogramFacet);
+                } else if (facet.facetType === 'range') {
+                    var ranges = [];
+                    for (var j = 0; j < facet.ranges.length; j++) {
+                        var range = facet.ranges[j];
+                        if (range[0] == undefined) {
+                            ranges.push({"to":range[1]})
+                        } else if (range[1] == undefined) {
+                            ranges.push({"from":range[0]})
+                        } else {
+                            ranges.push({"from":range[0],"to":range[1]});
+                        }
+                    }
+                    queryfacets[facet.field]={"range":{"field":facet.field,"ranges":ranges}};
+                } else if (facet.facetType === 'datehistogram') {
+                    queryfacets[facet.field]={"date_histogram":{"field":facet.field,"interval":facet.interval}};
+                } else if (facet.facetType === 'histogram') {
+                    queryfacets[facet.field]={"histogram":{"field":facet.field,"interval":facet.interval}};
                 }
             }
             return queryfacets;

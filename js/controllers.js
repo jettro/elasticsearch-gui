@@ -255,10 +255,11 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            var matchPart = {};
-            matchPart.query = $scope.search.simple;
+            // var matchPart = {};
+            // matchPart.query = $scope.search.simple;
 
-            executedQuery = {"match":{"_all":matchPart}};
+            // executedQuery = {"match":{"_all":matchPart}};
+            executedQuery = {"simple_query_string":{"query":$scope.search.simple,"fields":["_all"],"analyzer":"snowball"}};
         } else {
             executedQuery = {"matchAll": {}};
         }

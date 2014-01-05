@@ -475,6 +475,26 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
     $scope.query.indices = {};
     $scope.query.types = {};
 
+    // initialize pagination
+    $scope.currentPage = 1;
+    $scope.maxSize = 5;
+    $scope.numPages = 0;
+    $scope.pageSize = 10;
+    $scope.totalItems = 0;
+
+    $scope.changePage = function (pageNo) {
+        $scope.currentPage = pageNo;
+        $scope.executeQuery();
+    };
+
+    $scope.restartSearch = function() {
+        $scope.currentPage = 1;
+        $scope.numPages = 0;
+        $scope.pageSize = 10;
+        $scope.totalItems = 0;
+        $scope.executeQuery();        
+    };
+
     $scope.unbind = {};
     $scope.unbind.indicesScope = function () {
     };
@@ -564,6 +584,9 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         elastic.doSearch(request,function (results) {
             $scope.queryResults = results.hits;
             $scope.facetResults = results.facets;
+            $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
+            $scope.totalItems = results.hits.total;
+
             $scope.metaResults.totalShards = results._shards.total;
             if (results._shards.failed > 0) {
                 $scope.metaResults.failedShards = results._shards.failed;
@@ -630,6 +653,9 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         query.index = "";
         query.body = {};
         query.body.query = {};
+        
+        query.size = $scope.pageSize;
+        query.from = ($scope.currentPage - 1) * $scope.pageSize;
         
         var chosenIndices = [];
         angular.forEach($scope.query.indices, function (value) {

@@ -84,7 +84,7 @@
     </div>
 </div>
 
-<form novalidate class="form-search" ng-submit="executeQuery()">
+<form novalidate class="form-search" ng-submit="restartSearch()">
     <div class="row">
         <div class="col-md-2">
             <span class="text-info">Query config</span>
@@ -252,7 +252,7 @@
                 </div>
             </div>
             <div class="panel-footer">
-                <p>Going to add pagination here soon.</p>
+        <pagination total-items="totalItems" page="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" num-pages="numPages" on-select-page="changePage(page)"></pagination>
             </div>
         </div>
     </div>

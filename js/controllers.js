@@ -153,12 +153,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
                 });
                 
             }
-        },function(errors) {
-            $scope.metaResults.failedShards = 1;
-            $scope.metaResults.errors = [];
-            $scope.metaResults.errors.push(errors.error);
-        });
-
+        },handleErrors);
     };
 
     $scope.addSearchField = function () {
@@ -188,7 +183,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
                 $scope.search.facets.push(result);
             }
         }, function () {
-            console.log('Modal dismissed at: ' + new Date());
+            // Nothing to do here
         });
     };
 
@@ -240,6 +235,16 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         $scope.doSearch();
     };
 
+    $scope.obtainFacetByKey = function (key) {
+        for (var i = 0; i < $scope.search.facets.length; i++) {
+            var currentFacet = $scope.search.facets[i];
+            if (currentFacet.field === key) {
+                return currentFacet;
+            }
+        }
+        return null;
+    }
+
     function searchPart() {
         var executedQuery;
         if ($scope.search.doAdvanced && $scope.search.advanced.searchFields.length > 0) {
@@ -255,10 +260,6 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            // var matchPart = {};
-            // matchPart.query = $scope.search.simple;
-
-            // executedQuery = {"match":{"_all":matchPart}};
             executedQuery = {"simple_query_string":{"query":$scope.search.simple,"fields":["_all"],"analyzer":"snowball"}};
         } else {
             executedQuery = {"matchAll": {}};
@@ -364,14 +365,16 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         }
     }
 
-    $scope.obtainFacetByKey = function (key) {
-        for (var i = 0; i < $scope.search.facets.length; i++) {
-            var currentFacet = $scope.search.facets[i];
-            if (currentFacet.field === key) {
-                return currentFacet;
+    function handleErrors(errors) {
+        $scope.metaResults.failedShards = 1;
+        $scope.metaResults.errors = [];
+        if (errors.message && typeof errors.message === "object") {
+            if (errors.message.hasOwnProperty('message')) {
+                $scope.metaResults.errors.push(errors.message.message);
             }
+        } else {
+            $scope.metaResults.errors.push(errors.message);
         }
-        return null;
     }
 }
 SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$modal', 'queryStorage'];
@@ -436,9 +439,6 @@ function GraphCtrl($scope, $modal, elastic, facetBuilder) {
             console.log(errors);
         });
 
-        // elastic.doSearch(request,function (results) {
-        //     $scope.results = getValue(results.facets);
-        // });
 
     };
 

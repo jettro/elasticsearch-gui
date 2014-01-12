@@ -20,6 +20,14 @@
     <navbar heading="Elasticsearch GUI"/>
 </div>
 
+<div class="container" ng-show="alerts">
+    <div class="row">
+        <div class="alert alert-danger" ng-repeat="alert in alerts">
+            {{alert.msg}}
+        </div>
+    </div>
+</div>
+
 <div class="container">
     <div class="row">
         <div class="col-md-12" ng-view>

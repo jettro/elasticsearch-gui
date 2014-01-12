@@ -329,3 +329,25 @@ serviceModule.factory('facetBuilder', function () {
 
     return new FacetBuilder();
 });
+
+serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {
+    function ErrorHandling(rootScope) {
+        $rootScope.alerts = [];
+
+        this.add = function(message) {
+            if (message && typeof message === "object") {
+                if (message.hasOwnProperty('message')) {
+                    $rootScope.alerts.push({"msg":message.message});    
+                }
+            } else {
+                $rootScope.alerts.push({"msg":message});
+            }
+        }
+
+        this.clear = function() {
+            $rootScope.alerts = [];
+        }
+    }
+
+    return new ErrorHandling($rootScope);
+}]);

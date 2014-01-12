@@ -137,12 +137,11 @@
         </div>
     </div>
 </div>
-
 <div class="row" ng-show="metaResults.failedShards">
-    <div class="col-md-12 alert alert-error">
+    <div class="col-md-12">
         <h3>Errors</h3>
-        <div ng-repeat="error in metaResults.errors">
-            <p>{{error}}</p>
+        <div class="alert alert-danger" ng-repeat="error in metaResults.errors">
+            {{error}}
         </div>
     </div>
 </div>

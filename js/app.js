@@ -13,3 +13,11 @@ var myApp = angular.module('myApp', ['ngRoute','myApp.filters', 'myApp.services'
         }]);
 
 myApp.value('localStorage', window.localStorage);
+
+myApp.factory('$exceptionHandler', function($injector) {
+    return function(exception, cause) {
+        var errorHandling = $injector.get('errorHandling');
+        errorHandling.add(exception.message);
+        throw exception;
+    };
+});

@@ -26,7 +26,7 @@
 </div>
 <div class="row">
     <div class="col-md-12" ng-show="configError">
-        <div class="alert alert-error">{{configError}}</div>
+        <div class="alert alert-danger">{{configError}}</div>
     </div>
 </div>
 <div class="row">
@@ -91,6 +91,14 @@
                 </div>
             </div>
         </form>
+    </div>
+</div>
+<div class="row" ng-show="metaResults.failedShards">
+    <div class="col-md-12">
+        <h3>Errors</h3>
+        <div class="alert alert-danger" ng-repeat="error in metaResults.errors">
+            {{error}}
+        </div>
     </div>
 </div>
 <div class="row">

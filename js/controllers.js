@@ -342,7 +342,23 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
                     termFilter.term[selectedFacets[i].key] = selectedFacets[i].value;
                     filters.push(termFilter);
                 } else if (facetType === "datehistogram") {
-                    // TODO jettro, what are we going to do here ??
+                    var fromDate = new Date(selectedFacets[i].value);
+                    if (facet.interval === 'year') {
+                        fromDate.setFullYear(fromDate.getFullYear() + 1);
+                    } else if (facet.interval === 'month') {
+                        fromDate.setMonth(fromDate.getMonth() + 1);
+                    } else if (facet.interval === 'week') {
+                        fromDate.setDate(fromDate.getDate() + 7);
+                    } else if (facet.interval === 'day') {
+                        fromDate.setDate(fromDate.getDate() + 1);
+                    } else if (facet.interval === 'hour') {
+                        fromDate.setHours(fromDate.getHours() + 1);
+                    } else if (facet.interval === 'minute') {
+                        fromDate.setMinutes(fromDate.getMinutes() + 1);
+                    }
+                    var rangeFilter = {"range":{}};
+                    rangeFilter.range[selectedFacets[i].key] = {"from":selectedFacets[i].value,"to":fromDate.getTime()};
+                    filters.push(rangeFilter);
                 } else if (facetType === "histogram") {
                     var rangeFilter = {"range":{}};
                     rangeFilter.range[selectedFacets[i].key] = {"from":selectedFacets[i].value,"to":selectedFacets[i].value + facet.interval};

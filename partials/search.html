@@ -119,12 +119,11 @@
             </div>
             <div ng-show="value._type === 'date_histogram'">
                 <div ng-repeat="entry in value.entries">
-                    <!--<span ng-show="checkSelectedFacet(key,entry.time)"> {{entry.time | date:'medium'}} ({{entry.count}}) <i-->
-                    <!--style="cursor:pointer;" class="icon-remove"-->
-                    <!--ng-click="removeFilter(key,entry.time)"></i></span>-->
-                    <!--<span ng-hide="checkSelectedFacet(key,entry.time)" class="btn btn-mini btn-link"-->
-                    <!--ng-click="addFilter(key,entry.time)">{{entry.time | date:'medium'}} ({{entry.count}})</span>-->
-                    <span>{{entry.time | date:'medium'}} ({{entry.count}})</span>
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,entry.time)"  ng-click="removeFilter(key,entry.time)"> {{entry.time | date:'medium'}} ({{entry.count}}) <span
+                    class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedFacet(key,entry.time)" class="btn btn-mini btn-link"
+                        ng-click="addFilter(key,entry.time)">{{entry.time | date:'medium'}} ({{entry.count}})</span>
+                    <!-- <span>{{entry.time | date:'medium'}} ({{entry.count}})</span> -->
                 </div>
             </div>
             <div ng-show="value._type === 'histogram'">

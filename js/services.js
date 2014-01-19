@@ -188,7 +188,7 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
                     handleSubfields(field.properties[subField], newField, myFields, nestedPath);
                 }
             } else {
-                if (field.type === "multi_field") {
+                if (field.hasOwnProperty("fields")) {
                     for (var multiField in field.fields) {
                         var multiFieldName = fieldName + "." + multiField;
                         // TODO jettro : fix the nested documents with multi_fields

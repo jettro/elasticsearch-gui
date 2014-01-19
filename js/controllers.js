@@ -483,6 +483,10 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
     $scope.pageSize = 10;
     $scope.totalItems = 0;
 
+    $scope.$watchCollection('query', function(){
+        $scope.changeQuery();
+    });
+
     $scope.changePage = function (pageNo) {
         $scope.currentPage = pageNo;
         $scope.executeQuery();

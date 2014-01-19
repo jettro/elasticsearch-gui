@@ -123,7 +123,6 @@
                     class="glyphicon glyphicon-remove"></span></button>
                     <button ng-hide="checkSelectedFacet(key,entry.time)" class="btn btn-mini btn-link"
                         ng-click="addFilter(key,entry.time)">{{entry.time | date:'medium'}} ({{entry.count}})</span>
-                    <!-- <span>{{entry.time | date:'medium'}} ({{entry.count}})</span> -->
                 </div>
             </div>
             <div ng-show="value._type === 'histogram'">

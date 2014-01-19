@@ -165,7 +165,7 @@
                     </div>
                     <div ng-show="value._type === 'date_histogram'">
                         <div>
-                            <span ng-repeat="entry in value.entries"> {{entry.time}} ({{entry.count}})</span>
+                            <span ng-repeat="entry in value.entries"> {{entry.time | date:'medium'}} ({{entry.count}})</span>
                         </div>
                     </div>
                     <div ng-show="value._type === 'histogram'">

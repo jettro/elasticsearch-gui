@@ -8,7 +8,7 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
     function ElasticService(serverConfig, esFactory) {
         var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
-        var es = esFactory({"host": serverUrl});
+        var es = esFactory({"host": serverUrl, "apiVersion":"1.0", "log":"trace"});
 
         this.changeServerAddress = function (serverAddress) {
             serverUrl = serverAddress;
@@ -141,7 +141,7 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
             es.indices.getMapping(mappingFilter).then(function (data) {
                 var myTypes = [];
                 for (var index in data) {
-                    for (var type in data[index]) {
+                    for (var type in data[index].mappings) {
                         if (myTypes.indexOf(type) == -1 && type != "_default_") {
                             myTypes.push(type);
                         }
@@ -157,33 +157,18 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
                 mappingFilter.index = selectedIndex.toString();
             }
             if (selectedType.length > 0) {
-                // if (!selectedIndex.length > 0) {
-                //     url += "/*";
-                // }
                 mappingFilter.type = selectedType.toString();
             }
             es.indices.getMapping(mappingFilter).then(function (data) {
                 var myTypes = [];
                 var myFields = {};
                 for (var index in data) {
-                    /*
-                     * Structure of result with one index is different from the other results. usually you first
-                     * get the index, in this special case you immediately get the type.
-                     */
-                    if (index == selectedType) {
-                        myTypes.push(index);
-                        var properties = data[index].properties;
-                        for (var field in properties) {
-                            handleSubfields(properties[field], field, myFields, undefined);
-                        }
-                    } else {
-                        for (var type in data[index]) {
-                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
-                                myTypes.push(type);
-                                var properties = data[index][type].properties;
-                                for (var field in properties) {
-                                    handleSubfields(properties[field], field, myFields, undefined);
-                                }
+                    for (var type in data[index].mappings) {
+                        if (myTypes.indexOf(type) == -1 && type != "_default_") {
+                            myTypes.push(type);
+                            var properties = data[index].mappings[type].properties;
+                            for (var field in properties) {
+                                handleSubfields(properties[field], field, myFields, undefined);
                             }
                         }
                     }

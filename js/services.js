@@ -58,7 +58,9 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
             es.indices.status({"ignoreUnavailable":true}).then(function (data) {
                 var indices = [];
                 for (var index in data.indices) {
-                    indices.push(index);
+                    if (indexIsNotIgnored(index)) {
+                        indices.push(index);
+                    }
                 }
                 callback(indices);
             });
@@ -118,9 +120,11 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
             es.indices.getMapping(mappingFilter).then(function (data) {
                 var myTypes = [];
                 for (var index in data) {
-                    for (var type in data[index].mappings) {
-                        if (myTypes.indexOf(type) == -1 && type != "_default_") {
-                            myTypes.push(type);
+                    if (indexIsNotIgnored(index)) {
+                        for (var type in data[index].mappings) {
+                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
+                                myTypes.push(type);
+                            }
                         }
                     }
                 }
@@ -140,12 +144,14 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
                 var myTypes = [];
                 var myFields = {};
                 for (var index in data) {
-                    for (var type in data[index].mappings) {
-                        if (myTypes.indexOf(type) == -1 && type != "_default_") {
-                            myTypes.push(type);
-                            var properties = data[index].mappings[type].properties;
-                            for (var field in properties) {
-                                handleSubfields(properties[field], field, myFields, undefined);
+                    if (indexIsNotIgnored(index)) {
+                        for (var type in data[index].mappings) {
+                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
+                                myTypes.push(type);
+                                var properties = data[index].mappings[type].properties;
+                                for (var field in properties) {
+                                    handleSubfields(properties[field], field, myFields, undefined);
+                                }
                             }
                         }
                     }
@@ -191,6 +197,10 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
                 errorCallback(errors)
             });
         };
+
+        function indexIsNotIgnored(index) {
+            return index.substring(0,7) !== '.marvel';
+        }
     }
 
     return new ElasticService(serverConfig, esFactory);

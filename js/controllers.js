@@ -727,10 +727,11 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
 }
 QueryCtrl.$inject = ['$scope', '$modal', 'elastic', 'facetBuilder', 'queryStorage'];
 
-function NavbarCtrl($scope, $timeout, elastic) {
+function NavbarCtrl($scope, $timeout, elastic, configuration) {
     $scope.statusCluster = {};
     $scope.serverUrl = elastic.obtainServerAddress();
     $scope.configureServerUrl = false;
+    $scope.configure = configuration;
 
     var items = $scope.items = [
         {title: 'Dashboard', link: 'dashboard'},
@@ -757,6 +758,7 @@ function NavbarCtrl($scope, $timeout, elastic) {
 
     $scope.changeServerUrl = function () {
         elastic.changeServerAddress($scope.serverUrl);
+        configuration.excludedIndexes = $scope.configure.excludedIndexes;
     };
 
     $scope.initNavBar = function () {
@@ -775,7 +777,7 @@ function NavbarCtrl($scope, $timeout, elastic) {
 
     doCheckStatus();
 }
-NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic'];
+NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic', 'configuration'];
 
 function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;

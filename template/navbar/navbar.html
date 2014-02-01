@@ -22,11 +22,18 @@
           </div>
     </nav>
     <div class="row" ng-show="configureServerUrl">
-        <div class="col-md-11">
-            <div class="pull-right">
-                <form class="form-horizontal" ng-submit="changeServerUrl()" name="changeServer">
-                    <input type="url" ng-model="serverUrl" autofocus="true"/>
-                    <button class="btn" type="submit">Change</button>
+        <div class="col-md-11 coll-md-offset-1">
+            <div class="alert alert-warning">
+                <form role="form" ng-submit="changeServerUrl()" name="changeServer">
+                    <div class="form-group">
+                        <label>Server url</label>
+                        <input type="url" class="form-control" ng-model="serverUrl" autofocus="true"/>
+                    </div>
+                    <div class="form-group">
+                        <label>Ignored indexes (type start of indexes to exclude, for multiple use comma seperated)</label>
+                        <input type="text" class="form-control" ng-model="configure.excludedIndexes" placeholder="index1,index2 of index"/>
+                    </div>
+                    <button class="btn btn-info" type="submit">Change</button>
                 </form>
             </div>
         </div>

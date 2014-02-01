@@ -4,11 +4,12 @@
 var serviceModule = angular.module('myApp.services', []);
 serviceModule.value('version', '0.9');
 
-serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverConfig, esFactory) {
-    function ElasticService(serverConfig, esFactory) {
+serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', function (serverConfig, esFactory, configuration) {
+    function ElasticService(serverConfig, esFactory, configuration) {
         var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
-        var es = esFactory({"host": serverUrl, "apiVersion":"1.0", "log":"trace"});
+        var es = esFactory({"host": serverUrl, "apiVersion":"1.0"});
+        var activeIndexes = [];
 
         this.changeServerAddress = function (serverAddress) {
             serverUrl = serverAddress;
@@ -58,10 +59,12 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
             es.indices.status({"ignoreUnavailable":true}).then(function (data) {
                 var indices = [];
                 for (var index in data.indices) {
+                    var ignored = indexIsNotIgnored(index);
                     if (indexIsNotIgnored(index)) {
                         indices.push(index);
                     }
                 }
+                activeIndexes = indices;
                 callback(indices);
             });
         };
@@ -191,6 +194,9 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
         }
 
         this.doSearch = function(query, resultCallback, errorCallback) {
+            if (query.index === "") {
+                query.index = activeIndexes;
+            }
             es.search(query).then(function(results) {
                 resultCallback(results)
             }, function(errors) {
@@ -199,11 +205,22 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
         };
 
         function indexIsNotIgnored(index) {
+            var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(","):[];
+            var ignore = false;
+            angular.forEach(excludedIndexes, function(excludedIndex) {
+                var indexToCheck = excludedIndex.trim();
+                if (index.substring(0,indexToCheck.length) === indexToCheck) {
+                    ignore = true;
+                }
+            });
+            if (ignore) {
+                return false;
+            }
             return index.substring(0,7) !== '.marvel';
         }
     }
 
-    return new ElasticService(serverConfig, esFactory);
+    return new ElasticService(serverConfig, esFactory, configuration);
 }]);
 
 serviceModule.factory('configuration', ['$rootScope', 'localStorage', function ($rootScope, localStorage) {
@@ -213,7 +230,8 @@ serviceModule.factory('configuration', ['$rootScope', 'localStorage', function (
 
         var configuration = configurationString ? JSON.parse(configurationString) : {
             title: undefined,
-            description: undefined
+            description: undefined,
+            exludedIndexes: undefined
         };
 
         $rootScope.$watch(function () {

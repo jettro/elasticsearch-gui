@@ -49,7 +49,7 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
         };
 
         this.nodeInfo = function (nodeId, callback) {
-            es.cluster.nodeInfo({"all":true,"nodeId":nodeId}).then(function (data) {
+            es.nodes.info({"nodeId":nodeId,"human":true}).then(function (data) {
                 callback(data.nodes[nodeId]);
             });
         };

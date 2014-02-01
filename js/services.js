@@ -55,7 +55,7 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
         };
 
         this.indexes = function (callback) {
-            es.indices.status({}).then(function (data) {
+            es.indices.status({"ignoreUnavailable":true}).then(function (data) {
                 var indices = [];
                 for (var index in data.indices) {
                     indices.push(index);

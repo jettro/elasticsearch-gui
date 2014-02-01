@@ -38,10 +38,6 @@ function DashboardCtrl($scope, elastic) {
         elastic.clusterNodes(function (data) {
             $scope.nodes = data;
         });
-
-        elastic.plugins(function(data) {
-            $scope.plugins = data;
-        });
     }
 
     $scope.$on('$viewContentLoaded', function () {

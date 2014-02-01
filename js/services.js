@@ -43,30 +43,8 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
         };
 
         this.clusterNodes = function (callback) {
-            es.cluster.nodeInfo().then(function (data) {
+            es.nodes.info().then(function (data) {
                 callback(data.nodes);
-            });
-        };
-
-        this.plugins = function (callback) {
-            es.cluster.nodeInfo({"plugin":true}).then(function(data) {
-                var nodes = [];
-                angular.forEach(data.nodes, function (node,node_id) {
-                    var siteNode = {};
-                    siteNode.name = node.name;
-                    siteNode.plugins = [];
-                    var httpAddress = node.http_address.substring(6,node.http_address.length-1);
-                    angular.forEach(node.plugins, function(plugin) {
-                        if (plugin.site) {
-                            var sitePlugin = {};
-                            sitePlugin.url = 'http://'+ httpAddress + plugin.url;
-                            sitePlugin.name = plugin.name;
-                            siteNode.plugins.push(sitePlugin);
-                        }
-                    })
-                    nodes.push(siteNode);
-                });
-                callback(nodes);
             });
         };
 
@@ -105,30 +83,29 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', function (serverCo
         };
 
         this.indexesDetails = function (callback) {
-            es.indices.status().then(function (statusData) {
+            es.indices.status({"human":true,"recovery":false}).then(function (statusData) {
                 var indexesStatus = statusData.indices;
-                var stateFilter = {};
-                stateFilter.filterRoutingTable = true;
-                stateFilter.filterNodes = true;
-                stateFilter.filterBlocks = true;
 
-                es.cluster.state(stateFilter).then(function(stateData) {
-                    var indexesState = stateData.metadata.indices;
-                    var indices = [];
-                    angular.forEach(indexesState, function(value,key) {
-                        var newIndex = {};
-                        newIndex.name = key;
-                        newIndex.numShards = value.settings['index.number_of_shards'];
-                        if (value.state === 'open') {
-                            newIndex.size = indexesStatus[key].index.size;
-                            newIndex.numDocs = indexesStatus[key].docs.num_docs;
-                            newIndex.state = true;
-                        } else {
-                            newIndex.state = false;
-                        }
-                        indices.push(newIndex);
+                es.indices.getSettings().then(function(settings) {
+                    es.cluster.state({"metric":"metadata"}).then(function(stateData) {
+                        var indexesState = stateData.metadata.indices;
+                        var indices = [];
+                        angular.forEach(indexesState, function(value,key) {
+                            var newIndex = {};
+                            newIndex.name = key;
+                            if (value.state === 'open') {
+                                newIndex.size = indexesStatus[key].index.size;
+                                newIndex.numDocs = indexesStatus[key].docs.num_docs;
+                                newIndex.state = true;
+                                newIndex.numShards = settings[key].settings.index.number_of_shards;
+                                newIndex.numReplicas = settings[key].settings.index.number_of_replicas
+                            } else {
+                                newIndex.state = false;
+                            }
+                            indices.push(newIndex);
+                        });
+                        callback(indices);
                     });
-                    callback(indices);
                 });
             });
         };

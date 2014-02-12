@@ -1,0 +1,18 @@
+<div class="modal-header">
+    <h1>Configure plugin</h1>
+</div>
+<div class="modal-body">
+    <form role="form">
+        <div class="form-group">
+            <label>Server url</label>
+            <input type="url" class="form-control" ng-model="configuration.serverUrl" autofocus="true"/>
+        </div>
+        <div class="form-group">
+            <label>Ignored indexes (type start of indexes to exclude, for multiple use comma seperated)</label>
+            <input type="text" class="form-control" ng-model="configuration.excludedIndexes" placeholder="index1,index2 of index"/>
+        </div>
+    </form>
+</div>
+<div class="modal-footer">
+    <button ng-click="close(dialog)" class="btn btn-primary">Change</button>
+</div>

@@ -727,7 +727,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
 }
 QueryCtrl.$inject = ['$scope', '$modal', 'elastic', 'facetBuilder', 'queryStorage'];
 
-function NavbarCtrl($scope, $timeout, elastic, configuration) {
+function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
     $scope.statusCluster = {};
     $scope.serverUrl = elastic.obtainServerAddress();
     $scope.configureServerUrl = false;
@@ -761,6 +761,29 @@ function NavbarCtrl($scope, $timeout, elastic, configuration) {
         configuration.excludedIndexes = $scope.configure.excludedIndexes;
     };
 
+    $scope.openDialog = function () {
+        console.log("Open dialog");
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/config.html',
+            controller: 'ConfigDialogCtrl',
+            resolve: {fields: function () {
+                return angular.copy(configuration);
+            } }};
+        var modalInstance = $modal.open(opts);
+        modalInstance.result.then(function (result) {
+            console.log(result);
+            if (result) {
+                elastic.changeServerAddress(result.serverUrl);
+                configuration = angular.copy(result);
+            }
+        }, function () {
+            // Nothing to do here
+        });
+    };
+
     $scope.initNavBar = function () {
         doCheckStatus();
     };
@@ -777,7 +800,7 @@ function NavbarCtrl($scope, $timeout, elastic, configuration) {
 
     doCheckStatus();
 }
-NavbarCtrl.$inject = ['$scope', '$timeout', 'elastic', 'configuration'];
+NavbarCtrl.$inject = ['$scope', '$timeout', '$modal','elastic', 'configuration'];
 
 function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;
@@ -806,4 +829,14 @@ function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.addRangeField = function (data) {
         $scope.ranges.push([data.range.from, data.range.to]);
     }
+}
+
+function ConfigDialogCtrl($scope, $modalInstance, configuration) {
+    $scope.configuration = configuration;
+
+    $scope.close = function (result) {
+        console.log(result);
+        $modalInstance.close($scope.configuration);
+    };
+
 }

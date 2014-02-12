@@ -2,7 +2,7 @@
 
 /* Services */
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '0.9');
+serviceModule.value('version', '1.0');
 
 serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', function (serverConfig, esFactory, configuration) {
     function ElasticService(serverConfig, esFactory, configuration) {
@@ -231,7 +231,8 @@ serviceModule.factory('configuration', ['$rootScope', 'localStorage', function (
         var configuration = configurationString ? JSON.parse(configurationString) : {
             title: undefined,
             description: undefined,
-            exludedIndexes: undefined
+            exludedIndexes: undefined,
+            serverUrl: undefined
         };
 
         $rootScope.$watch(function () {

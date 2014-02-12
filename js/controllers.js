@@ -774,7 +774,6 @@ function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
             } }};
         var modalInstance = $modal.open(opts);
         modalInstance.result.then(function (result) {
-            console.log(result);
             if (result) {
                 elastic.changeServerAddress(result.serverUrl);
                 configuration = angular.copy(result);
@@ -835,7 +834,6 @@ function ConfigDialogCtrl($scope, $modalInstance, configuration) {
     $scope.configuration = configuration;
 
     $scope.close = function (result) {
-        console.log(result);
         $modalInstance.close($scope.configuration);
     };
 

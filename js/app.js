@@ -8,6 +8,7 @@ var myApp = angular.module('myApp', ['ngRoute','myApp.filters', 'myApp.services'
             $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: SearchCtrl});
             $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: QueryCtrl});
             $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: GraphCtrl});
+            $routeProvider.when('/tools', {templateUrl: 'partials/tools.html', controller: ToolCtrl});
             $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
             $routeProvider.otherwise({redirectTo: '/dashboard'});
         }]);

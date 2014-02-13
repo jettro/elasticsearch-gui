@@ -8,12 +8,12 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', f
     function ElasticService(serverConfig, esFactory, configuration) {
         var serverUrl = serverConfig.host;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
-        var es = esFactory({"host": serverUrl, "apiVersion":"1.0"});
+        var es = createEsFactory();
         var activeIndexes = [];
 
         this.changeServerAddress = function (serverAddress) {
             serverUrl = serverAddress;
-            es = esFactory({"host": serverUrl})
+            es = createEsFactory();
         };
 
         this.obtainServerAddress = function () {
@@ -204,6 +204,40 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', f
             });
         };
 
+        this.suggest = function(suggestRequest, resultCallback) {
+            var suggest = {};
+            suggest.index = suggestRequest.index;
+            suggest.body = {};
+            suggest.body.mysuggester = {};
+            suggest.body.mysuggester.text = suggestRequest.query;
+            suggest.body.mysuggester.term = {};
+            suggest.body.mysuggester.term.field = suggestRequest.field;
+            suggest.body.mysuggester.term.min_word_length = suggestRequest.min_word_length;
+            suggest.body.mysuggester.term.prefix_length = suggestRequest.prefix_length;
+
+            es.suggest(suggest).then(function(results) {
+                var suggested = {};
+                if (results.mysuggester) {
+                    for (var i=0; i < results.mysuggester.length; i++) {
+                        var item = results.mysuggester[i];
+                        suggested[item.text] = [];
+                        for (var j=0; j < item.options.length; j++) {
+                            suggested[item.text].push(item.options[j].text);    
+                        }
+                        
+                    }                    
+                }
+
+                resultCallback(suggested);
+            }, function(errors) {
+                console.log(errors);
+            });
+        }
+
+        function createEsFactory() {
+            return esFactory({"host": serverUrl, "apiVersion":"1.0","sniffOnStart": true,"sniffInterval": 60000});
+        }
+
         function indexIsNotIgnored(index) {
             var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(","):[];
             var ignore = false;
@@ -213,10 +247,8 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', f
                     ignore = true;
                 }
             });
-            if (ignore) {
-                return false;
-            }
-            return index.substring(0,7) !== '.marvel';
+
+            return !ignore;
         }
     }
 

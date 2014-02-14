@@ -6,7 +6,7 @@ serviceModule.value('version', '1.0');
 
 serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', function (serverConfig, esFactory, configuration) {
     function ElasticService(serverConfig, esFactory, configuration) {
-        var serverUrl = serverConfig.host;
+        var serverUrl = configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
         var activeIndexes = [];

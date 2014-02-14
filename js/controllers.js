@@ -5,6 +5,7 @@ function DashboardCtrl($scope, elastic) {
     $scope.health = {};
     $scope.nodes = [];
     $scope.plugins = [];
+    $scope.serverUrl;
 
     $scope.removeIndex = function (index) {
         elastic.removeIndex(index, function () {
@@ -31,6 +32,8 @@ function DashboardCtrl($scope, elastic) {
     }
 
     function refreshData() {
+        $scope.serverUrl = elastic.obtainServerAddress();
+
         elastic.clusterHealth(function (data) {
             $scope.health = data;
         });

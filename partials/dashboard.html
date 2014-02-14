@@ -112,7 +112,7 @@
                 <dl ng-repeat="node in nodes">
                     <dt>{{node.name}}</dt>
                     <dd ng-repeat="plugin in node.plugins">
-                        <a href="{{plugin.url}}" target="_blank">{{plugin.name}}</a>
+                        <a href="{{serverUrl}}{{plugin.url}}" target="_blank">{{plugin.name}}</a>
                     </dd>
                 </dl>
             </div>

@@ -235,7 +235,8 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', f
         }
 
         function createEsFactory() {
-            return esFactory({"host": serverUrl, "apiVersion":"1.0","sniffOnStart": true,"sniffInterval": 60000});
+//            return esFactory({"host": serverUrl, "apiVersion":"1.0","sniffOnStart": false,"sniffInterval": 60000});
+            return esFactory({"host": serverUrl, "apiVersion":"1.0"});
         }
 
         function indexIsNotIgnored(index) {
@@ -255,17 +256,29 @@ serviceModule.factory('elastic', ['serverConfig','esFactory', 'configuration', f
     return new ElasticService(serverConfig, esFactory, configuration);
 }]);
 
-serviceModule.factory('configuration', ['$rootScope', 'localStorage', function ($rootScope, localStorage) {
+serviceModule.factory('configuration', ['$rootScope', 'localStorage', '$location', function ($rootScope, localStorage, $location) {
     function LocalStorageService(localStorage) {
         var LOCAL_STORAGE_ID = 'es-config',
                 configurationString = localStorage[LOCAL_STORAGE_ID];
 
-        var configuration = configurationString ? JSON.parse(configurationString) : {
-            title: undefined,
-            description: undefined,
-            exludedIndexes: undefined,
-            serverUrl: undefined
-        };
+        var configuration;
+        if (configurationString) {
+            configuration = JSON.parse(configurationString);
+        } else {
+            var host;
+            if ($location.host() == 'www.gridshore.nl') {
+                host = "http://localhost:9200";
+            } else {
+                host = $location.protocol() + "://" + $location.host() + ":" + $location.port();
+            }
+
+            configuration = {
+                        title: undefined,
+                        description: undefined,
+                        exludedIndexes: undefined,
+                        serverUrl: host
+                    };
+        }
 
         $rootScope.$watch(function () {
             return configuration;
@@ -355,20 +368,20 @@ serviceModule.factory('facetBuilder', function () {
 
 serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {
     function ErrorHandling(rootScope) {
-        $rootScope.alerts = [];
+        rootScope.alerts = [];
 
         this.add = function(message) {
             if (message && typeof message === "object") {
                 if (message.hasOwnProperty('message')) {
-                    $rootScope.alerts.push({"msg":message.message});    
+                    rootScope.alerts.push({"msg":message.message});
                 }
             } else {
-                $rootScope.alerts.push({"msg":message});
+                rootScope.alerts.push({"msg":message});
             }
         }
 
         this.clear = function() {
-            $rootScope.alerts = [];
+            rootScope.alerts = [];
         }
     }
 

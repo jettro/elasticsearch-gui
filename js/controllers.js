@@ -798,6 +798,7 @@ function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
     $scope.serverUrl = elastic.obtainServerAddress();
     $scope.configureServerUrl = false;
     $scope.configure = configuration;
+    $scope.isCollapsed = true;
 
     var items = $scope.items = [
         {title: 'Dashboard', link: 'dashboard'},

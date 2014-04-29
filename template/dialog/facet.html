@@ -2,43 +2,48 @@
     <h1>Create a facet</h1>
 </div>
 <div class="modal-body">
-    <form>
-        <fieldset>
+    <form role="form">
+        <div class="form-group">
             <label>Available Fields</label>
-            <select ng-model="dialog.field" ng-options="key as value.forPrint for (key,value) in fields">
+            <select class="form-control" ng-model="dialog.field" ng-options="key as value.forPrint for (key,value) in fields">
                 <option value="">-- chose field --</option>
             </select>
+        </div>
+        <div class="form-group">
             <label>Facet types</label>
-            <select ng-model="dialog.facettype" ng-options="facetType for facetType in facetTypes">
-                <option value="">-- chose field --</option>
+            <select class="form-control" ng-model="dialog.facettype" ng-options="facetType for facetType in facetTypes">
+                <option value="">-- chose facet --</option>
             </select>
-
-            <div ng-show="dialog.facettype == 'Term'">
-                <p class="text-info">No special configuration for a Term facet</p>
+        </div>
+        <div ng-show="dialog.facettype == 'Term'">
+            <p class="text-info">No special configuration for a Term facet</p>
+        </div>
+        <div ng-show="dialog.facettype == 'Range'">
+            <div ng-repeat="range in ranges">
+                <span>from: {{range[0]}}</span>
+                <span>to: {{range[1]}}</span>
             </div>
-            <div ng-show="dialog.facettype == 'Range'">
-                <div ng-repeat="range in ranges">
-                    <span>from: {{range[0]}}</span>
-                    <span>to: {{range[1]}}</span>
-                </div>
+            <div class="form-group">
                 <label>from</label>
-                <input type="number" ng-model="dialog.range.from"/>
+                <input class="form-control" type="number" ng-model="dialog.range.from"/>
+            </div>
+            <div class="form-group">
                 <label>to</label>
-                <input type="number" ng-model="dialog.range.to"/>
-                <span class="btn btn-info btn-mini" ng-click="addRangeField(dialog)" title="Add range Field">
-                    <i class="icon-plus-sign icon-white"></i>
-                </span>
+                <input class="form-control" type="number" ng-model="dialog.range.to"/>
             </div>
-            <div ng-show="dialog.facettype == 'DateHistogram'">
-                <label>Interval</label>
-                <select ng-model="dialog.interval" ng-options="anInterval for anInterval in intervals">
-                </select>
-            </div>
-            <div ng-show="dialog.facettype == 'Histogram'">
-                <label>Interval</label>
-                <input type="number" ng-model="dialog.interval"/>
-            </div>
-        </fieldset>
+            <btn class="btn btn-info btn-mini" ng-click="addRangeField(dialog)" title="Add range Field"> Add range
+                <span class="glyphicon glyphicon-plus-sign"></span>
+            </btn>
+        </div>
+        <div ng-show="dialog.facettype == 'DateHistogram'">
+            <label>Interval</label>
+            <select class="form-control" ng-model="dialog.interval" ng-options="anInterval for anInterval in intervals">
+            </select>
+        </div>
+        <div ng-show="dialog.facettype == 'Histogram'">
+            <label>Interval</label>
+            <input class="form-control" type="number" ng-model="dialog.interval"/>
+        </div>
     </form>
 </div>
 <div class="modal-footer">

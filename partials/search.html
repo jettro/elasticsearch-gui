@@ -3,7 +3,7 @@
         <div class="alert alert-info">
             <p>Using this page you can query your indexes like a search box on a website would do. First you need to
                 configure the titel and description of your search results. You can store and load a search. You can also do an advanced search, this way you can select fields and query based on those fields.</p>
-            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><spam class="glyphicon glyphicon-cog"></span>  Configure: {{clusterName}}  <span
+            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><spam class="glyphicon glyphicon-cog"></span>  Configure fields to show  <span
                     class="glyphicon glyphicon-chevron-down" ng-show="isCollapsed"></span><span class="glyphicon glyphicon-chevron-left" ng-hide="isCollapsed"></span></button>
             <div collapse="isCollapsed">
                 <form role="form">
@@ -36,12 +36,12 @@
         </label>
 
         <div>
-            <span>Facets</span>
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Facet">
+            <span>Aggregations</span>
+        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Aggregation">
             <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
         </button>
         </div>
-        <div ng-repeat="facet in search.facets">{{facet.field}} ({{facet.facetType}})
+        <div ng-repeat="aggregation in search.aggs">{{aggregation.name}}: {{aggregation.field}} ({{aggregation.aggsType}})
             <button class="btn btn-link" ng-click="removeFacetField($index)" title="Remove facet Field">
                 <span class="glyphicon glyphicon-remove"></span>
             </button>
@@ -108,34 +108,30 @@
 </div>
 <div class="row">
     <div class="col-md-3">
-        <div ng-repeat="(key,value) in facets">
+        <div ng-repeat="(key,value) in aggs">
             <div><strong>{{key}}</strong></div>
-            <div ng-show="value._type === 'terms'">
-                <div ng-repeat="term in value.terms">
-                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,term.term)" ng-click="removeFilter(key,term.term)">{{term.term}} ({{term.count}}) <span class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedFacet(key,term.term)" class="btn btn-link"
-                          ng-click="addFilter(key,term.term)">{{term.term}} ({{term.count}})</button>
+            {{search.aggs[key]}}
+            <div ng-repeat="bucket in value.buckets">
+                <div ng-show="search.aggs[key].aggsType === 'term'">
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-link"
+                          ng-click="addFilter(search.aggs[key].name,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
                 </div>
-            </div>
-            <div ng-show="value._type === 'date_histogram'">
-                <div ng-repeat="entry in value.entries">
-                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,entry.time)"  ng-click="removeFilter(key,entry.time)"> {{entry.time | date:'medium'}} ({{entry.count}}) <span
+                <div ng-show="search.aggs[key].aggsType === 'histogram'">
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-link"
+                          ng-click="addFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
+                </div>
+                <div ng-show="search.aggs[key].aggsType === 'range'">
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-link"
+                          ng-click="addFilter(key,bucket.key)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}})</button>
+                </div>
+                <div ng-show="search.aggs[key].aggsType === 'datehistogram'">
+                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)"  ng-click="removeFilter(key,bucket.key)"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}}) <span
                     class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedFacet(key,entry.time)" class="btn btn-mini btn-link"
-                        ng-click="addFilter(key,entry.time)">{{entry.time | date:'medium'}} ({{entry.count}})</span>
-                </div>
-            </div>
-            <div ng-show="value._type === 'histogram'">
-                <div ng-repeat="entry in value.entries">
-                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,entry.key)" ng-click="removeFilter(key,entry.key)"> {{entry.key}}-{{entry.key+obtainFacetByKey(key).interval}} ({{entry.count}}) <span
-                            class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedFacet(key,entry.key)" class="btn btn-link"
-                          ng-click="addFilter(key,entry.key)">{{entry.key}}-{{entry.key+obtainFacetByKey(key).interval}} ({{entry.count}})</button>
-                </div>
-            </div>
-            <div ng-show="value._type === 'range'">
-                <div ng-repeat="range in value.ranges">
-                    <span>{{range.from}}-{{range.to}} ({{range.total_count}})</span>
+                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-mini btn-link"
+                        ng-click="addFilter(key,bucket.key)">{{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}})</span>
                 </div>
             </div>
         </div>

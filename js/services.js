@@ -333,17 +333,16 @@ serviceModule.factory('serverConfig', ['$location', function ($location) {
 
 serviceModule.factory('facetBuilder', function () {
     function FacetBuilder() {
-        this.build = function (facets) {
-            var queryfacets = {};
+        this.build = function (aggs) {
+            var queryaggs = {};
 
-            for (var i = 0; i < facets.length; i++) {
-                var facet = facets[i];
-                if (facet.facetType === 'term') {
-                    queryfacets[facet.field] = {"terms":{"field":facet.field}};
-                } else if (facet.facetType === 'range') {
+            angular.forEach(aggs, function(aggregation,key) {
+                if (aggregation.aggsType === 'term') {
+                    queryaggs[aggregation.name] = {"terms":{"field":aggregation.field}};
+                } else if (aggregation.aggsType === 'range') {
                     var ranges = [];
-                    for (var j = 0; j < facet.ranges.length; j++) {
-                        var range = facet.ranges[j];
+                    for (var j = 0; j < aggregation.ranges.length; j++) {
+                        var range = aggregation.ranges[j];
                         if (range[0] == undefined) {
                             ranges.push({"to":range[1]})
                         } else if (range[1] == undefined) {
@@ -352,14 +351,14 @@ serviceModule.factory('facetBuilder', function () {
                             ranges.push({"from":range[0],"to":range[1]});
                         }
                     }
-                    queryfacets[facet.field]={"range":{"field":facet.field,"ranges":ranges}};
-                } else if (facet.facetType === 'datehistogram') {
-                    queryfacets[facet.field]={"date_histogram":{"field":facet.field,"interval":facet.interval}};
-                } else if (facet.facetType === 'histogram') {
-                    queryfacets[facet.field]={"histogram":{"field":facet.field,"interval":facet.interval}};
+                    queryaggs[aggregation.name]={"range":{"field":aggregation.field,"ranges":ranges}};
+                } else if (aggregation.aggsType === 'datehistogram') {
+                    queryaggs[aggregation.name]={"date_histogram":{"field":aggregation.field,"interval":aggregation.interval}};
+                } else if (aggregation.aggsType === 'histogram') {
+                    queryaggs[aggregation.name]={"histogram":{"field":aggregation.field,"interval":aggregation.interval}};
                 }
-            }
-            return queryfacets;
+            });
+            return queryaggs;
         }
     }
 

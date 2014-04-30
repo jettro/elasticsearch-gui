@@ -59,20 +59,19 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
 function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryStorage) {
-    $scope.isCollapsed = true;
+    $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
-    $scope.clusterName = "";
     $scope.search = {};
     $scope.search.advanced = {};
     $scope.search.advanced.searchFields = [];
-    $scope.search.facets = [];
+    $scope.search.aggs = {};
     $scope.search.selectedFacets = [];
 
     $scope.configError = "";
 
     $scope.results = [];
-    $scope.facets = [];
+    $scope.aggs = [];
 
     // initialize pagination
     $scope.currentPage = 1;
@@ -86,7 +85,6 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         $scope.doSearch();
     };
 
-
     $scope.init = function () {
         elastic.fields([], [], function (data) {
             $scope.fields = data;
@@ -99,9 +97,6 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             if (!$scope.configure.description && $scope.fields.description) {
                 $scope.configure.description = "description";
             }
-        });
-        elastic.clusterName(function (data) {
-            $scope.clusterName = data;
         });
     };
 
@@ -128,7 +123,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
         
-        query.body.facets = facetBuilder.build($scope.search.facets);
+        query.body.aggs = facetBuilder.build($scope.search.aggs);
         var filter = filterChosenFacetPart();
         if (filter) {
             query.body.query = {"filtered":{"query":searchPart(),"filter":filter}};
@@ -139,7 +134,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         $scope.metaResults = {};
         elastic.doSearch(query,function (results) {
             $scope.results = results.hits;
-            $scope.facets = results.facets;
+            $scope.aggs = results.aggregations;
             $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
             $scope.totalItems = results.hits.total;
 
@@ -179,7 +174,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         var modalInstance = $modal.open(opts);
         modalInstance.result.then(function (result) {
             if (result) {
-                $scope.search.facets.push(result);
+                $scope.search.aggs[result.name]=result;
             }
         }, function () {
             // Nothing to do here
@@ -187,7 +182,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     };
 
     $scope.removeFacetField = function (index) {
-        $scope.search.facets.splice(index, 1);
+        $scope.search.aggs.splice(index, 1);
     };
 
     $scope.saveQuery = function () {
@@ -235,8 +230,8 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     };
 
     $scope.obtainFacetByKey = function (key) {
-        for (var i = 0; i < $scope.search.facets.length; i++) {
-            var currentFacet = $scope.search.facets[i];
+        for (var i = 0; i < $scope.search.aggs.length; i++) {
+            var currentFacet = $scope.search.aggs[i];
             if (currentFacet.field === key) {
                 return currentFacet;
             }
@@ -335,10 +330,10 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             var filters = [];
             for (var i = 0; i < selectedFacets.length; i++) {
                 var facet = determineFacet(selectedFacets[i].key);
-                var facetType = facet.facetType;
+                var facetType = facet.aggsType;
                 if (facetType === "term") {
                     var termFilter = {"term":{}};
-                    termFilter.term[selectedFacets[i].key] = selectedFacets[i].value;
+                    termFilter.term[$scope.search.aggs[selectedFacets[i].key].field] = selectedFacets[i].value;
                     filters.push(termFilter);
                 } else if (facetType === "datehistogram") {
                     var fromDate = new Date(selectedFacets[i].value);
@@ -356,11 +351,11 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
                         fromDate.setMinutes(fromDate.getMinutes() + 1);
                     }
                     var rangeFilter = {"range":{}};
-                    rangeFilter.range[selectedFacets[i].key] = {"from":selectedFacets[i].value,"to":fromDate.getTime()};
+                    rangeFilter.range[$scope.search.aggs[selectedFacets[i].key].field] = {"from":selectedFacets[i].value,"to":fromDate.getTime()};
                     filters.push(rangeFilter);
                 } else if (facetType === "histogram") {
                     var rangeFilter = {"range":{}};
-                    rangeFilter.range[selectedFacets[i].key] = {"from":selectedFacets[i].value,"to":selectedFacets[i].value + facet.interval};
+                    rangeFilter.range[$scope.search.aggs[selectedFacets[i].key].field] = {"from":selectedFacets[i].value,"to":selectedFacets[i].value + facet.interval};
                     filters.push(rangeFilter);
                 }
             }
@@ -372,12 +367,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     }
 
     function determineFacet(key) {
-        for (var i = 0; i < $scope.search.facets.length; i++) {
-            var currentFacet = $scope.search.facets[i];
-            if (currentFacet.field === key) {
-                return currentFacet;
-            }
-        }
+        return $scope.search.aggs[key];
     }
 
     function handleErrors(errors) {
@@ -869,23 +859,24 @@ NavbarCtrl.$inject = ['$scope', '$timeout', '$modal','elastic', 'configuration']
 
 function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;
-    $scope.facetTypes = ["Term", "Range", "Histogram", "DateHistogram"];
+    $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram", "Stats"];
     $scope.ranges = [];
     $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
 
     $scope.close = function (result) {
         var dialogResult = {};
         dialogResult.field = result.field;
-        if (result.facettype === 'Term') {
-            dialogResult.facetType = 'term';
-        } else if (result.facettype === 'Range') {
-            dialogResult.facetType = 'range';
+        dialogResult.name = result.name;
+        if (result.aggstype === 'Term') {
+            dialogResult.aggsType = 'term';
+        } else if (result.aggstype === 'Range') {
+            dialogResult.aggsType = 'range';
             dialogResult.ranges = $scope.ranges;
-        } else if (result.facettype === 'DateHistogram') {
-            dialogResult.facetType = 'datehistogram';
+        } else if (result.aggstype === 'DateHistogram') {
+            dialogResult.aggsType = 'datehistogram';
             dialogResult.interval = result.interval;
-        } else if (result.facettype === 'Histogram') {
-            dialogResult.facetType = 'histogram';
+        } else if (result.aggstype === 'Histogram') {
+            dialogResult.aggsType = 'histogram';
             dialogResult.interval = result.interval;
         }
         $modalInstance.close(dialogResult);

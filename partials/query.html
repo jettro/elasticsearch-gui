@@ -66,18 +66,18 @@
 
 <div class="row">
     <div class="col-md-2">
-        <span class="text-info">Facets</span>
+        <span class="text-info">Aggregations</span>
         <button type="button" popover-placement="right"
-                popover="Here you can select the facets to return. A few basic types are available. Use the Facets screen to do more advanced stuff with facets."
+                popover="Here you can select the aggregations to return. A few basic types are available. Use the Aggregations screen to do more advanced stuff with aggregations."
                 class="btn btn-link"><span class="glyphicon glyphicon-question-sign"></span></button>
 
     </div>
     <div class="col-md-9">
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Facet">
+        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Aggregations">
             <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
         </button>
-        <span ng-repeat="facet in query.facets">{{facet.field}} ({{facet.facetType}})
-            <button class="btn btn-sm btn-link" ng-click="removeFacetField($index)" title="Remove facet Field">
+        <span ng-repeat="aggregation in query.aggs">{{aggregation.name}} ({{aggregation.aggsType}})
+            <button class="btn btn-sm btn-link" ng-click="removeFacetField(aggregation.name)" title="Remove aggregation Field">
                 <span class="glyphicon glyphicon-remove"></span>
             </button>
         </span>
@@ -148,34 +148,29 @@
     <div class="col-md-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                <h3 class="panel-title">Facet results</h3>
+                <h3 class="panel-title">Aggregation results</h3>
             </div>
             <div class="panel-body">
-                <div ng-repeat="(key,value) in facetResults">
-                    <div><strong>{{key}} - {{value._type}}</strong></div>
-                    <div ng-show="value._type === 'terms'">
+                <div ng-repeat="(key,value) in aggsResults">
+                    <div><strong>{{key}} - {{query.aggs[key].aggsType}}</strong></div>
+                     <div ng-show="query.aggs[key].aggsType === 'term'">
                         <div>
-                            <span>Total: {{value.total}}</span>
-                            <span>Missing: {{value.missing}}</span>
-                            <span>Other: {{value.other}}</span>
-                        </div>
-                        <div>
-                            <span ng-repeat="term in value.terms"> {{term.term}} ({{term.count}})</span>
+                            <span ng-repeat="bucket in value.buckets"> {{bucket.key}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
-                    <div ng-show="value._type === 'date_histogram'">
+                    <div ng-show="query.aggs[key].aggsType === 'datehistogram'">
                         <div>
-                            <span ng-repeat="entry in value.entries"> {{entry.time | date:'medium'}} ({{entry.count}})</span>
+                            <span ng-repeat="bucket in value.buckets"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
-                    <div ng-show="value._type === 'histogram'">
+                    <div ng-show="query.aggs[key].aggsType === 'histogram'">
                         <div>
-                            <span ng-repeat="entry in value.entries"> {{entry.key}} ({{entry.count}})</span>
+                            <span ng-repeat="bucket in value.buckets"> {{bucket.key}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
-                    <div ng-show="value._type === 'range'">
+                    <div ng-show="query.aggs[key].aggsType === 'range'">
                         <div>
-                            <span ng-repeat="range in value.ranges">{{range.from}}-{{range.to}} ({{range.total_count}})</span>
+                            <span ng-repeat="bucket in value.buckets"> {{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
                 </div>

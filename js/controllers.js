@@ -507,13 +507,13 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
     $scope.createdQuery = "";
 
     $scope.queryResults = [];
-    $scope.facetResults = [];
+    $scope.aggsResults = [];
     $scope.metaResults = {};
     $scope.queryFactory = {};
     $scope.query = {};
 
     $scope.query.chosenFields = [];
-    $scope.query.facets = [];
+    $scope.query.aggs = {};
     $scope.query.indices = {};
     $scope.query.types = {};
 
@@ -616,8 +616,8 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         $scope.changeQuery();
     };
 
-    $scope.removeFacetField = function (index) {
-        $scope.query.facets.splice(index, 1);
+    $scope.removeFacetField = function (name) {
+        delete $scope.query.aggs[name];
         $scope.changeQuery();
     };
 
@@ -629,7 +629,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
 
         elastic.doSearch(request,function (results) {
             $scope.queryResults = results.hits;
-            $scope.facetResults = results.facets;
+            $scope.aggsResults = results.aggregations;
             $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
             $scope.totalItems = results.hits.total;
 
@@ -676,7 +676,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         var d = $modal.open(opts);
         d.result.then(function (result) {
             if (result) {
-                $scope.query.facets.push(result);
+                $scope.query.aggs[result.name]=result;
                 $scope.changeQuery();
             }
         });
@@ -736,7 +736,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
             query.body.query.matchAll = {};
         }
 
-        query.body.facets = facetBuilder.build($scope.query.facets);
+        query.body.aggs = facetBuilder.build($scope.query.aggs);
 
         query.body.explain = $scope.query.explain;
         if ($scope.query.highlight) {

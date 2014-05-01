@@ -331,8 +331,8 @@ serviceModule.factory('serverConfig', ['$location', function ($location) {
     return new ServerConfig($location);
 }]);
 
-serviceModule.factory('facetBuilder', function () {
-    function FacetBuilder() {
+serviceModule.factory('aggregateBuilder', function () {
+    function AggregateBuilder() {
         this.build = function (aggs) {
             var queryaggs = {};
 
@@ -362,7 +362,7 @@ serviceModule.factory('facetBuilder', function () {
         }
     }
 
-    return new FacetBuilder();
+    return new AggregateBuilder();
 });
 
 serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {

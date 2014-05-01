@@ -58,7 +58,7 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryStorage) {
+function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
@@ -123,7 +123,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
         
-        query.body.aggs = facetBuilder.build($scope.search.aggs);
+        query.body.aggs = aggregateBuilder.build($scope.search.aggs);
         var filter = filterChosenAggregatePart();
         if (filter) {
             query.body.query = {"filtered":{"query":searchPart(),"filter":filter}};
@@ -166,8 +166,8 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             backdrop: true,
             keyboard: true,
             backdropClick: true,
-            templateUrl: 'template/dialog/facet.html',
-            controller: 'FacetDialogCtrl',
+            templateUrl: 'template/dialog/aggregate.html',
+            controller: 'AggregateDialogCtrl',
             resolve: {fields: function () {
                 return angular.copy($scope.fields)
             } }};
@@ -418,9 +418,9 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         }
     }
 }
-SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'facetBuilder', '$modal', 'queryStorage'];
+SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
-function GraphCtrl($scope, $modal, elastic, facetBuilder) {
+function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
@@ -450,8 +450,8 @@ function GraphCtrl($scope, $modal, elastic, facetBuilder) {
             backdrop: true,
             keyboard: true,
             backdropClick: true,
-            templateUrl: 'template/dialog/facet.html',
-            controller: 'FacetDialogCtrl',
+            templateUrl: 'template/dialog/aggregate.html',
+            controller: 'AggregateDialogCtrl',
             resolve: {fields: function () {
                 return angular.copy($scope.fields)
             } }};
@@ -493,7 +493,7 @@ function GraphCtrl($scope, $modal, elastic, facetBuilder) {
         query.body.query = {"matchAll":{}};
         var aggregations = [];
         aggregations.push($scope.aggregate);
-        query.body.aggs = facetBuilder.build(aggregations);
+        query.body.aggs = aggregateBuilder.build(aggregations);
 
         return query;
     }
@@ -502,9 +502,9 @@ function GraphCtrl($scope, $modal, elastic, facetBuilder) {
     $scope.loadTypes();
     $scope.loadFields();
 }
-GraphCtrl.$inject = ['$scope', '$modal', 'elastic', 'facetBuilder'];
+GraphCtrl.$inject = ['$scope', '$modal', 'elastic', 'aggregateBuilder'];
 
-function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
+function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
 
@@ -618,7 +618,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
         $scope.changeQuery();
     };
 
-    $scope.removeFacetField = function (name) {
+    $scope.removeAggregateField = function (name) {
         delete $scope.query.aggs[name];
         $scope.changeQuery();
     };
@@ -670,8 +670,8 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
             backdrop: true,
             keyboard: true,
             backdropClick: true,
-            templateUrl: 'template/dialog/facet.html',
-            controller: 'FacetDialogCtrl',
+            templateUrl: 'template/dialog/aggregate.html',
+            controller: 'AggregateDialogCtrl',
             resolve: {fields: function () {
                 return angular.copy($scope.fields)
             } }};
@@ -738,7 +738,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
             query.body.query.matchAll = {};
         }
 
-        query.body.aggs = facetBuilder.build($scope.query.aggs);
+        query.body.aggs = aggregateBuilder.build($scope.query.aggs);
 
         query.body.explain = $scope.query.explain;
         if ($scope.query.highlight) {
@@ -756,7 +756,7 @@ function QueryCtrl($scope, $modal, elastic, facetBuilder, queryStorage) {
 
     $scope.resetQuery();
 }
-QueryCtrl.$inject = ['$scope', '$modal', 'elastic', 'facetBuilder', 'queryStorage'];
+QueryCtrl.$inject = ['$scope', '$modal', 'elastic', 'aggregateBuilder', 'queryStorage'];
 
 function ToolCtrl($scope, elastic) {
     $scope.suggest={};
@@ -895,7 +895,7 @@ function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
 }
 NavbarCtrl.$inject = ['$scope', '$timeout', '$modal','elastic', 'configuration'];
 
-function FacetDialogCtrl($scope, $modalInstance, fields) {
+function AggregateDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;
     $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
     $scope.ranges = [];

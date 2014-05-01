@@ -77,7 +77,7 @@
             <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
         </button>
         <span ng-repeat="aggregation in query.aggs">{{aggregation.name}} ({{aggregation.aggsType}})
-            <button class="btn btn-sm btn-link" ng-click="removeFacetField(aggregation.name)" title="Remove aggregation Field">
+            <button class="btn btn-sm btn-link" ng-click="removeAggregateField(aggregation.name)" title="Remove aggregation Field">
                 <span class="glyphicon glyphicon-remove"></span>
             </button>
         </span>

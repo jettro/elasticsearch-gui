@@ -1,24 +1,24 @@
 <div class="row">
     <div class="col-md-12">
         <div class="alert alert-info">
-            <p>This page helps you trying out different facets and how to present the data. Currently only term and date histogram facets are supported.</p>
+            <p>This page helps you trying out different aggregations and how to present the data. Currently only term and date histogram aggregations are supported.</p>
         </div>
     </div>
 </div>
 
 <div class="row">
     <div class="col-md-12">
-        <span class="text-info">Facets</span>
+        <span class="text-info">Aggregations</span>
         <button type="button" popover-placement="right"
-                popover="Here you can select the facet to return. "
+                popover="Here you can select the agregate to return. "
                 class="btn btn-sm btn-link"><span class="glyphicon glyphicon-question-sign"></span></button>
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Set the Facet">Add/Change Facet
+        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Set the Aggregate">Add/Change Aggregate
             <span class="glyphicon glyphicon-edit glyphicon-white"></span>
         </button>
-        <span ng-show="facet">{{facet.field}} ({{facet.facetType}})</span>
+        <span ng-show="aggregate">{{aggregate.name}} ({{aggregate.aggsType}})</span>
     </div>
 </div>
-<div class="row" ng-show="facet">
+<div class="row" ng-show="aggregate">
     <div class="col-md-12">
         <button class="btn btn-primary" type="button" ng-click="executeQuery()">Execute<span
                 class="glyphicon glyphicon-fire glyphicon-white"></span></button>
@@ -31,8 +31,8 @@
             <div class="alert alert-info">Here we'll show the graphics when you have executed the query.</div>
         </div>
         <div ng-show="results">
-            <div ng-switch on="results._type">
-                <div ng-switch-when="terms">
+            <div ng-switch on="aggregate.aggsType">
+                <div ng-switch-when="term">
                     <fs-donut outer-radius="200" inner-radius="75" duration="750" bind="results"/>
                 </div>
                 <span ng-switch-when="date_histogram">

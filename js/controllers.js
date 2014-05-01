@@ -458,24 +458,26 @@ function GraphCtrl($scope, $modal, elastic, facetBuilder) {
         var d = $modal.open(opts);
         d.result.then(function (result) {
             if (result) {
-                $scope.facet = result;
+                $scope.aggregate = result;
             }
         });
     };
 
     function getValue(data) {
-        for (var key in data) {
-            if (data.hasOwnProperty(key)) {
-                return data[key];
-            }
-        }
+        return data.doc_count;
+        // for (var key in data) {
+        //     if (data.hasOwnProperty(key)) {
+        //         return data[key];
+        //     }
+        // }
     }
 
     $scope.executeQuery = function () {
         var query = createQuery();
 
         elastic.doSearch(query,function (results) {
-            $scope.results = getValue(results.facets);
+            // $scope.results = getValue(results.aggregations[$scope.aggregate.name]);
+            $scope.results = results.aggregations[$scope.aggregate.name].buckets;
         },function(errors) {
             console.log(errors);
         });
@@ -489,9 +491,9 @@ function GraphCtrl($scope, $modal, elastic, facetBuilder) {
         query.body = {};
         query.size = 0;
         query.body.query = {"matchAll":{}};
-        var facets = [];
-        facets.push($scope.facet);
-        query.body.facets = facetBuilder.build(facets);
+        var aggregations = [];
+        aggregations.push($scope.aggregate);
+        query.body.aggs = facetBuilder.build(aggregations);
 
         return query;
     }
@@ -830,7 +832,7 @@ function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
         {title: 'Search', link: 'search'},
         {title: 'Queries', link: 'query'},
         {title: 'Tools', link: 'tools'},
-        {title: 'Graphs', link: 'graph'},
+        // {title: 'Graphs', link: 'graph'},
         {title: 'About', link: 'about'}
     ];
 

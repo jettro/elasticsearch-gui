@@ -42,7 +42,7 @@
         </button>
         </div>
         <div ng-repeat="aggregation in search.aggs">{{aggregation.name}}: {{aggregation.field}} ({{aggregation.aggsType}})
-            <button class="btn btn-link" ng-click="removeFacetField(aggregation.name)" title="Remove facet Field">
+            <button class="btn btn-link" ng-click="removeAggregateField(aggregation.name)" title="Remove aggregate Field">
                 <span class="glyphicon glyphicon-remove"></span>
             </button>
         </div>
@@ -112,24 +112,24 @@
             <div><strong>{{key}}</strong></div>
             <div ng-repeat="bucket in value.buckets">
                 <div ng-show="search.aggs[key].aggsType === 'term'">
-                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-link"
+                    <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-link"
                           ng-click="addFilter(search.aggs[key].name,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
                 </div>
                 <div ng-show="search.aggs[key].aggsType === 'histogram'">
-                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-link"
+                    <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-link"
                           ng-click="addFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
                 </div>
                 <div ng-show="search.aggs[key].aggsType === 'range'">
-                    <button class="btn btn-link" ng-show="checkSelectedRangeFacet(key,bucket.from,bucket.to)" ng-click="removeRangeFilter(key,bucket.from,bucket.to)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedRangeFacet(key,bucket.from,bucket.to)" class="btn btn-link"
+                    <button class="btn btn-link" ng-show="checkSelectedRangeAggregate(key,bucket.from,bucket.to)" ng-click="removeRangeFilter(key,bucket.from,bucket.to)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedRangeAggregate(key,bucket.from,bucket.to)" class="btn btn-link"
                           ng-click="addRangeFilter(key,bucket.from,bucket.to)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}})</button>
                 </div>
                 <div ng-show="search.aggs[key].aggsType === 'datehistogram'">
-                    <button class="btn btn-link" ng-show="checkSelectedFacet(key,bucket.key)"  ng-click="removeFilter(key,bucket.key)"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}}) <span
+                    <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)"  ng-click="removeFilter(key,bucket.key)"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}}) <span
                     class="glyphicon glyphicon-remove"></span></button>
-                    <button ng-hide="checkSelectedFacet(key,bucket.key)" class="btn btn-mini btn-link"
+                    <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-mini btn-link"
                         ng-click="addFilter(key,bucket.key)">{{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}})</span>
                 </div>
             </div>

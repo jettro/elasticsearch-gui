@@ -66,7 +66,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     $scope.search.advanced = {};
     $scope.search.advanced.searchFields = [];
     $scope.search.aggs = {};
-    $scope.search.selectedFacets = [];
+    $scope.search.selectedAggs = [];
 
     $scope.configError = "";
 
@@ -124,7 +124,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
         
         query.body.aggs = facetBuilder.build($scope.search.aggs);
-        var filter = filterChosenFacetPart();
+        var filter = filterChosenAggregatePart();
         if (filter) {
             query.body.query = {"filtered":{"query":searchPart(),"filter":filter}};
         } else {
@@ -181,7 +181,7 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         });
     };
 
-    $scope.removeFacetField = function (name) {
+    $scope.removeAggregateField = function (name) {
         delete $scope.search.aggs[name];
     };
 
@@ -196,41 +196,41 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     };
 
     $scope.addFilter = function (key, value) {
-        if (!$scope.search.selectedFacets) {
-            $scope.search.selectedFacets = [];
+        if (!$scope.search.selectedAggs) {
+            $scope.search.selectedAggs = [];
         }
-        $scope.search.selectedFacets.push({"key": key, "value": value});
+        $scope.search.selectedAggs.push({"key": key, "value": value});
         $scope.doSearch();
     };
 
     $scope.addRangeFilter = function (key, from, to) {
-        if (!$scope.search.selectedFacets) {
-            $scope.search.selectedFacets = [];
+        if (!$scope.search.selectedAggs) {
+            $scope.search.selectedAggs = [];
         }
-        $scope.search.selectedFacets.push({"key": key, "from": from, "to": to});
+        $scope.search.selectedAggs.push({"key": key, "from": from, "to": to});
         $scope.doSearch();
     };
 
-    $scope.checkSelectedFacet = function (key, value) {
-        if (!$scope.search.selectedFacets) {
+    $scope.checkSelectedAggregate = function (key, value) {
+        if (!$scope.search.selectedAggs) {
             return false;
         }
-        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
-            var selectedFacet = $scope.search.selectedFacets;
-            if (selectedFacet[i].key === key && selectedFacet[i].value === value) {
+        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
+            var selectedAggregate = $scope.search.selectedAggs;
+            if (selectedAggregate[i].key === key && selectedAggregate[i].value === value) {
                 return true;
             }
         }
         return false;
     };
 
-    $scope.checkSelectedRangeFacet = function (key, from, to) {
-        if (!$scope.search.selectedFacets) {
+    $scope.checkSelectedRangeAggregate = function (key, from, to) {
+        if (!$scope.search.selectedAggs) {
             return false;
         }
-        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
-            var selectedFacet = $scope.search.selectedFacets;
-            if (selectedFacet[i].key === key && selectedFacet[i].from === from && selectedFacet[i].to === to) {
+        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
+            var selectedAggregate = $scope.search.selectedAggs;
+            if (selectedAggregate[i].key === key && selectedAggregate[i].from === from && selectedAggregate[i].to === to) {
                 return true;
             }
         }
@@ -238,36 +238,36 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     };
 
     $scope.removeFilter = function (key, value) {
-        if (!$scope.search.selectedFacets) {
+        if (!$scope.search.selectedAggs) {
             return;
         }
-        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
-            var selectedFacet = $scope.search.selectedFacets;
-            if (selectedFacet[i].key === key && selectedFacet[i].value === value) {
-                $scope.search.selectedFacets.splice(i, 1);
+        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
+            var selectedAggregate = $scope.search.selectedAggs;
+            if (selectedAggregate[i].key === key && selectedAggregate[i].value === value) {
+                $scope.search.selectedAggs.splice(i, 1);
             }
         }
         $scope.doSearch();
     };
 
     $scope.removeRangeFilter = function (key, from, to) {
-        if (!$scope.search.selectedFacets) {
+        if (!$scope.search.selectedAggs) {
             return;
         }
-        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
-            var selectedFacet = $scope.search.selectedFacets;
-            if (selectedFacet[i].key === key && selectedFacet[i].from === from && selectedFacet[i].to === to) {
-                $scope.search.selectedFacets.splice(i, 1);
+        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
+            var selectedAggregate = $scope.search.selectedAggs;
+            if (selectedAggregate[i].key === key && selectedAggregate[i].from === from && selectedAggregate[i].to === to) {
+                $scope.search.selectedAggs.splice(i, 1);
             }
         }
         $scope.doSearch();
     };
 
-    $scope.obtainFacetByKey = function (key) {
+    $scope.obtainAggregateByKey = function (key) {
         for (var i = 0; i < $scope.search.aggs.length; i++) {
-            var currentFacet = $scope.search.aggs[i];
-            if (currentFacet.field === key) {
-                return currentFacet;
+            var currentAggregate = $scope.search.aggs[i];
+            if (currentAggregate.field === key) {
+                return currentAggregate;
             }
         }
         return null;
@@ -356,46 +356,46 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
     }
 
 
-    function filterChosenFacetPart() {
+    function filterChosenAggregatePart() {
 
-        if ($scope.search.selectedFacets && $scope.search.selectedFacets.length > 0) {
+        if ($scope.search.selectedAggs && $scope.search.selectedAggs.length > 0) {
             var filterQuery = {};
-            var selectedFacets = $scope.search.selectedFacets;
+            var selectedAggs = $scope.search.selectedAggs;
             var filters = [];
-            for (var i = 0; i < selectedFacets.length; i++) {
-                var facet = determineFacet(selectedFacets[i].key);
-                var facetType = facet.aggsType;
-                if (facetType === "term") {
+            for (var i = 0; i < selectedAggs.length; i++) {
+                var aggregate = $scope.search.aggs[selectedAggs[i].key];
+                var aggregateType = aggregate.aggsType;
+                if (aggregateType === "term") {
                     var termFilter = {"term":{}};
-                    termFilter.term[$scope.search.aggs[selectedFacets[i].key].field] = selectedFacets[i].value;
+                    termFilter.term[$scope.search.aggs[selectedAggs[i].key].field] = selectedAggs[i].value;
                     filters.push(termFilter);
-                } else if (facetType === "datehistogram") {
-                    var fromDate = new Date(selectedFacets[i].value);
-                    if (facet.interval === 'year') {
+                } else if (aggregateType === "datehistogram") {
+                    var fromDate = new Date(selectedAggs[i].value);
+                    if (aggregate.interval === 'year') {
                         fromDate.setFullYear(fromDate.getFullYear() + 1);
-                    } else if (facet.interval === 'month') {
+                    } else if (aggregate.interval === 'month') {
                         fromDate.setMonth(fromDate.getMonth() + 1);
-                    } else if (facet.interval === 'week') {
+                    } else if (aggregate.interval === 'week') {
                         fromDate.setDate(fromDate.getDate() + 7);
-                    } else if (facet.interval === 'day') {
+                    } else if (aggregate.interval === 'day') {
                         fromDate.setDate(fromDate.getDate() + 1);
-                    } else if (facet.interval === 'hour') {
+                    } else if (aggregate.interval === 'hour') {
                         fromDate.setHours(fromDate.getHours() + 1);
-                    } else if (facet.interval === 'minute') {
+                    } else if (aggregate.interval === 'minute') {
                         fromDate.setMinutes(fromDate.getMinutes() + 1);
                     }
                     var rangeFilter = {"range":{}};
-                    rangeFilter.range[$scope.search.aggs[selectedFacets[i].key].field] = {"from":selectedFacets[i].value,"to":fromDate.getTime()};
+                    rangeFilter.range[$scope.search.aggs[selectedAggs[i].key].field] = {"from":selectedAggs[i].value,"to":fromDate.getTime()};
                     filters.push(rangeFilter);
-                } else if (facetType === "histogram") {
+                } else if (aggregateType === "histogram") {
                     var rangeFilter = {"range":{}};
-                    var currentAgg = $scope.search.aggs[selectedFacets[i].key];
-                    rangeFilter.range[currentAgg.field] = {"from":selectedFacets[i].value,"to":selectedFacets[i].value + currentAgg.interval - 1};
+                    var currentAgg = $scope.search.aggs[selectedAggs[i].key];
+                    rangeFilter.range[currentAgg.field] = {"from":selectedAggs[i].value,"to":selectedAggs[i].value + currentAgg.interval - 1};
                     filters.push(rangeFilter);
-                } else if (facetType === "range") {
+                } else if (aggregateType === "range") {
                     var rangeFilter = {"range":{}};
-                    var currentAgg = $scope.search.aggs[selectedFacets[i].key];
-                    rangeFilter.range[currentAgg.field] = {"from":selectedFacets[i].from,"to":selectedFacets[i].to};
+                    var currentAgg = $scope.search.aggs[selectedAggs[i].key];
+                    rangeFilter.range[currentAgg.field] = {"from":selectedAggs[i].from,"to":selectedAggs[i].to};
                     filters.push(rangeFilter);
                 }
             }
@@ -404,10 +404,6 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
             return filterQuery;
         }
         return null;
-    }
-
-    function determineFacet(key) {
-        return $scope.search.aggs[key];
     }
 
     function handleErrors(errors) {
@@ -899,7 +895,7 @@ NavbarCtrl.$inject = ['$scope', '$timeout', '$modal','elastic', 'configuration']
 
 function FacetDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;
-    $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram", "Stats"];
+    $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
     $scope.ranges = [];
     $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
 

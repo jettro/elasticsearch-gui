@@ -181,8 +181,8 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         });
     };
 
-    $scope.removeFacetField = function (index) {
-        $scope.search.aggs.splice(index, 1);
+    $scope.removeFacetField = function (name) {
+        delete $scope.search.aggs[name];
     };
 
     $scope.saveQuery = function () {
@@ -203,6 +203,14 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         $scope.doSearch();
     };
 
+    $scope.addRangeFilter = function (key, from, to) {
+        if (!$scope.search.selectedFacets) {
+            $scope.search.selectedFacets = [];
+        }
+        $scope.search.selectedFacets.push({"key": key, "from": from, "to": to});
+        $scope.doSearch();
+    };
+
     $scope.checkSelectedFacet = function (key, value) {
         if (!$scope.search.selectedFacets) {
             return false;
@@ -216,6 +224,19 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         return false;
     };
 
+    $scope.checkSelectedRangeFacet = function (key, from, to) {
+        if (!$scope.search.selectedFacets) {
+            return false;
+        }
+        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
+            var selectedFacet = $scope.search.selectedFacets;
+            if (selectedFacet[i].key === key && selectedFacet[i].from === from && selectedFacet[i].to === to) {
+                return true;
+            }
+        }
+        return false;
+    };
+
     $scope.removeFilter = function (key, value) {
         if (!$scope.search.selectedFacets) {
             return;
@@ -223,6 +244,19 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
         for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
             var selectedFacet = $scope.search.selectedFacets;
             if (selectedFacet[i].key === key && selectedFacet[i].value === value) {
+                $scope.search.selectedFacets.splice(i, 1);
+            }
+        }
+        $scope.doSearch();
+    };
+
+    $scope.removeRangeFilter = function (key, from, to) {
+        if (!$scope.search.selectedFacets) {
+            return;
+        }
+        for (var i = 0; i < $scope.search.selectedFacets.length; i++) {
+            var selectedFacet = $scope.search.selectedFacets;
+            if (selectedFacet[i].key === key && selectedFacet[i].from === from && selectedFacet[i].to === to) {
                 $scope.search.selectedFacets.splice(i, 1);
             }
         }
@@ -355,7 +389,13 @@ function SearchCtrl($scope, elastic, configuration, facetBuilder, $modal, queryS
                     filters.push(rangeFilter);
                 } else if (facetType === "histogram") {
                     var rangeFilter = {"range":{}};
-                    rangeFilter.range[$scope.search.aggs[selectedFacets[i].key].field] = {"from":selectedFacets[i].value,"to":selectedFacets[i].value + facet.interval};
+                    var currentAgg = $scope.search.aggs[selectedFacets[i].key];
+                    rangeFilter.range[currentAgg.field] = {"from":selectedFacets[i].value,"to":selectedFacets[i].value + currentAgg.interval - 1};
+                    filters.push(rangeFilter);
+                } else if (facetType === "range") {
+                    var rangeFilter = {"range":{}};
+                    var currentAgg = $scope.search.aggs[selectedFacets[i].key];
+                    rangeFilter.range[currentAgg.field] = {"from":selectedFacets[i].from,"to":selectedFacets[i].to};
                     filters.push(rangeFilter);
                 }
             }

@@ -8,9 +8,9 @@
     <meta name="author" content="Jettro Coenradie">
 
     <!-- Le styles -->
-    <link href="css/bootstrap-3.0.3.min.css" rel="stylesheet">
+    <link href="css/bootstrap-3.1.1.min.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
-    <link href="css/bootstrap-theme-3.0.3.min.css" rel="stylesheet">
+    <link href="css/bootstrap-theme-3.1.1.min.css" rel="stylesheet">
 
 </head>
 
@@ -20,11 +20,9 @@
     <navbar heading="Elasticsearch GUI"/>
 </div>
 
-<div class="container" ng-show="alerts">
+<div class="container" ng-show="alerts" ng-controller="NotificationCtrl">
     <div class="row">
-        <div class="alert alert-danger" ng-repeat="alert in alerts">
-            {{alert.msg}}
-        </div>
+        <div class="alert alert-danger" ng-repeat="alert in alerts" ng-data="alert.msg"></div>
     </div>
 </div>
 
@@ -49,11 +47,11 @@
 <!-- Le javascript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
-<script src="lib/angular/angular-1.2.6.min.js"></script>
-<script src="lib/angular/angular-route-1.2.6.min.js"></script>
-<script src="lib/angular/ui-bootstrap-0.10.0.min.js"></script>
+<script src="lib/angular/angular-1.2.16.min.js"></script>
+<script src="lib/angular/angular-route-1.2.16.min.js"></script>
+<script src="lib/angular/ui-bootstrap-0.11.0.min.js"></script>
 <script src="lib/angular/dangle.min.js"></script>
-<script src="lib/elasticsearch/elasticsearch.angular-1.5.4.min.js"></script>
+<script src="lib/elasticsearch/elasticsearch.angular-2.1.6.min.js"></script>
 <script src="lib/d3/d3.v3.min.js"></script>
 
 <script src="js/app.js"></script>

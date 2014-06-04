@@ -3,13 +3,14 @@
         <div class="alert alert-info">
             <p>Using this page you can query your indexes like a search box on a website would do. First you need to
                 configure the titel and description of your search results. You can store and load a search. You can also do an advanced search, this way you can select fields and query based on those fields.</p>
-            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><spam class="glyphicon glyphicon-cog"></span>  Configure fields to show  <span
+            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><span
+                    class="glyphicon glyphicon-cog"></span> Configure fields to show  <span
                     class="glyphicon glyphicon-chevron-down" ng-show="isCollapsed"></span><span class="glyphicon glyphicon-chevron-left" ng-hide="isCollapsed"></span></button>
             <div collapse="isCollapsed">
                 <form role="form">
                     <div class="form-group">
                         <label>Title</label>
-                        <select class="form-control" ng-model="configure.title" 
+                        <select class="form-control" ng-model="configure.title"
                                 ng-options="key as value.forPrint for (key,value) in fields">
                         </select>
                     </div>
@@ -130,16 +131,47 @@
                     <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)"  ng-click="removeFilter(key,bucket.key)"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}}) <span
                     class="glyphicon glyphicon-remove"></span></button>
                     <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-mini btn-link"
-                        ng-click="addFilter(key,bucket.key)">{{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}})</span>
+                            ng-click="addFilter(key,bucket.key)">{{bucket.key_as_string | date:'medium'}}
+                        ({{bucket.doc_count}})
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     <div class="col-md-8" ng-show="totalItems>0">
-        <pagination total-items="totalItems" page="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" num-pages="numPages" on-select-page="changePage(page)"></pagination>
-        
+        <pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm"
+                    max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
+                    first-text="&laquo;" last-text="&raquo;"></pagination>
+
+        <div class="well" ng-show="tokensPerField">
+            <table>
+                <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Value</th>
+                    <th>Terms</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="field in tokensPerField">
+                    <td>{{field.field}}</td>
+                    <td>{{field.value}}</td>
+                    <td><span ng-repeat="token in field.tokens">&quot;{{token.token}}&quot;&nbsp;</span></td>
+                </tr>
+                </tbody>
+                <tfoot>
+                <tr>
+                    <td colspan="3">
+                        <button class="btn btn-default" ng-click="tokensPerField=undefined">Close</button>
+                    </td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+
         <div ng-repeat="result in results.hits">
-            <div><span class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
+            <div><a ng-click="showAnalysis(result._index,result._type,result._id)">Show terms</a>&nbsp;<span
+                    class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
                                                                                         ng-show="search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>
             </div>
             <div class="well-small">

@@ -5,7 +5,7 @@ function DashboardCtrl($scope, elastic) {
     $scope.health = {};
     $scope.nodes = [];
     $scope.plugins = [];
-    $scope.serverUrl;
+    $scope.serverUrl = "";
 
     $scope.removeIndex = function (index) {
         elastic.removeIndex(index, function () {
@@ -72,6 +72,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 
     $scope.results = [];
     $scope.aggs = [];
+    $scope.tokensPerField = [];
 
     // initialize pagination
     $scope.currentPage = 1;
@@ -80,8 +81,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     $scope.pageSize = 10;
     $scope.totalItems = 0;
 
-    $scope.changePage = function (pageNo) {
-        $scope.currentPage = pageNo;
+    $scope.changePage = function () {
         $scope.doSearch();
     };
 
@@ -100,12 +100,13 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         });
     };
 
-    $scope.restartSearch = function() {
+    $scope.restartSearch = function () {
         $scope.currentPage = 1;
         $scope.numPages = 0;
         $scope.pageSize = 10;
         $scope.totalItems = 0;
-        $scope.doSearch();        
+        $scope.tokensPerField = [];
+        $scope.doSearch();
     };
 
     $scope.doSearch = function () {
@@ -122,17 +123,17 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
-        
+
         query.body.aggs = aggregateBuilder.build($scope.search.aggs);
         var filter = filterChosenAggregatePart();
         if (filter) {
-            query.body.query = {"filtered":{"query":searchPart(),"filter":filter}};
+            query.body.query = {"filtered": {"query": searchPart(), "filter": filter}};
         } else {
             query.body.query = searchPart();
         }
-        
+
         $scope.metaResults = {};
-        elastic.doSearch(query,function (results) {
+        elastic.doSearch(query, function (results) {
             $scope.results = results.hits;
             $scope.aggs = results.aggregations;
             $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
@@ -142,12 +143,12 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             if (results._shards.failed > 0) {
                 $scope.metaResults.failedShards = results._shards.failed;
                 $scope.metaResults.errors = [];
-                angular.forEach(results._shards.failures, function(failure) {
+                angular.forEach(results._shards.failures, function (failure) {
                     $scope.metaResults.errors.push(failure.index + " - " + failure.reason);
                 });
-                
+
             }
-        },handleErrors);
+        }, handleErrors);
     };
 
     $scope.addSearchField = function () {
@@ -174,7 +175,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         var modalInstance = $modal.open(opts);
         modalInstance.result.then(function (result) {
             if (result) {
-                $scope.search.aggs[result.name]=result;
+                $scope.search.aggs[result.name] = result;
             }
         }, function () {
             // Nothing to do here
@@ -271,7 +272,13 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             }
         }
         return null;
-    }
+    };
+
+    $scope.showAnalysis = function (index, type, id) {
+        elastic.documentTerms(index, type, id, $scope.fields, function (result) {
+            $scope.tokensPerField = result;
+        });
+    };
 
     function searchPart() {
         var executedQuery;
@@ -288,7 +295,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            executedQuery = {"simple_query_string":{"query":$scope.search.simple,"fields":["_all"],"analyzer":"snowball"}};
+            executedQuery = {"simple_query_string": {"query": $scope.search.simple, "fields": ["_all"], "analyzer": "snowball"}};
         } else {
             executedQuery = {"matchAll": {}};
         }
@@ -312,7 +319,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
                 }
                 var matchQuery = {};
                 matchQuery[fieldName] = tree[prop];
-                boolQuery.bool.must.push({"match":matchQuery});
+                boolQuery.bool.must.push({"match": matchQuery});
             }
         }
 
@@ -366,7 +373,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
                 var aggregate = $scope.search.aggs[selectedAggs[i].key];
                 var aggregateType = aggregate.aggsType;
                 if (aggregateType === "term") {
-                    var termFilter = {"term":{}};
+                    var termFilter = {"term": {}};
                     termFilter.term[$scope.search.aggs[selectedAggs[i].key].field] = selectedAggs[i].value;
                     filters.push(termFilter);
                 } else if (aggregateType === "datehistogram") {
@@ -384,18 +391,18 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
                     } else if (aggregate.interval === 'minute') {
                         fromDate.setMinutes(fromDate.getMinutes() + 1);
                     }
-                    var rangeFilter = {"range":{}};
-                    rangeFilter.range[$scope.search.aggs[selectedAggs[i].key].field] = {"from":selectedAggs[i].value,"to":fromDate.getTime()};
+                    var rangeFilter = {"range": {}};
+                    rangeFilter.range[$scope.search.aggs[selectedAggs[i].key].field] = {"from": selectedAggs[i].value, "to": fromDate.getTime()};
                     filters.push(rangeFilter);
                 } else if (aggregateType === "histogram") {
-                    var rangeFilter = {"range":{}};
+                    var rangeFilter = {"range": {}};
                     var currentAgg = $scope.search.aggs[selectedAggs[i].key];
-                    rangeFilter.range[currentAgg.field] = {"from":selectedAggs[i].value,"to":selectedAggs[i].value + currentAgg.interval - 1};
+                    rangeFilter.range[currentAgg.field] = {"from": selectedAggs[i].value, "to": selectedAggs[i].value + currentAgg.interval - 1};
                     filters.push(rangeFilter);
                 } else if (aggregateType === "range") {
-                    var rangeFilter = {"range":{}};
+                    var rangeFilter = {"range": {}};
                     var currentAgg = $scope.search.aggs[selectedAggs[i].key];
-                    rangeFilter.range[currentAgg.field] = {"from":selectedAggs[i].from,"to":selectedAggs[i].to};
+                    rangeFilter.range[currentAgg.field] = {"from": selectedAggs[i].from, "to": selectedAggs[i].to};
                     filters.push(rangeFilter);
                 }
             }
@@ -434,7 +441,7 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     };
 
     $scope.loadTypes = function () {
-        elastic.types([],function (data) {
+        elastic.types([], function (data) {
             $scope.types = data;
         });
     };
@@ -475,10 +482,10 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.executeQuery = function () {
         var query = createQuery();
 
-        elastic.doSearch(query,function (results) {
+        elastic.doSearch(query, function (results) {
             // $scope.results = getValue(results.aggregations[$scope.aggregate.name]);
             $scope.results = results.aggregations[$scope.aggregate.name].buckets;
-        },function(errors) {
+        }, function (errors) {
             console.log(errors);
         });
 
@@ -490,7 +497,7 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
         query.index = "";
         query.body = {};
         query.size = 0;
-        query.body.query = {"matchAll":{}};
+        query.body.query = {"matchAll": {}};
         var aggregations = [];
         aggregations.push($scope.aggregate);
         query.body.aggs = aggregateBuilder.build(aggregations);
@@ -526,21 +533,20 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.pageSize = 10;
     $scope.totalItems = 0;
 
-    $scope.$watchCollection('query', function(){
+    $scope.$watchCollection('query', function () {
         $scope.changeQuery();
     });
 
-    $scope.changePage = function (pageNo) {
-        $scope.currentPage = pageNo;
+    $scope.changePage = function () {
         $scope.executeQuery();
     };
 
-    $scope.restartSearch = function() {
+    $scope.restartSearch = function () {
         $scope.currentPage = 1;
         $scope.numPages = 0;
         $scope.pageSize = 10;
         $scope.totalItems = 0;
-        $scope.executeQuery();        
+        $scope.executeQuery();
     };
 
     $scope.unbind = {};
@@ -629,7 +635,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         var request = createQuery();
         $scope.metaResults = {};
 
-        elastic.doSearch(request,function (results) {
+        elastic.doSearch(request, function (results) {
             $scope.queryResults = results.hits;
             $scope.aggsResults = results.aggregations;
             $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
@@ -639,12 +645,12 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
             if (results._shards.failed > 0) {
                 $scope.metaResults.failedShards = results._shards.failed;
                 $scope.metaResults.errors = [];
-                angular.forEach(results._shards.failures, function(failure) {
+                angular.forEach(results._shards.failures, function (failure) {
                     $scope.metaResults.errors.push(failure.index + " - " + failure.reason);
                 });
-                
+
             }
-        },function(errors) {
+        }, function (errors) {
             $scope.metaResults.failedShards = 1;
             $scope.metaResults.errors = [];
             $scope.metaResults.errors.push(errors.error);
@@ -662,7 +668,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     };
 
     $scope.changeQuery = function () {
-        $scope.createdQuery = JSON.stringify(createQuery().body,null,2);
+        $scope.createdQuery = JSON.stringify(createQuery().body, null, 2);
     };
 
     $scope.openDialog = function () {
@@ -678,7 +684,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         var d = $modal.open(opts);
         d.result.then(function (result) {
             if (result) {
-                $scope.query.aggs[result.name]=result;
+                $scope.query.aggs[result.name] = result;
                 $scope.changeQuery();
             }
         });
@@ -701,10 +707,10 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         query.index = "";
         query.body = {};
         query.body.query = {};
-        
+
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
-        
+
         var chosenIndices = [];
         angular.forEach($scope.query.indices, function (value) {
             if (value.state) {
@@ -733,7 +739,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
             } else {
                 matchPart.operator = $scope.query.type;
             }
-            query.body.query.match = {"_all":matchPart};
+            query.body.query.match = {"_all": matchPart};
         } else {
             query.body.query.matchAll = {};
         }
@@ -742,15 +748,16 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
 
         query.body.explain = $scope.query.explain;
         if ($scope.query.highlight) {
-            var highlight = {"fields":{}};
+            var highlight = {"fields": {}};
             angular.forEach($scope.query.chosenFields, function (value) {
-                highlight.fields[value] = {};    
+                highlight.fields[value] = {};
             });
             query.body.highlight = highlight;
         }
         return query;
     }
-    this.errorCallback = function(errors) {
+
+    this.errorCallback = function (errors) {
         console.log(errors);
     };
 
@@ -759,7 +766,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
 QueryCtrl.$inject = ['$scope', '$modal', 'elastic', 'aggregateBuilder', 'queryStorage'];
 
 function ToolCtrl($scope, elastic) {
-    $scope.suggest={};
+    $scope.suggest = {};
     $scope.suggest.index = '';
     $scope.suggest.field = '';
     $scope.suggest.query = '';
@@ -776,7 +783,7 @@ function ToolCtrl($scope, elastic) {
     $scope.unbind.indicesScope = function () {
     };
 
-    $scope.suggest = function() {
+    $scope.suggest = function () {
         var request = {};
         request.index = $scope.suggest.index.name;
         request.field = $scope.suggest.field;
@@ -784,7 +791,7 @@ function ToolCtrl($scope, elastic) {
         request.min_word_length = $scope.suggest.min_word_length;
         request.prefix_length = $scope.suggest.prefix_length;
 
-        elastic.suggest(request, function(result) {
+        elastic.suggest(request, function (result) {
             $scope.results = result;
         });
     };
@@ -819,9 +826,9 @@ function ToolCtrl($scope, elastic) {
 
     $scope.loadIndices();
 }
-ToolCtrl.$inject = ['$scope','elastic'];
+ToolCtrl.$inject = ['$scope', 'elastic'];
 
-function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
+function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
     $scope.statusCluster = {};
     $scope.serverUrl = elastic.obtainServerAddress();
     $scope.configureServerUrl = false;
@@ -885,15 +892,15 @@ function NavbarCtrl($scope, $timeout, $modal,elastic, configuration) {
         elastic.clusterStatus(function (message, status) {
             $scope.statusCluster.message = message;
             $scope.statusCluster.state = status;
-        });        
-        $timeout(function() {
+        });
+        $timeout(function () {
             doCheckStatus();
         }, 5000); // wait 5 seconds before calling it again
     }
 
     doCheckStatus();
 }
-NavbarCtrl.$inject = ['$scope', '$timeout', '$modal','elastic', 'configuration'];
+NavbarCtrl.$inject = ['$scope', '$timeout', '$modal', 'elastic', 'configuration'];
 
 function AggregateDialogCtrl($scope, $modalInstance, fields) {
     $scope.fields = fields;
@@ -932,4 +939,17 @@ function ConfigDialogCtrl($scope, $modalInstance, configuration) {
         $modalInstance.close($scope.configuration);
     };
 
+}
+
+function NotificationCtrl($scope, $timeout) {
+    $scope.alerts = {};
+
+    $scope.$on('msg:notification', function (event, type, message) {
+        var id = Math.random().toString(36).substring(2, 5);
+        $scope.alerts[id] = {"type": type, "message": message};
+
+        $timeout(function () {
+            delete $scope.alerts[id];
+        }, 5000);
+    });
 }

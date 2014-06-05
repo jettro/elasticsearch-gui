@@ -31,12 +31,6 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             });
         };
 
-//        this.clusterName = function (callback) {
-//            es.cluster.health().then(function (data) {
-//                callback(data.cluster_name);
-//            });
-//        };
-
         this.clusterHealth = function (callback) {
             es.cluster.health().then(function (data) {
                 callback(data);
@@ -148,7 +142,6 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
                         var text = result._source[sourceField];
                         if (text) {
                             analyzedFields.push({"field": field, "value": text});
-                            console.log(field + "(" + sourceField + ")" + " : " + text);
                             actions.push(es.indices.analyze({"field": field, "text": text, "index": index, "format": "text"}));
                         }
                     }
@@ -160,12 +153,10 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
                         analyzedFields[i].tokens = results[i].tokens;
                         i++;
                     }
-                    console.log(analyzedFields);
                     callback(analyzedFields);
                 }, function (error) {
                     console.log(error);
                 }, function (notify) {
-                    console.log(notify);
                 });
             });
         };
@@ -412,7 +403,6 @@ serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {
             } else {
                 errorMessage = message;
             }
-            console.log("send an event to log a message");
             rootScope.$broadcast('msg:notification', 'error', errorMessage);
         };
     }

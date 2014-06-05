@@ -244,7 +244,11 @@
                 </div>
             </div>
             <div class="panel-footer">
-        <pagination total-items="totalItems" page="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" num-pages="numPages" on-select-page="changePage(page)"></pagination>
+                <!--<pagination total-items="totalItems" page="currentPage" max-size="maxSize" class="pagination-sm" boundary-links="true" rotate="false" num-pages="numPages" on-select-page="changePage(page)"></pagination>-->
+                <pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm"
+                            max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
+                            first-text="&laquo;" last-text="&raquo;"></pagination>
+
             </div>
         </div>
     </div>

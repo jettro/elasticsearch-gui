@@ -113,7 +113,7 @@
                 </div>
             </div>
             <div class="well-small">
-                {{result._source.text | limitTo:300 }}
+                {{result.description | limitTo:300 }}
             </div>
             <p ng-show="result._source.last_updated" class="text-right">
               <small>last updated</small> 

@@ -464,7 +464,12 @@ function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuratio
     }
 
     $scope.redirectSearch = function () {
-        $location.path("/search/" + $scope.search.simple);
+        if ($scope.search.advanced.searchSources.length === 0) {
+            $location.path("/search/" + $scope.search.simple);
+        } else {
+            // handle the case when sources are specified
+            $scope.restartSearch();
+        }
     };
 
     if ($routeParams.hasOwnProperty("searchStr") && $routeParams.searchStr) {

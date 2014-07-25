@@ -58,7 +58,7 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
@@ -81,6 +81,10 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 
     $scope.changePage = function () {
         $scope.doSearch();
+    };
+
+    $scope.getDescription = function (response) {
+        return $sce.trustAsHtml(response.description);
     };
 
     $scope.init = function () {
@@ -422,7 +426,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         }
     }
 }
-SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+SearchCtrl.$inject = ['$scope', '$sce', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
 function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];

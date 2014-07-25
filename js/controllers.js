@@ -58,17 +58,17 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
+    $scope.types = [];
     $scope.search = {};
     $scope.search.advanced = {};
     $scope.search.advanced.searchFields = [];
+    $scope.search.advanced.searchSources = [];
     $scope.search.aggs = {};
     $scope.search.selectedAggs = [];
-
-    $scope.configError = "";
 
     $scope.results = [];
     $scope.aggs = [];
@@ -85,18 +85,17 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         $scope.doSearch();
     };
 
+    $scope.getDescription = function (response) {
+        return $sce.trustAsHtml(response.description.replace(/\\n/g, ' '));
+    };
+
     $scope.init = function () {
         elastic.fields([], [], function (data) {
             $scope.fields = data;
-            if (!$scope.configure.title) {
-                if ($scope.fields.title) {
-                    $scope.configure.title = "title";
-                }
-            }
+        });
 
-            if (!$scope.configure.description && $scope.fields.description) {
-                $scope.configure.description = "description";
-            }
+        elastic.types([], function (data) {
+            $scope.types = data;
         });
     };
 
@@ -110,27 +109,40 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     };
 
     $scope.doSearch = function () {
-        if ((!($scope.configure.title)) || (!($scope.configure.description))) {
-            $scope.configError = "Please configure the title and description in the configuration at the top of the page.";
-        } else {
-            $scope.configError = "";
-        }
 
         var query = {};
         query.index = "";
         query.body = {};
-        query.fields = $scope.configure.title + "," + $scope.configure.description
 
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
 
         query.body.aggs = aggregateBuilder.build($scope.search.aggs);
+
+        //HARDCODED HIGHLIGHTS
+        var highlight = {"fields": {"text": {}}};
+        query.body.highlight = highlight;
+
+        /*
         var filter = filterChosenAggregatePart();
         if (filter) {
             query.body.query = {"filtered": {"query": searchPart(), "filter": filter}};
         } else {
             query.body.query = searchPart();
         }
+        */
+
+        if ($scope.search.advanced.searchSources.length > 0) {
+            var filter = {"or": []};
+            angular.forEach($scope.search.advanced.searchSources, function(source) {
+                var source_filter = {"type": {"value": source}};
+                filter["or"].push(source_filter);
+            });
+            query.body.filter = filter;
+        }
+
+        query.body.query = searchPart();
+
 
         $scope.metaResults = {};
         elastic.doSearch(query, function (results) {
@@ -140,6 +152,13 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             $scope.totalItems = results.hits.total;
 
             $scope.metaResults.totalShards = results._shards.total;
+            angular.forEach(results.hits.hits, function (hit) {
+                if (hit.highlight) {
+                    hit.description = hit.highlight.text.join(' ... ');
+                } else {
+                    hit.description = hit._source.text;
+                }
+            });
             if (results._shards.failed > 0) {
                 $scope.metaResults.failedShards = results._shards.failed;
                 $scope.metaResults.errors = [];
@@ -153,9 +172,11 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 
     $scope.addSearchField = function () {
         var searchField = {};
-        searchField.field = $scope.search.advanced.newField;
-        searchField.text = $scope.search.advanced.newText;
-        $scope.search.advanced.searchFields.push(searchField);
+        if ($scope.search.advanced.newField) { 
+            searchField.field = $scope.search.advanced.newField;
+            searchField.text = $scope.search.advanced.newText;
+            $scope.search.advanced.searchFields.push(searchField);
+        }
     };
 
     $scope.removeSearchField = function (index) {
@@ -295,7 +316,8 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            executedQuery = {"simple_query_string": {"query": $scope.search.simple, "fields": ["_all"], "analyzer": "snowball"}};
+            var functions = [{"filter": {"type": {"value": "irc_log"}}, "boost_factor": 0.25}];
+            executedQuery = {"function_score": {"query": {"query_string": {"query": $scope.search.simple, "fields": ["_all"], "use_dis_max": true}},"functions":functions}};
         } else {
             executedQuery = {"matchAll": {}};
         }
@@ -424,8 +446,22 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             $scope.metaResults.errors.push(errors.message);
         }
     }
+
+    $scope.redirectSearch = function () {
+        if ($scope.search.advanced.searchSources.length === 0) {
+            $location.path("/search/" + $scope.search.simple);
+        } else {
+            // handle the case when sources are specified
+            $scope.restartSearch();
+        }
+    };
+
+    if ($routeParams.hasOwnProperty("searchStr") && $routeParams.searchStr) {
+        $scope.search.simple = $routeParams.searchStr;
+        $scope.restartSearch();
+    }
 }
-SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+SearchCtrl.$inject = ['$scope', '$sce', '$routeParams', '$location', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
 function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
@@ -513,7 +549,9 @@ GraphCtrl.$inject = ['$scope', '$modal', 'elastic', 'aggregateBuilder'];
 
 function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
+    $scope.types = [];
     $scope.createdQuery = "";
+    $scope.serverUrl = elastic.obtainServerAddress();
 
     $scope.queryResults = [];
     $scope.aggsResults = [];
@@ -589,6 +627,8 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
                 $scope.query.types = {};
             }
         });
+        console.log($scope.query.types);
+        $scope.types = $scope.query.types; // TODO: hacky, do better
     };
 
     $scope.loadFields = function () {
@@ -835,11 +875,10 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
     $scope.configure = configuration;
 
     var items = $scope.items = [
-        {title: 'Dashboard', link: 'dashboard'},
         {title: 'Search', link: 'search'},
+        {title: 'Dashboard', link: 'dashboard'},
         {title: 'Queries', link: 'query'},
         {title: 'Tools', link: 'tools'},
-        // {title: 'Graphs', link: 'graph'},
         {title: 'About', link: 'about'}
     ];
 

@@ -1,99 +1,65 @@
 <div class="row" ng-init="init()">
     <div class="col-md-12">
-        <div class="alert alert-info">
-            <p>Using this page you can query your indexes like a search box on a website would do. First you need to
-                configure the titel and description of your search results. You can store and load a search. You can also do an advanced search, this way you can select fields and query based on those fields.</p>
-            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><span
-                    class="glyphicon glyphicon-cog"></span> Configure fields to show  <span
-                    class="glyphicon glyphicon-chevron-down" ng-show="isCollapsed"></span><span class="glyphicon glyphicon-chevron-left" ng-hide="isCollapsed"></span></button>
-            <div collapse="isCollapsed">
-                <form role="form">
-                    <div class="form-group">
-                        <label>Title</label>
-                        <select class="form-control" ng-model="configure.title"
-                                ng-options="key as value.forPrint for (key,value) in fields">
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <select class="form-control" ng-model="configure.description"
-                                ng-options="key as value.forPrint for (key,value) in fields">
-                        </select>
-                    </div>
-                </form>
-            </div>
-        </div>
+        
     </div>
 </div>
-<div class="row">
-    <div class="col-md-12" ng-show="configError">
-        <div class="alert alert-danger">{{configError}}</div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-4">
-        <label class="checkbox">
-            <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
-        </label>
 
-        <div>
-            <span>Aggregations</span>
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Aggregation">
-            <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
-        </button>
-        </div>
-        <div ng-repeat="aggregation in search.aggs">{{aggregation.name}}: {{aggregation.field}} ({{aggregation.aggsType}})
-            <button class="btn btn-link" ng-click="removeAggregateField(aggregation.name)" title="Remove aggregate Field">
-                <span class="glyphicon glyphicon-remove"></span>
-            </button>
-        </div>
-
-    </div>
-    <div class="col-md-8" ng-hide="search.doAdvanced">
+<div class="row">
+    <div class="col-sm-9" ng-hide="search.doAdvanced">
         <form class="form-inline">
-            <div class="col-xs-4">
+            <span>
                 <input class="form-control" type="search" ng-model="search.simple" autofocus="true"
-                       placeholder="Type your search string"/>
-            </div>
+                       placeholder="Search"/>
+            </span>
+
             <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
-            <label class="checkbox">
-                <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
+
+            <label> Filter by:
+                <select multiple class="form-control" ng-model="search.advanced.searchSources"
+                            ng-options="type for type in types">
+                        <option value="">-- choose source --</option>
+                </select>
             </label>
-            <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
-            <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
+            <!-- The button's there to force a call to the function. Eventually we'll want a dropdown like:
+            http://dotansimha.github.io/angularjs-dropdown-multiselect/#/ -->
         </form>
     </div>
-    <div class="col-md-8" ng-show="search.doAdvanced">
+
+    <div class="col-sm-2" ng-show="search.doAdvanced">
+        <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
+    </div>
+    <div class="col-sm-8" ng-show="search.doAdvanced">
+        
         <form class="form-inline">
-            <div>
-                <label>Choose field</label>
+            <span>
+                <input class="form-control" type="search" ng-model="search.advanced.newText" autofocus="true"
+                           placeholder=""/>
+            </span>
+            <span>
                 <select class="form-control" ng-model="search.advanced.newField"
                         ng-options="key as value.forPrint for (key,value) in fields">
-                    <option value="">-- chose field --</option>
+                    <option value="">-- choose field --</option>
                 </select>
-                <label>Enter text</label>
-                <div class="col-xs-4">
-                    <input class="form-control" type="search" ng-model="search.advanced.newText" autofocus="true"
-                           placeholder="Type your search string"/>
-                </div>
                 <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
-            </div>
+            </span>
             <div>
                 <div ng-repeat="searchField in search.advanced.searchFields">
                     {{searchField.field}} = {{searchField.text}} <button class="btn btn-link" ng-click="removeSearchField($index)"><span
                         class="glyphicon glyphicon-remove"></span></button>
                 </div>
                 <br/>
-
-                <div>
-                    <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
-                    <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
-                    <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
-                </div>
             </div>
+
         </form>
     </div>
 </div>
+
+<div>
+    <label class="checkbox">
+                <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
+    </label>
+</div>
+
 <div class="row" ng-show="metaResults.failedShards">
     <div class="col-md-12">
         <h3>Errors</h3>
@@ -138,45 +104,25 @@
             </div>
         </div>
     </div>
-    <div class="col-md-8" ng-show="totalItems>0">
+    <div class="col-md-12" ng-show="totalItems>0">
         <pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm"
                     max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"></pagination>
 
-        <div class="well" ng-show="tokensPerField">
-            <table>
-                <thead>
-                <tr>
-                    <th>Field</th>
-                    <th>Value</th>
-                    <th>Terms</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="field in tokensPerField">
-                    <td>{{field.field}}</td>
-                    <td>{{field.value}}</td>
-                    <td><span ng-repeat="token in field.tokens">&quot;{{token.token}}&quot;&nbsp;</span></td>
-                </tr>
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td colspan="3">
-                        <button class="btn btn-default" ng-click="tokensPerField=undefined">Close</button>
-                    </td>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div ng-repeat="result in results.hits">
-            <div><a ng-click="showAnalysis(result._index,result._type,result._id)">Show terms</a>&nbsp;<span
-                    class="text-info">{{result.fields[configure.title]}}</span><span class="text-warning"
-                                                                                        ng-show="search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>
+        <div ng-repeat="result in results.hits" class="result">
+            <div>
+              <p class="header">
+                <a href="{{result._source.url}}">{{result._source.title}}</a>
+                <small span ng-show="result._source.author">by {{result._source.author}} </small>
+                <small class="text-warning text-right"> source: {{result._type | humanize}} </small>
+              </p>
             </div>
-            <div class="well-small">
-                {{result.fields[configure.description]}}
+            <div class="well-small" ng-bind-html="getDescription(result)">
             </div>
+            <p ng-show="result._source.last_updated" class="text-right">
+              <small>last updated</small> 
+              {{ result._source.last_updated | date:'medium'}}
+            </p>
         </div>
         <br/>
         <pre>Page: {{currentPage}} / {{numPages}}</pre>

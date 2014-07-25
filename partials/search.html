@@ -107,10 +107,8 @@
               <p class="header">
                 <a href="{{result._source.url}}">{{result._source.title}}</a>
                 <small span ng-show="result._source.author">by {{result._source.author}} </small>
+                <small class="text-warning text-right"> source: {{result._type | humanize}} </small>
               </p>
-                <div class="text-warning text-right">
-                    source: {{result._type}}
-                </div>
             </div>
             <div class="well-small" ng-bind-html="getDescription(result)">
             </div>

@@ -22,3 +22,11 @@ myApp.factory('$exceptionHandler', function($injector) {
         throw exception;
     };
 });
+
+myApp.filter('humanize', function(){
+  return function(text) {
+    if(text) { 
+      return text.split("_").join(" ").toLowerCase();
+    };
+  };
+});

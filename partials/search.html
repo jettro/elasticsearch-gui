@@ -97,7 +97,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-8" ng-show="totalItems>0">
+    <div class="col-md-12" ng-show="totalItems>0">
         <pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm"
                     max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"></pagination>
@@ -107,10 +107,8 @@
               <p class="header">
                 <a href="{{result._source.url}}">{{result._source.title}}</a>
                 <small span ng-show="result._source.author">by {{result._source.author}} </small>
+                <small class="text-warning text-right"> source: {{result._type | humanize}} </small>
               </p>
-                <div class="text-warning text-right">
-                    source: {{result._type}}
-                </div>
             </div>
             <div class="well-small" ng-bind-html="getDescription(result)">
             </div>

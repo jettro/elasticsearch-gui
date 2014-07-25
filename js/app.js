@@ -10,7 +10,7 @@ var myApp = angular.module('myApp', ['ngRoute','myApp.filters', 'myApp.services'
             $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: GraphCtrl});
             $routeProvider.when('/tools', {templateUrl: 'partials/tools.html', controller: ToolCtrl});
             $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
-            $routeProvider.otherwise({redirectTo: '/dashboard'});
+            $routeProvider.otherwise({redirectTo: '/search'});
         }]);
 
 myApp.value('localStorage', window.localStorage);
@@ -21,4 +21,12 @@ myApp.factory('$exceptionHandler', function($injector) {
         errorHandling.add(exception.message);
         throw exception;
     };
+});
+
+myApp.filter('humanize', function(){
+  return function(text) {
+    if(text) { 
+      return text.split("_").join(" ").toLowerCase();
+    };
+  };
 });

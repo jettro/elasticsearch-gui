@@ -40,6 +40,10 @@ body {
     font-size: 1.2em;
 }
 
+.result .header small {
+    font-weight: normal;
+}
+
 .result {
     margin-bottom: 1em;
 }

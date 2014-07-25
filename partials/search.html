@@ -1,28 +1,6 @@
 <div class="row" ng-init="init()">
     <div class="col-md-12">
-        <div class="alert alert-info">
-            <p>Using this page you can query your indexes like a search box on a website would do. First you need to
-                configure the titel and description of your search results. You can store and load a search. You can also do an advanced search, this way you can select fields and query based on those fields.</p>
-            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><span
-                    class="glyphicon glyphicon-cog"></span> Configure fields to show  <span
-                    class="glyphicon glyphicon-chevron-down" ng-show="isCollapsed"></span><span class="glyphicon glyphicon-chevron-left" ng-hide="isCollapsed"></span></button>
-            <div collapse="isCollapsed">
-                <form role="form">
-                    <div class="form-group">
-                        <label>Title</label>
-                        <select class="form-control" ng-model="configure.title"
-                                ng-options="key as value.forPrint for (key,value) in fields">
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <select class="form-control" ng-model="configure.description"
-                                ng-options="key as value.forPrint for (key,value) in fields">
-                        </select>
-                    </div>
-                </form>
-            </div>
-        </div>
+        
     </div>
 </div>
 <div class="row">
@@ -31,33 +9,21 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-4">
-        <label class="checkbox">
-            <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
-        </label>
-
-        <div>
-            <span>Aggregations</span>
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Aggregation">
-            <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
-        </button>
-        </div>
-        <div ng-repeat="aggregation in search.aggs">{{aggregation.name}}: {{aggregation.field}} ({{aggregation.aggsType}})
-            <button class="btn btn-link" ng-click="removeAggregateField(aggregation.name)" title="Remove aggregate Field">
-                <span class="glyphicon glyphicon-remove"></span>
-            </button>
-        </div>
-
-    </div>
+    
     <div class="col-md-8" ng-hide="search.doAdvanced">
         <form class="form-inline">
-            <div class="col-xs-4">
+            <span>
                 <input class="form-control" type="search" ng-model="search.simple" autofocus="true"
-                       placeholder="Type your search string"/>
-            </div>
+                       placeholder=""/>
+            </span>
             <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
+            <!-- TODO: Show the details by default.
             <label class="checkbox">
                 <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
+            </label>
+            -->
+            <label class="checkbox">
+                <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
             </label>
             <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
             <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
@@ -69,7 +35,7 @@
                 <label>Choose field</label>
                 <select class="form-control" ng-model="search.advanced.newField"
                         ng-options="key as value.forPrint for (key,value) in fields">
-                    <option value="">-- chose field --</option>
+                    <option value="">-- choose field --</option>
                 </select>
                 <label>Enter text</label>
                 <div class="col-xs-4">
@@ -147,16 +113,19 @@
             <table>
                 <thead>
                 <tr>
-                    <th>Field</th>
+                    <!-- Hard-code order to: Title/author/summary (limited to certain number of characters)/more underneath (or hide them)? -->
+                    <th>Field</th> <!-- More space between Field and Value?-->
                     <th>Value</th>
-                    <th>Terms</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="field in tokensPerField">
-                    <td>{{field.field}}</td>
+                    <td>{{field.field}}&nbsp;</td>
+                    <!-- TODO: See if we can apply wiki markup to value.
+                    If not, at least do something basic like converting
+                    \n to newlines. -->
                     <td>{{field.value}}</td>
-                    <td><span ng-repeat="token in field.tokens">&quot;{{token.token}}&quot;&nbsp;</span></td>
+                    <!-- TODO: token needs a space or newline; I think " " will work to have it go to nextline, literal space character won't be moved down. -->
                 </tr>
                 </tbody>
                 <tfoot>

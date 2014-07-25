@@ -9,15 +9,17 @@
         <form class="form-inline">
             <span>
                 <input class="form-control" type="search" ng-model="search.simple" autofocus="true"
-                       placeholder=""/>
+                       placeholder="Search"/>
             </span>
 
             <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
 
-            <select multiple class="form-control" ng-model="search.advanced.searchSources"
-                        ng-options="type for type in types">
-                    <option value="">-- choose source --</option>
-            </select>
+            <label> Filter by:
+                <select multiple class="form-control" ng-model="search.advanced.searchSources"
+                            ng-options="type for type in types">
+                        <option value="">-- choose source --</option>
+                </select>
+            </label>
             <!-- The button's there to force a call to the function. Eventually we'll want a dropdown like:
             http://dotansimha.github.io/angularjs-dropdown-multiselect/#/ -->
         </form>
@@ -49,11 +51,6 @@
             </div>
 
         </form>
-    </div>
-
-    <div class="col-sm-2">
-        <button class="btn btn-sm btn-default pull-right" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
-        <button class="btn btn-sm btn-default pull-right" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
     </div>
 </div>
 

@@ -76,7 +76,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     $scope.currentPage = 1;
     $scope.maxSize = 5;
     $scope.numPages = 0;
-    $scope.pageSize = 10;
+    $scope.pageSize = 100;
     $scope.totalItems = 0;
 
     $scope.changePage = function () {
@@ -92,7 +92,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     $scope.restartSearch = function () {
         $scope.currentPage = 1;
         $scope.numPages = 0;
-        $scope.pageSize = 10;
+        $scope.pageSize = 100;
         $scope.totalItems = 0;
         $scope.tokensPerField = [];
         $scope.doSearch();
@@ -513,7 +513,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.currentPage = 1;
     $scope.maxSize = 5;
     $scope.numPages = 0;
-    $scope.pageSize = 10;
+    $scope.pageSize = 100;
     $scope.totalItems = 0;
 
     $scope.$watchCollection('query', function () {
@@ -527,7 +527,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.restartSearch = function () {
         $scope.currentPage = 1;
         $scope.numPages = 0;
-        $scope.pageSize = 10;
+        $scope.pageSize = 100;
         $scope.totalItems = 0;
         $scope.executeQuery();
     };

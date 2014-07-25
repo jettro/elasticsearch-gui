@@ -81,9 +81,13 @@
                     max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"></pagination>
 
-        <div ng-repeat="result in results.hits">
+        <div ng-repeat="result in results.hits" class="result">
             <div>
-              <h2><a href="{{result._source.url}}">{{result._source.title}}</a></h2>
+              <p class="header">
+                <a href="{{result._source.url}}">{{result._source.title}}</a>
+                <small span ng-show="result._source.author">by {{result._source.author}} </small>
+              </p>
+
               <span class="text-warning" ng-show="search.details">
                 index: {{result._index}} - score: {{result._score}} - type: {{result._type}}
               </span>
@@ -91,6 +95,10 @@
             <div class="well-small">
                 {{result._source.text | limitTo:300 }}
             </div>
+            <p ng-show="result._source.last_updated" class="text-right">
+              <small>last updated</small> 
+              {{ result._source.last_updated | date:'medium'}}
+            </p>
         </div>
         <br/>
         <pre>Page: {{currentPage}} / {{numPages}}</pre>

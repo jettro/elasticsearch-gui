@@ -15,6 +15,14 @@
             <button class="btn btn-primary" ng-click="restartSearch()">
               <span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
             
+            <select multiple class="form-control" ng-model="search.advanced.newSource"
+                        ng-options="type for type in types">
+                    <option value="">-- choose source --</option>
+            </select>
+
+            <button class="btn btn-info" ng-click="addSearchSource()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Filter</button>
+            <!-- The button's there to force a call to the function. Eventually we'll want a dropdown like:
+            http://dotansimha.github.io/angularjs-dropdown-multiselect/#/ -->
             <label class="checkbox" ng-hide="search.doAdvanced">
                 <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
             </label>
@@ -37,6 +45,7 @@
                     <option value="">-- choose field --</option>
                 </select>
                 <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
+                <button class="btn btn-info" ng-click="addSearchSource()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Filter</button>
             </span>
             <div>
                 <div ng-repeat="searchField in search.advanced.searchFields">

@@ -125,6 +125,11 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
 
         query.body.aggs = aggregateBuilder.build($scope.search.aggs);
+
+        //HARDCODED HIGHLIGHTS
+        var highlight = {"fields": {"text": {}}};
+        query.body.highlight = highlight;
+
         var filter = filterChosenAggregatePart();
         if (filter) {
             query.body.query = {"filtered": {"query": searchPart(), "filter": filter}};

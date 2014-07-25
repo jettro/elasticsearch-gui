@@ -141,9 +141,11 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 
     $scope.addSearchField = function () {
         var searchField = {};
-        searchField.field = $scope.search.advanced.newField;
-        searchField.text = $scope.search.advanced.newText;
-        $scope.search.advanced.searchFields.push(searchField);
+        if ($scope.search.advanced.newField) { 
+            searchField.field = $scope.search.advanced.newField;
+            searchField.text = $scope.search.advanced.newText;
+            $scope.search.advanced.searchFields.push(searchField);
+        }
     };
 
     $scope.removeSearchField = function (index) {

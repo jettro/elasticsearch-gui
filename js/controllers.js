@@ -58,7 +58,7 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
@@ -448,8 +448,17 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
             $scope.metaResults.errors.push(errors.message);
         }
     }
+
+    $scope.redirectSearch = function () {
+        $location.path("/search/" + $scope.search.simple);
+    };
+
+    if ($routeParams.hasOwnProperty("searchStr") && $routeParams.searchStr) {
+        $scope.search.simple = $routeParams.searchStr;
+        $scope.restartSearch();
+    }
 }
-SearchCtrl.$inject = ['$scope', '$sce', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+SearchCtrl.$inject = ['$scope', '$sce', '$routeParams', '$location', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
 function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];

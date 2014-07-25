@@ -78,7 +78,7 @@ function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuratio
     $scope.currentPage = 1;
     $scope.maxSize = 5;
     $scope.numPages = 0;
-    $scope.pageSize = 100;
+    $scope.pageSize = 10;
     $scope.totalItems = 0;
 
     $scope.changePage = function () {
@@ -86,7 +86,7 @@ function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuratio
     };
 
     $scope.getDescription = function (response) {
-        return $sce.trustAsHtml(response.description);
+        return $sce.trustAsHtml(response.description.replace(/\\n/g, ' '));
     };
 
     $scope.init = function () {
@@ -102,7 +102,7 @@ function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuratio
     $scope.restartSearch = function () {
         $scope.currentPage = 1;
         $scope.numPages = 0;
-        $scope.pageSize = 100;
+        $scope.pageSize = 10;
         $scope.totalItems = 0;
         $scope.tokensPerField = [];
         $scope.doSearch();
@@ -154,7 +154,7 @@ function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuratio
             $scope.metaResults.totalShards = results._shards.total;
             angular.forEach(results.hits.hits, function (hit) {
                 if (hit.highlight) {
-                    hit.description = hit.highlight.text.join('... ');
+                    hit.description = hit.highlight.text.join(' ... ');
                 } else {
                     hit.description = hit._source.text;
                 }
@@ -567,6 +567,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.types = [];
     $scope.createdQuery = "";
+    $scope.serverUrl = elastic.obtainServerAddress();
 
     $scope.queryResults = [];
     $scope.aggsResults = [];
@@ -583,7 +584,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.currentPage = 1;
     $scope.maxSize = 5;
     $scope.numPages = 0;
-    $scope.pageSize = 100;
+    $scope.pageSize = 10;
     $scope.totalItems = 0;
 
     $scope.$watchCollection('query', function () {
@@ -597,7 +598,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.restartSearch = function () {
         $scope.currentPage = 1;
         $scope.numPages = 0;
-        $scope.pageSize = 100;
+        $scope.pageSize = 10;
         $scope.totalItems = 0;
         $scope.executeQuery();
     };

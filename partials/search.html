@@ -1,30 +1,3 @@
-<div class="row" ng-init="init()">
-    <div class="col-md-12">
-        <div class="alert alert-info">
-            <p>Using this page you can query your indexes like a search box on a website would do. First you need to
-                configure the titel and description of your search results. You can store and load a search. You can also do an advanced search, this way you can select fields and query based on those fields.</p>
-            <button class="btn btn-link" ng-click="isCollapsed = !isCollapsed"><span
-                    class="glyphicon glyphicon-cog"></span> Configure fields to show  <span
-                    class="glyphicon glyphicon-chevron-down" ng-show="isCollapsed"></span><span class="glyphicon glyphicon-chevron-left" ng-hide="isCollapsed"></span></button>
-            <div collapse="isCollapsed">
-                <form role="form">
-                    <div class="form-group">
-                        <label>Title</label>
-                        <select class="form-control" ng-model="configure.title"
-                                ng-options="key as value.forPrint for (key,value) in fields">
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <select class="form-control" ng-model="configure.description"
-                                ng-options="key as value.forPrint for (key,value) in fields">
-                        </select>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
 <div class="row">
     <div class="col-md-12" ng-show="configError">
         <div class="alert alert-danger">{{configError}}</div>
@@ -149,14 +122,12 @@
                 <tr>
                     <th>Field</th>
                     <th>Value</th>
-                    <th>Terms</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr ng-repeat="field in tokensPerField">
                     <td>{{field.field}}</td>
                     <td>{{field.value}}</td>
-                    <td><span ng-repeat="token in field.tokens">&quot;{{token.token}}&quot;&nbsp;</span></td>
                 </tr>
                 </tbody>
                 <tfoot>

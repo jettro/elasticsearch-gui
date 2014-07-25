@@ -55,7 +55,7 @@
 
 <div>
     <label class="checkbox">
-            <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
+            <input class="checkbox" type="checkbox" ng-model="search.details"> Show source
     </label>
 </div>
 
@@ -114,10 +114,9 @@
                 <a href="{{result._source.url}}">{{result._source.title}}</a>
                 <small span ng-show="result._source.author">by {{result._source.author}} </small>
               </p>
-
-              <span class="text-warning" ng-show="search.details">
-                index: {{result._index}} - score: {{result._score}} - type: {{result._type}}
-              </span>
+                <div class="text-warning text-right" ng-show="search.details">
+                        source: {{result._type}}
+                </div>
             </div>
             <div class="well-small">
                 {{result._source.text | limitTo:300 }}

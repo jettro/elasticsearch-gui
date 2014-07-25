@@ -333,7 +333,8 @@ function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuratio
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            executedQuery = {"query_string": {"query": $scope.search.simple, "fields": ["_all"], "use_dis_max": true}};
+            var functions = [{"filter": {"type": {"value": "irc_log"}}, "boost_factor": 0.25}];
+            executedQuery = {"function_score": {"query": {"query_string": {"query": $scope.search.simple, "fields": ["_all"], "use_dis_max": true}},"functions":functions}};
         } else {
             executedQuery = {"matchAll": {}};
         }

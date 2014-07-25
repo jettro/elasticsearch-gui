@@ -1,67 +1,64 @@
-<div class="row">
-    <div class="col-md-4">
-        <label class="checkbox">
-            <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
-        </label>
-
-        <div>
-            <span>Aggregations</span>
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Aggregation">
-            <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
-        </button>
-        </div>
-        <div ng-repeat="aggregation in search.aggs">{{aggregation.name}}: {{aggregation.field}} ({{aggregation.aggsType}})
-            <button class="btn btn-link" ng-click="removeAggregateField(aggregation.name)" title="Remove aggregate Field">
-                <span class="glyphicon glyphicon-remove"></span>
-            </button>
-        </div>
-
+<div class="row" ng-init="init()">
+    <div class="col-md-12">
+        
     </div>
-    <div class="col-md-8" ng-hide="search.doAdvanced">
+</div>
+
+<div class="row">
+    <div class="col-sm-9" ng-hide="search.doAdvanced">
         <form class="form-inline">
-            <div class="col-xs-4">
+            <span>
                 <input class="form-control" type="search" ng-model="search.simple" autofocus="true"
-                       placeholder="Type your search string"/>
-            </div>
+                       placeholder=""/>
+            </span>
+
             <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
-            <label class="checkbox">
-                <input class="checkbox" type="checkbox" ng-model="search.details"> Show details
+            
+            <label class="checkbox" ng-hide="search.doAdvanced">
+                <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
             </label>
-            <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
-            <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
         </form>
     </div>
-    <div class="col-md-8" ng-show="search.doAdvanced">
+
+    <div class="col-sm-2" ng-show="search.doAdvanced">
+        <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
+    </div>
+    <div class="col-sm-7" ng-show="search.doAdvanced">
+        
         <form class="form-inline">
-            <div>
-                <label>Choose field</label>
+            <span>
+                <input class="form-control" type="search" ng-model="search.advanced.newText" autofocus="true"
+                           placeholder=""/>
+            </span>
+            <span>
                 <select class="form-control" ng-model="search.advanced.newField"
                         ng-options="key as value.forPrint for (key,value) in fields">
-                    <option value="">-- chose field --</option>
+                    <option value="">-- choose field --</option>
                 </select>
-                <label>Enter text</label>
-                <div class="col-xs-4">
-                    <input class="form-control" type="search" ng-model="search.advanced.newText" autofocus="true"
-                           placeholder="Type your search string"/>
-                </div>
                 <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
-            </div>
+            </span>
             <div>
                 <div ng-repeat="searchField in search.advanced.searchFields">
                     {{searchField.field}} = {{searchField.text}} <button class="btn btn-link" ng-click="removeSearchField($index)"><span
                         class="glyphicon glyphicon-remove"></span></button>
                 </div>
                 <br/>
-
-                <div>
-                    <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
-                    <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
-                    <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
-                </div>
             </div>
         </form>
     </div>
+
+    <div class="col-sm-3">
+        <button class="btn btn-sm btn-default text-right" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
+        <button class="btn btn-sm btn-default text-right" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
+    </div>
 </div>
+
+<div>
+    <label class="checkbox">
+            <input class="checkbox" type="checkbox" ng-model="search.details"> Show source
+    </label>
+</div>
+
 <div class="row" ng-show="metaResults.failedShards">
     <div class="col-md-12">
         <h3>Errors</h3>
@@ -76,7 +73,37 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-md-12" ng-show="totalItems>0">
+    <div class="col-md-3">
+        <div ng-repeat="(key,value) in aggs">
+            <div><strong>{{key}}</strong></div>
+            <div ng-repeat="bucket in value.buckets">
+                <div ng-show="search.aggs[key].aggsType === 'term'">
+                    <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-link"
+                          ng-click="addFilter(search.aggs[key].name,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
+                </div>
+                <div ng-show="search.aggs[key].aggsType === 'histogram'">
+                    <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)" ng-click="removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-link"
+                          ng-click="addFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
+                </div>
+                <div ng-show="search.aggs[key].aggsType === 'range'">
+                    <button class="btn btn-link" ng-show="checkSelectedRangeAggregate(key,bucket.from,bucket.to)" ng-click="removeRangeFilter(key,bucket.from,bucket.to)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedRangeAggregate(key,bucket.from,bucket.to)" class="btn btn-link"
+                          ng-click="addRangeFilter(key,bucket.from,bucket.to)">{{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}})</button>
+                </div>
+                <div ng-show="search.aggs[key].aggsType === 'datehistogram'">
+                    <button class="btn btn-link" ng-show="checkSelectedAggregate(key,bucket.key)"  ng-click="removeFilter(key,bucket.key)"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}}) <span
+                    class="glyphicon glyphicon-remove"></span></button>
+                    <button ng-hide="checkSelectedAggregate(key,bucket.key)" class="btn btn-mini btn-link"
+                            ng-click="addFilter(key,bucket.key)">{{bucket.key_as_string | date:'medium'}}
+                        ({{bucket.doc_count}})
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8" ng-show="totalItems>0">
         <pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm"
                     max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"></pagination>
@@ -87,10 +114,9 @@
                 <a href="{{result._source.url}}">{{result._source.title}}</a>
                 <small span ng-show="result._source.author">by {{result._source.author}} </small>
               </p>
-
-              <span class="text-warning" ng-show="search.details">
-                index: {{result._index}} - score: {{result._score}} - type: {{result._type}}
-              </span>
+                <div class="text-warning text-right" ng-show="search.details">
+                        source: {{result._type}}
+                </div>
             </div>
             <div class="well-small">
                 {{result.description | limitTo:300 }}

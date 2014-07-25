@@ -21,7 +21,7 @@
 </div>
 
 <div class="container" ng-show="alerts" ng-controller="NotificationCtrl">
-    <div class="row">
+    <div class="row" ng-cloak>
         <div class="alert alert-danger" ng-repeat="alert in alerts" ng-data="alert.msg"></div>
     </div>
 </div>
@@ -35,7 +35,7 @@
     <hr>
 
     <footer>
-        <p class="muted credit">Made possible by dbkats & dnephin & enrico & eoin & grega & xili. Based on work by: <a href="http://www.gridshore.nl">Jettro Coenradie</a> and <a
+        <p class="muted credit">Made possible by dbkats & dnephin & enrico & eoin & grega & jrm & xili. Based on work by: <a href="http://www.gridshore.nl">Jettro Coenradie</a> and <a
                 href="http://www.trifork.nl">Trifork Amsterdam</a>. {{ 'Version v%VERSION%.' | interpolate }}
         </p>
 

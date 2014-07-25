@@ -112,8 +112,7 @@
                     source: {{result._type}}
                 </div>
             </div>
-            <div class="well-small">
-                {{result.description | limitTo:300 }}
+            <div class="well-small" ng-bind-html="getDescription(result)">
             </div>
             <p ng-show="result._source.last_updated" class="text-right">
               <small>last updated</small> 

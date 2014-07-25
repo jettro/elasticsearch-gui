@@ -117,12 +117,26 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
         var highlight = {"fields": {"text": {}}};
         query.body.highlight = highlight;
 
+        /*
         var filter = filterChosenAggregatePart();
         if (filter) {
             query.body.query = {"filtered": {"query": searchPart(), "filter": filter}};
         } else {
             query.body.query = searchPart();
         }
+        */
+
+        if ($scope.search.advanced.searchSources.length > 0) {
+            var filter = {"or": []};
+            angular.forEach($scope.search.advanced.searchSources, function(source) {
+                var source_filter = {"type": {"value": source}};
+                filter["or"].push(source_filter);
+            });
+            query.body.filter = filter;
+        }
+
+        query.body.query = searchPart();
+
 
         $scope.metaResults = {};
         elastic.doSearch(query, function (results) {

@@ -296,7 +296,7 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            executedQuery = {"simple_query_string": {"query": $scope.search.simple, "fields": ["_all"], "analyzer": "snowball"}};
+            executedQuery = {"query_string": {"query": $scope.search.simple, "fields": ["_all"], "use_dis_max": true}};
         } else {
             executedQuery = {"matchAll": {}};
         }

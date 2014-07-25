@@ -9,10 +9,11 @@
         <form class="form-inline">
             <span>
                 <input class="form-control" type="search" ng-model="search.simple" autofocus="true"
-                       placeholder=""/>
+                       placeholder="Search"/>
             </span>
 
-            <button class="btn btn-primary" ng-click="restartSearch()"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
+            <button class="btn btn-primary" ng-click="restartSearch()">
+              <span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
             
             <label class="checkbox" ng-hide="search.doAdvanced">
                 <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
@@ -45,11 +46,6 @@
                 <br/>
             </div>
         </form>
-    </div>
-
-    <div class="col-sm-2">
-        <button class="btn btn-sm btn-default pull-right" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
-        <button class="btn btn-sm btn-default pull-right" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
     </div>
 </div>
 

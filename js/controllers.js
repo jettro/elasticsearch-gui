@@ -58,13 +58,15 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
 }
 NodeInfoCtrl.$inject = ['$scope', 'elastic', '$routeParams'];
 
-function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+function SearchCtrl($scope, $sce, $routeParams, $location, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
+    $scope.types = [];
     $scope.search = {};
     $scope.search.advanced = {};
     $scope.search.advanced.searchFields = [];
+    $scope.search.advanced.searchSources = [];
     $scope.search.aggs = {};
     $scope.search.selectedAggs = [];
 
@@ -90,6 +92,10 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
     $scope.init = function () {
         elastic.fields([], [], function (data) {
             $scope.fields = data;
+        });
+
+        elastic.types([], function (data) {
+            $scope.types = data;
         });
     };
 
@@ -175,6 +181,17 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
 
     $scope.removeSearchField = function (index) {
         $scope.search.advanced.searchFields.splice(index, 1);
+    };
+
+    $scope.addSearchSource = function () {
+        var searchSource = [];
+        if ($scope.search.advanced.newSource) {
+            $scope.search.advanced.searchSources.push($scope.search.advanced.newSource[0]);
+        }
+    };
+
+    $scope.removeSearchSource = function (index) {
+        $scope.search.advanced.searchSources.splice(index, 1);
     };
 
     $scope.openDialog = function () {
@@ -300,13 +317,19 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
         if ($scope.search.doAdvanced && $scope.search.advanced.searchFields.length > 0) {
             var tree = {};
             for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
+                console.log($scope.search.advanced.searchFields);
                 var searchField = $scope.search.advanced.searchFields[i];
                 var fieldForSearch = $scope.fields[searchField.field];
+                console.log("field search details");
+                console.log(searchField);
+                console.log(fieldForSearch);
                 recurseTree(tree, searchField.field, searchField.text);
                 if (fieldForSearch.nestedPath) {
                     defineNestedPathInTree(tree, fieldForSearch.nestedPath, fieldForSearch.nestedPath);
                 }
             }
+            console.log("Constructing query...");
+            console.log(constructQuery(tree));
             executedQuery = constructQuery(tree);
 
         } else if ($scope.search.simple && $scope.search.simple.length > 0) {
@@ -439,8 +462,17 @@ function SearchCtrl($scope, $sce, elastic, configuration, aggregateBuilder, $mod
             $scope.metaResults.errors.push(errors.message);
         }
     }
+
+    $scope.redirectSearch = function () {
+        $location.path("/search/" + $scope.search.simple);
+    };
+
+    if ($routeParams.hasOwnProperty("searchStr") && $routeParams.searchStr) {
+        $scope.search.simple = $routeParams.searchStr;
+        $scope.restartSearch();
+    }
 }
-SearchCtrl.$inject = ['$scope', '$sce', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+SearchCtrl.$inject = ['$scope', '$sce', '$routeParams', '$location', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
 function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
@@ -528,6 +560,7 @@ GraphCtrl.$inject = ['$scope', '$modal', 'elastic', 'aggregateBuilder'];
 
 function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
+    $scope.types = [];
     $scope.createdQuery = "";
 
     $scope.queryResults = [];
@@ -604,6 +637,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
                 $scope.query.types = {};
             }
         });
+        $scope.types = scope.query.types; // TODO: hacky, do better
     };
 
     $scope.loadFields = function () {

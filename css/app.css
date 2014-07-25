@@ -43,3 +43,8 @@ body {
 .result {
     margin-bottom: 1em;
 }
+
+em {
+    font-style: normal;
+    background-color: yellow;
+}

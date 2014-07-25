@@ -21,7 +21,7 @@
 </div>
 
 <div class="container" ng-show="alerts" ng-controller="NotificationCtrl">
-    <div class="row">
+    <div class="row" ng-cloak>
         <div class="alert alert-danger" ng-repeat="alert in alerts" ng-data="alert.msg"></div>
     </div>
 </div>

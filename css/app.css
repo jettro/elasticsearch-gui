@@ -34,3 +34,12 @@ body {
     stroke: none;
     font-size: 12px;
 }
+
+.result .header {
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.result {
+    margin-bottom: 1em;
+}

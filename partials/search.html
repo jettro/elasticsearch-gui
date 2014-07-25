@@ -108,38 +108,13 @@
                     max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"></pagination>
 
-        <div class="well" ng-show="tokensPerField">
-            <table>
-                <thead>
-                <tr>
-                    <!-- Hard-code order to: Title/author/summary (limited to certain number of characters)/more underneath (or hide them)? -->
-                    <th>Field</th> <!-- More space between Field and Value?-->
-                    <th>Value</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr ng-repeat="field in tokensPerField">
-                    <td>{{field.field}}&nbsp;</td>
-                    <!-- TODO: See if we can apply wiki markup to value.
-                    If not, at least do something basic like converting
-                    \n to newlines. -->
-                    <td>{{field.value}}</td>
-                    <!-- TODO: token needs a space or newline; I think " " will work to have it go to nextline, literal space character won't be moved down. -->
-                </tr>
-                </tbody>
-                <tfoot>
-                <tr>
-                    <td colspan="3">
-                        <button class="btn btn-default" ng-click="tokensPerField=undefined">Close</button>
-                    </td>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div ng-repeat="result in results.hits">
+        <div ng-repeat="result in results.hits" class="result">
             <div>
-              <h2><a href="{{result._source.url}}">{{result._source.title}}</a></h2>
+              <p class="header">
+                <a href="{{result._source.url}}">{{result._source.title}}</a>
+                <small span ng-show="result._source.author">by {{result._source.author}} </small>
+              </p>
+
               <span class="text-warning" ng-show="search.details">
                 index: {{result._index}} - score: {{result._score}} - type: {{result._type}}
               </span>
@@ -147,6 +122,10 @@
             <div class="well-small">
                 {{result._source.text | limitTo:300 }}
             </div>
+            <p ng-show="result._source.last_updated" class="text-right">
+              <small>last updated</small> 
+              {{ result._source.last_updated | date:'medium'}}
+            </p>
         </div>
         <br/>
         <pre>Page: {{currentPage}} / {{numPages}}</pre>

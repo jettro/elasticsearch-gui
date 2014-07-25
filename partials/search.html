@@ -22,9 +22,6 @@
             <button class="btn btn-info" ng-click="addSearchSource()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Filter</button>
             <!-- The button's there to force a call to the function. Eventually we'll want a dropdown like:
             http://dotansimha.github.io/angularjs-dropdown-multiselect/#/ -->
-            <label class="checkbox" ng-hide="search.doAdvanced">
-                <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
-            </label>
         </form>
     </div>
 
@@ -44,7 +41,6 @@
                     <option value="">-- choose field --</option>
                 </select>
                 <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
-                <button class="btn btn-info" ng-click="addSearchSource()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Filter</button>
             </span>
             <div>
                 <div ng-repeat="searchField in search.advanced.searchFields">
@@ -53,6 +49,7 @@
                 </div>
                 <br/>
             </div>
+
         </form>
     </div>
 
@@ -60,6 +57,12 @@
         <button class="btn btn-sm btn-default pull-right" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
         <button class="btn btn-sm btn-default pull-right" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
     </div>
+</div>
+
+<div>
+    <label class="checkbox">
+                <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Advanced search
+    </label>
 </div>
 
 <div class="row" ng-show="metaResults.failedShards">

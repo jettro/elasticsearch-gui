@@ -562,6 +562,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.types = [];
     $scope.createdQuery = "";
+    $scope.serverUrl = elastic.obtainServerAddress();
 
     $scope.queryResults = [];
     $scope.aggsResults = [];

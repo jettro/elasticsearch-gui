@@ -53,12 +53,6 @@
     </div>
 </div>
 
-<div>
-    <label class="checkbox">
-            <input class="checkbox" type="checkbox" ng-model="search.details"> Show source
-    </label>
-</div>
-
 <div class="row" ng-show="metaResults.failedShards">
     <div class="col-md-12">
         <h3>Errors</h3>
@@ -114,8 +108,8 @@
                 <a href="{{result._source.url}}">{{result._source.title}}</a>
                 <small span ng-show="result._source.author">by {{result._source.author}} </small>
               </p>
-                <div class="text-warning text-right" ng-show="search.details">
-                        source: {{result._type}}
+                <div class="text-warning text-right">
+                    source: {{result._type}}
                 </div>
             </div>
             <div class="well-small">

@@ -832,11 +832,10 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
     $scope.configure = configuration;
 
     var items = $scope.items = [
-        {title: 'Dashboard', link: 'dashboard'},
         {title: 'Search', link: 'search'},
+        {title: 'Dashboard', link: 'dashboard'},
         {title: 'Queries', link: 'query'},
         {title: 'Tools', link: 'tools'},
-        // {title: 'Graphs', link: 'graph'},
         {title: 'About', link: 'about'}
     ];
 

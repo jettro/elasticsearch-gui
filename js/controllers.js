@@ -128,6 +128,12 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             $scope.totalItems = results.hits.total;
 
             $scope.metaResults.totalShards = results._shards.total;
+            angular.forEach(results.hits.hits, function (hit) {
+                if (hit.highlight.text) {
+                    hit.description = hit.highlight.text.join('... ')
+                } else {
+                    hit.description = hit._source.text;
+            });
             if (results._shards.failed > 0) {
                 $scope.metaResults.failedShards = results._shards.failed;
                 $scope.metaResults.errors = [];

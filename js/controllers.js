@@ -68,8 +68,6 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     $scope.search.aggs = {};
     $scope.search.selectedAggs = [];
 
-    $scope.configError = "";
-
     $scope.results = [];
     $scope.aggs = [];
     $scope.tokensPerField = [];
@@ -88,15 +86,6 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     $scope.init = function () {
         elastic.fields([], [], function (data) {
             $scope.fields = data;
-            if (!$scope.configure.title) {
-                if ($scope.fields.title) {
-                    $scope.configure.title = "title";
-                }
-            }
-
-            if (!$scope.configure.description && $scope.fields.description) {
-                $scope.configure.description = "description";
-            }
         });
     };
 
@@ -110,16 +99,10 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     };
 
     $scope.doSearch = function () {
-        if ((!($scope.configure.title)) || (!($scope.configure.description))) {
-            $scope.configError = "Please configure the title and description in the configuration at the top of the page.";
-        } else {
-            $scope.configError = "";
-        }
 
         var query = {};
         query.index = "";
         query.body = {};
-        query.fields = $scope.configure.title + "," + $scope.configure.description
 
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;

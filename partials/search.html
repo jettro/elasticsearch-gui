@@ -1,9 +1,4 @@
 <div class="row">
-    <div class="col-md-12" ng-show="configError">
-        <div class="alert alert-danger">{{configError}}</div>
-    </div>
-</div>
-<div class="row">
     <div class="col-md-4">
         <label class="checkbox">
             <input class="checkbox" type="checkbox" ng-model="search.doAdvanced">Do advanced search
@@ -88,13 +83,13 @@
 
         <div ng-repeat="result in results.hits">
             <div>
-              <h2><a href="{{result.fields.url}}">{{result.fields.title}}</a></h2>
+              <h2><a href="{{result._source.url}}">{{result._source.title}}</a></h2>
               <span class="text-warning" ng-show="search.details">
                 index: {{result._index}} - score: {{result._score}} - type: {{result._type}}
               </span>
             </div>
             <div class="well-small">
-                {{result.fields.text | limitTo:300 }}
+                {{result._source.text | limitTo:300 }}
             </div>
         </div>
         <br/>

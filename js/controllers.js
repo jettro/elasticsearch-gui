@@ -432,6 +432,7 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.types = [];
     $scope.fields = [];
     $scope.results = [];
+    $scope.columns = [];
 
     /* Functions to retrieve values used to created the query */
     $scope.loadIndices = function () {
@@ -466,25 +467,28 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
         d.result.then(function (result) {
             if (result) {
                 $scope.aggregate = result;
+                $scope.executeQuery();
             }
         });
     };
-
-    function getValue(data) {
-        return data.doc_count;
-        // for (var key in data) {
-        //     if (data.hasOwnProperty(key)) {
-        //         return data[key];
-        //     }
-        // }
-    }
 
     $scope.executeQuery = function () {
         var query = createQuery();
 
         elastic.doSearch(query, function (results) {
-            // $scope.results = getValue(results.aggregations[$scope.aggregate.name]);
-            $scope.results = results.aggregations[$scope.aggregate.name].buckets;
+            if ($scope.aggregate.aggsType === "term") {
+                $scope.columns = [];
+                var result = {};
+                angular.forEach(results.aggregations[$scope.aggregate.name].buckets, function(bucket) {
+                    $scope.columns.push({"id":bucket.key,"type":"pie","name":bucket.key + "[" + bucket.doc_count + "]"});
+                    result[bucket.key]=bucket.doc_count;
+                });
+                $scope.results = [result];
+            } else {
+                $scope.columns = [{"id":"doc_count","type":"bar","name":"documents"}];
+                $scope.xaxis = {"id":"key"};
+                $scope.results = results.aggregations[$scope.aggregate.name].buckets;
+            }
         }, function (errors) {
             console.log(errors);
         });
@@ -839,7 +843,7 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
         {title: 'Search', link: 'search'},
         {title: 'Queries', link: 'query'},
         {title: 'Tools', link: 'tools'},
-        // {title: 'Graphs', link: 'graph'},
+        {title: 'Graphs', link: 'graph'},
         {title: 'About', link: 'about'}
     ];
 

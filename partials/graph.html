@@ -18,32 +18,43 @@
         <span ng-show="aggregate">{{aggregate.name}} ({{aggregate.aggsType}})</span>
     </div>
 </div>
-<div class="row" ng-show="aggregate">
-    <div class="col-md-12">
-        <button class="btn btn-primary" type="button" ng-click="executeQuery()">Execute<span
-                class="glyphicon glyphicon-fire glyphicon-white"></span></button>
-    </div>
-</div>
 
 <div class="row">
     <div class="col-md-12">
         <div ng-hide="results">
-            <div class="alert alert-info">Here we'll show the graphics when you have executed the query.</div>
+            <div class="alert alert-link">Here we'll show the graphics when you have executed the query.</div>
         </div>
         <div ng-show="results">
             <div ng-switch on="aggregate.aggsType">
-                <div ng-switch-when="term">
-                    <fs-donut outer-radius="200" inner-radius="75" duration="750" bind="results"/>
+                <div ng-switch-when="term" class="container">
+                    <c3chart bindto-id="chart2" chart-data="results" chart-columns="columns">
+                        <chart-legend show-legend="true" legend-position="right"/>
+                        <chart-size chart-height="400" chart-width="600"/>
+                    </c3chart>
                 </div>
                 <span ng-switch-when="date_histogram">
-                    <fs-date-histo duration="750" bind="results"/>
-                </span>
-                <span ng-switch-when="histogram">
-                    <!--<fs-bar bind="results" height="400"/>-->
                     TODO
                 </span>
+                <span ng-switch-when="histogram">
+                    <c3chart bindto-id="chart2" chart-data="results" chart-columns="columns" chart-x="xaxis">
+                        <chart-legend show-legend="false"/>
+                        <chart-size chart-height="400" chart-width="600"/>
+                        <chart-axis>
+                            <chart-axis-x axis-position="outer-left"
+                                          axis-label="Number by {{aggregate.interval}}"
+                                          axis-type="category">
+                                <chart-axis-x-tick tick-fit="true"
+                                                   tick-rotate="50"/>
+                            </chart-axis-x>
+                            <chart-axis-y axis-id="y"
+                                          axis-position="outer-right"
+                                          axis-label="Document count"
+                                          padding-bottom="0"
+                                          range-min="0"/>
+                            </chart-axis>
+                    </c3chart>
+                </span>
                 <span ng-switch-when="range">
-                    <!--<fs-bar bind="results" height="400"/>-->
                     TODO
                 </span>
             </div>

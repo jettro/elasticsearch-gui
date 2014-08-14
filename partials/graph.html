@@ -27,7 +27,7 @@
         <div ng-show="results">
             <div ng-switch on="aggregate.aggsType">
                 <div ng-switch-when="term" class="container">
-                    <c3chart bindto-id="chart2" chart-data="results" chart-columns="columns">
+                    <c3chart bindto-id="chartterm" chart-data="results" chart-columns="columns">
                         <chart-legend show-legend="true" legend-position="right"/>
                         <chart-size chart-height="400" chart-width="600"/>
                     </c3chart>
@@ -36,7 +36,7 @@
                     TODO
                 </span>
                 <span ng-switch-when="histogram">
-                    <c3chart bindto-id="chart2" chart-data="results" chart-columns="columns" chart-x="xaxis">
+                    <c3chart bindto-id="charthisto" chart-data="results" chart-columns="columns" chart-x="xaxis">
                         <chart-legend show-legend="false"/>
                         <chart-size chart-height="400" chart-width="600"/>
                         <chart-axis>
@@ -55,7 +55,24 @@
                     </c3chart>
                 </span>
                 <span ng-switch-when="range">
-                    TODO
+                    <!-- TODO Prefer not copying the whole thing -->
+                    <c3chart bindto-id="chartrange" chart-data="results" chart-columns="columns" chart-x="xaxis">
+                        <chart-legend show-legend="false"/>
+                        <chart-size chart-height="400" chart-width="600"/>
+                        <chart-axis>
+                            <chart-axis-x axis-position="outer-left"
+                                          axis-label="Number by {{aggregate.interval}}"
+                                          axis-type="category">
+                                <chart-axis-x-tick tick-fit="true"
+                                                   tick-rotate="50"/>
+                            </chart-axis-x>
+                            <chart-axis-y axis-id="y"
+                                          axis-position="outer-right"
+                                          axis-label="Document count"
+                                          padding-bottom="0"
+                                          range-min="0"/>
+                        </chart-axis>
+                    </c3chart>
                 </span>
             </div>
         </div>

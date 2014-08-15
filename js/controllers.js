@@ -479,11 +479,15 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
             if ($scope.aggregate.aggsType === "term") {
                 $scope.columns = [];
                 var result = {};
-                angular.forEach(results.aggregations[$scope.aggregate.name].buckets, function(bucket) {
-                    $scope.columns.push({"id":bucket.key,"type":"pie","name":bucket.key + "[" + bucket.doc_count + "]"});
-                    result[bucket.key]=bucket.doc_count;
+                angular.forEach(results.aggregations[$scope.aggregate.name].buckets, function (bucket) {
+                    $scope.columns.push({"id": bucket.key, "type": "pie", "name": bucket.key + "[" + bucket.doc_count + "]"});
+                    result[bucket.key] = bucket.doc_count;
                 });
                 $scope.results = [result];
+            } else if ($scope.aggregate.aggsType === "datehistogram") {
+                $scope.columns = [{"id":"doc_count","type":"line","name":"documents"}];
+                $scope.xaxis = {"id":"key"};
+                $scope.results = results.aggregations[$scope.aggregate.name].buckets;
             } else {
                 $scope.columns = [{"id":"doc_count","type":"bar","name":"documents"}];
                 $scope.xaxis = {"id":"key"};

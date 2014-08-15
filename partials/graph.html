@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-md-12">
         <div class="alert alert-info">
-            <p>This page helps you trying out different aggregations and how to present the data. Currently only term and date histogram aggregations are supported.</p>
+            <p>This page helps you trying out different aggregations and how to present the data.</p>
         </div>
     </div>
 </div>
@@ -32,8 +32,25 @@
                         <chart-size chart-height="400" chart-width="600"/>
                     </c3chart>
                 </div>
-                <span ng-switch-when="date_histogram">
-                    TODO
+                <span ng-switch-when="datehistogram">
+                    <c3chart bindto-id="charthisto" chart-data="results" chart-columns="columns" chart-x="xaxis" show-subchart="true" enable-zoom="true">
+                        <chart-legend show-legend="false"/>
+                        <chart-size chart-height="400" chart-width="600"/>
+                        <chart-axis>
+                            <chart-axis-x axis-position="outer-left"
+                                          axis-label="Date by {{aggregate.interval}}"
+                                          axis-type="timeseries">
+                                <chart-axis-x-tick tick-fit="true"
+                                                   tick-rotate="50"
+                                                   tick-format="%Y-%m-%d"/>
+                            </chart-axis-x>
+                            <chart-axis-y axis-id="y"
+                                          axis-position="outer-right"
+                                          axis-label="Document count"
+                                          padding-bottom="0"
+                                          range-min="0"/>
+                        </chart-axis>
+                    </c3chart>
                 </span>
                 <span ng-switch-when="histogram">
                     <c3chart bindto-id="charthisto" chart-data="results" chart-columns="columns" chart-x="xaxis">

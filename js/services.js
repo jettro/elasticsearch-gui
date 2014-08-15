@@ -2,7 +2,7 @@
 
 /* Services */
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '1.0');
+serviceModule.value('version', '1.1');
 
 serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (esFactory, configuration, $q) {
     function ElasticService(esFactory, configuration, $q) {

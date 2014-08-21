@@ -56,6 +56,9 @@
             <button class="btn btn-info btn-sm" ng-click="addQueryField()" title="Add query Field">
                 <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
             </button>
+            <button class="btn btn-info btn-sm" ng-click="addAllQueryFields()">
+                <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> all
+            </button>
             <span ng-repeat="field in query.chosenFields">{{field}}
                 <button class="btn btn-link btn-sm" ng-click="removeQueryField($index)" title="Remove query Field">
                     <span class="glyphicon glyphicon-remove"></span>

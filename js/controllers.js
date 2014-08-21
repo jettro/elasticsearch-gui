@@ -627,6 +627,13 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         $scope.changeQuery();
     };
 
+    $scope.addAllQueryFields = function() {
+        angular.forEach($scope.fields, function(value, key) {
+            $scope.query.chosenFields.push(key);
+        });
+        $scope.changeQuery();
+    };
+
     $scope.removeQueryField = function (index) {
         $scope.query.chosenFields.splice(index, 1);
         $scope.changeQuery();

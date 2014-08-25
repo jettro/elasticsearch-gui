@@ -849,14 +849,11 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
     $scope.configureServerUrl = false;
     $scope.configure = configuration;
 
-    var items = $scope.items = [
-        {title: 'Dashboard', link: 'dashboard'},
-        {title: 'Search', link: 'search'},
-        {title: 'Queries', link: 'query'},
-        {title: 'Tools', link: 'tools'},
-        {title: 'Graphs', link: 'graph'},
-        {title: 'About', link: 'about'}
-    ];
+    var items = [];
+
+    this.addItem = function(item) {
+        items.push(item);
+    };
 
     this.select = $scope.select = function (item) {
         angular.forEach(items, function (item) {

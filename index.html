@@ -18,7 +18,16 @@
 <body>
 
 <div>
-    <navbar heading="Elasticsearch GUI"/>
+    <navbar heading="Elasticsearch GUI">
+        <navbaritem link="dashboard" title="Dashboard"></navbaritem>
+        <navbaritem link="search" title="Search"></navbaritem>
+        <navbaritem link="query" title="Queries"></navbaritem>
+        <navbardropdown title="Tools">
+            <navbardropdownitem link="tools" title="Suggestions"></navbardropdownitem>
+        </navbardropdown>
+        <navbaritem link="graph" title="Graphs"></navbaritem>
+        <navbaritem link="about" title="About"></navbaritem>
+    </navbar>
 </div>
 
 <div class="container" ng-show="alerts" ng-controller="NotificationCtrl">

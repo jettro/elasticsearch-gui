@@ -34,3 +34,19 @@ body {
     stroke: none;
     font-size: 12px;
 }
+
+/* Where are my shards screen */
+.whereshard {
+    float: left;
+    border: 1px solid #67b168;
+    padding: 0px;
+    margin: 5px;
+}
+.whereshard div.whereshard-head {
+    background-color: #67b168;
+}
+.whereshard div.whereshardbody {
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top:2px;
+}

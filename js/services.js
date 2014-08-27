@@ -43,6 +43,12 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             });
         };
 
+        this.obtainShards = function(callback) {
+            es.cluster.state({"metric":["routing_table","nodes"]}).then(function(data) {
+               callback(data.nodes,data.routing_nodes.nodes);
+            });
+        };
+
         this.nodeInfo = function (nodeId, callback) {
             es.nodes.info({"nodeId": nodeId, "human": true}).then(function (data) {
                 callback(data.nodes[nodeId]);

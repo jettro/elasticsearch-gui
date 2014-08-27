@@ -46,8 +46,8 @@ angular.module('myApp.directives', []).
                 templateUrl: 'template/navbar/navbardropdownitem.html',
                 replace: true,
                 link: function ($scope, $element, $attrs, navbarCtrl) {
-                    $scope.item={"title": $attrs['title'], "link": $attrs['link'], "selected": false};
-                    navbarCtrl.addItem($scope.item);
+//                    $scope.item={"title": $attrs['title'], "link": $attrs['link'], "selected": false};
+//                    navbarCtrl.addItem($scope.item);
                 }
             }
         }]).
@@ -56,10 +56,12 @@ angular.module('myApp.directives', []).
                 require:'^navbar',
                 restrict: 'E',
                 transclude: true,
-                scope:{"theTitle":"@title"},
+                scope:{"theTitle":"@title","theLink":"@link"},
                 templateUrl: 'template/navbar/navbardropdown.html',
                 replace: true,
                 link: function ($scope, $element, $attrs, navbarCtrl) {
+                    $scope.item={"title": $scope.theTitle, "link": $scope.theLink, "selected": false};
+                    navbarCtrl.addItem($scope.item);
                 }
             }
         }]).

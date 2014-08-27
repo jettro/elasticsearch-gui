@@ -485,12 +485,16 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
                 });
                 $scope.results = [result];
             } else if ($scope.aggregate.aggsType === "datehistogram") {
-                $scope.columns = [{"id":"doc_count","type":"line","name":"documents"}];
-                $scope.xaxis = {"id":"key"};
+                $scope.columns = [
+                    {"id": "doc_count", "type": "line", "name": "documents"}
+                ];
+                $scope.xaxis = {"id": "key"};
                 $scope.results = results.aggregations[$scope.aggregate.name].buckets;
             } else {
-                $scope.columns = [{"id":"doc_count","type":"bar","name":"documents"}];
-                $scope.xaxis = {"id":"key"};
+                $scope.columns = [
+                    {"id": "doc_count", "type": "bar", "name": "documents"}
+                ];
+                $scope.xaxis = {"id": "key"};
                 $scope.results = results.aggregations[$scope.aggregate.name].buckets;
             }
         }, function (errors) {
@@ -627,8 +631,8 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         $scope.changeQuery();
     };
 
-    $scope.addAllQueryFields = function() {
-        angular.forEach($scope.fields, function(value, key) {
+    $scope.addAllQueryFields = function () {
+        angular.forEach($scope.fields, function (value, key) {
             $scope.query.chosenFields.push(key);
         });
         $scope.changeQuery();
@@ -851,7 +855,7 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
 
     var items = [];
 
-    this.addItem = function(item) {
+    this.addItem = function (item) {
         items.push(item);
     };
 
@@ -864,7 +868,7 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
 
     this.selectByUrl = function (url) {
         angular.forEach(items, function (item) {
-            if ('/' + item.link === url) {
+            if (item.link == url.split("/")[1]) {
                 $scope.select(item);
             }
         });

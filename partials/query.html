@@ -116,10 +116,12 @@
             <label class="checkbox-inline"><input type="checkbox" ng-model="query.explain"/></label>
             <span class="text-info">, Use highlighting:</span>
             <label class="checkbox-inline"><input type="checkbox" ng-model="query.highlight"/></label>
+            <span class="text-info">, Use multi search:</span>
+            <label class="checkbox-inline"><input class="checkbox" type="checkbox" ng-model="query.multiSearch"></label>
         </div>
     </div>
     <div class="row" style="padding-bottom: 5px">
-        <div class="col-md-12 alert alert-info">
+        <div class="col-md-12 alert alert-info" ng-hide="query.multiSearch">
             <span class="col-md-2"><label>Search for:</label></span>
             <span class="col-md-3"><input type="search" class="form-control" ng-model="query.term"
                                           placeholder="Enter search term"/></span>
@@ -131,6 +133,34 @@
             <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span
                     class="glyphicon glyphicon-download-alt"></span> load
             </button>
+        </div>
+        <div class="col-md-12 alert alert-info" ng-show="query.multiSearch">
+            <div>
+                <div class="col-xs-4">
+                    <select class="form-control" ng-model="query.advanced.newField"
+                            ng-options="key as value.forPrint for (key,value) in fields">
+                        <option value="">-- chose field --</option>
+                    </select>
+                </div>
+                <div class="col-xs-4">
+                    <input class="form-control" type="search" ng-model="query.advanced.newText" autofocus="true"
+                           placeholder="Type your search string"/>
+                </div>
+                <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
+            </div>
+            <div>
+                <div ng-repeat="searchField in query.advanced.searchFields">
+                    {{searchField.field}} = {{searchField.text}} <button class="btn btn-link" ng-click="removeSearchField($index)"><span
+                        class="glyphicon glyphicon-remove"></span></button>
+                </div>
+                <br/>
+
+                <div>
+                    <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
+                    <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
+                    <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
+                </div>
+            </div>
         </div>
     </div>
 </form>

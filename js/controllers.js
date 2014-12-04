@@ -119,7 +119,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         var query = {};
         query.index = "";
         query.body = {};
-        query.fields = $scope.configure.title + "," + $scope.configure.description
+        query.fields = $scope.configure.title + "," + $scope.configure.description;
 
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
@@ -537,6 +537,10 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.query.aggs = {};
     $scope.query.indices = {};
     $scope.query.types = {};
+    $scope.query.advanced = {};
+    $scope.query.advanced.searchFields = [];
+    $scope.query.multiSearch=false;
+
 
     // initialize pagination
     $scope.currentPage = 1;
@@ -643,6 +647,17 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         $scope.changeQuery();
     };
 
+    $scope.addSearchField = function () {
+        var searchField = {};
+        searchField.field = $scope.query.advanced.newField;
+        searchField.text = $scope.query.advanced.newText;
+        $scope.query.advanced.searchFields.push(searchField);
+    };
+
+    $scope.removeSearchField = function (index) {
+        $scope.query.advanced.searchFields.splice(index, 1);
+    };
+
     $scope.removeAggregateField = function (name) {
         delete $scope.query.aggs[name];
         $scope.changeQuery();
@@ -682,6 +697,10 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         $scope.query.chosenIndices = [];
         $scope.query.chosenTypes = [];
         $scope.query.chosenFields = [];
+        $scope.query.advanced = {};
+        $scope.query.advanced.searchFields = [];
+        $scope.query.multiSearch=false;
+
         $scope.changeQuery();
         $scope.query.type = "or";
     };
@@ -749,8 +768,20 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         if ($scope.query.chosenFields.length > 0) {
             query.fields = $scope.query.chosenFields.toString();
         }
+        if ($scope.query.multiSearch && $scope.query.advanced.searchFields.length > 0) {
+            // Check query type, if and use must else use should
+            var tree = {};
+            for (var i = 0; i < $scope.query.advanced.searchFields.length; i++) {
+                var searchField = $scope.query.advanced.searchFields[i];
+                var fieldForSearch = $scope.fields[searchField.field];
+                recurseTree(tree, searchField.field, searchField.text);
+                if (fieldForSearch.nestedPath) {
+                    defineNestedPathInTree(tree, fieldForSearch.nestedPath, fieldForSearch.nestedPath);
+                }
+            }
+            query.body.query = constructQuery(tree);
 
-        if ($scope.query.term.length > 0) {
+        } else if ($scope.query.term.length > 0) {
             var matchPart = {};
             matchPart.query = $scope.query.term;
             if ($scope.query.type === 'phrase') {
@@ -774,6 +805,72 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
             query.body.highlight = highlight;
         }
         return query;
+    }
+
+    function constructQuery(tree) {
+        var props = Object.getOwnPropertyNames(tree);
+        var boolQuery = {};
+        boolQuery.bool = {};
+        boolQuery.bool.must = [];
+        for (var i = 0; i < props.length; i++) {
+            var prop = props[i];
+            if (tree[prop] instanceof Object) {
+                boolQuery.bool.must.push(constructQuery(tree[prop]));
+            } else if (!(prop.substring(0, 1) === "_")) {
+                var fieldName = prop;
+                if (tree._nested) {
+                    fieldName = tree._nested + "." + fieldName;
+                }
+
+                var matchQuery = {};
+                matchQuery[fieldName] = {};
+                matchQuery[fieldName].query = tree[prop];
+                if ($scope.query.type === 'phrase') {
+                    matchQuery[fieldName].type = "phrase";
+                } else {
+                    matchQuery[fieldName].operator = $scope.query.type;
+                }
+                boolQuery.bool.must.push({"match": matchQuery});
+            }
+        }
+
+        var returnQuery;
+        if (tree._nested) {
+            var nestedQuery = {};
+            nestedQuery.nested = {};
+            nestedQuery.nested.path = tree._nested;
+            nestedQuery.nested.query = boolQuery;
+            returnQuery = nestedQuery;
+        } else {
+            returnQuery = boolQuery;
+        }
+
+        return returnQuery;
+    }
+
+    function defineNestedPathInTree(tree, path, nestedPath) {
+        var pathItems = path.split(".");
+        if (pathItems.length > 1) {
+            defineNestedPathInTree(tree[pathItems[0]], pathItems.splice(1).join("."), nestedPath);
+        } else {
+            tree[path]._nested = nestedPath;
+        }
+
+    }
+
+    function recurseTree(tree, newKey, value) {
+        var newKeys = newKey.split(".");
+
+        if (newKeys.length > 1) {
+            if (!tree.hasOwnProperty(newKeys[0])) {
+                tree[newKeys[0]] = {};
+            }
+            recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value);
+        } else {
+            if (!tree.hasOwnProperty(newKey)) {
+                tree[newKey] = value;
+            }
+        }
     }
 
     this.errorCallback = function (errors) {

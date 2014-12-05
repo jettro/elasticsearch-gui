@@ -6,8 +6,13 @@
             <ul>
                 <li>Connect to each elasticsearch instance you have (html based) access to</li>
                 <li>Search the connected elasticsearch instance. This is how a search box on a website could work.</li>
-                <li>Construct a query and learn about the constructed query</li>
+                <li>Construct a query and learn about the constructed query.</li>
             </ul>
+            <p>Starting from elasticsearch 1.4 there have been some security measures. One thing is that CORS is now by
+                default disabled. This is smart from security perspective but prevents this plugin from running if you
+                are not coming from the same host as the elasticsearch server. If you still want this to work add the
+                following properties to elasticsearch.yml: http.cors.enabled: true and
+                http.cors.allow-origin: "http://www.gridshore.nl"</p>
         </div>
     </div>
 </div>

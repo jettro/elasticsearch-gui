@@ -1,4 +1,4 @@
-function AggregateDialogCtrl($scope, $modalInstance, fields) {
+function AggregateDialogCtrl ($scope, $modalInstance, fields) {
     $scope.fields = fields;
     $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
     $scope.ranges = [];
@@ -27,3 +27,4 @@ function AggregateDialogCtrl($scope, $modalInstance, fields) {
         $scope.ranges.push([data.range.from, data.range.to]);
     }
 }
+AggregateDialogCtrl.$inject = ['$scope', '$modalInstance', 'fields'];

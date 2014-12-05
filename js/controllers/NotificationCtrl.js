@@ -1,4 +1,4 @@
-function NotificationCtrl($scope, $timeout) {
+function NotificationCtrl($scope, $timeout){
     $scope.alerts = {};
 
     $scope.$on('msg:notification', function (event, type, message) {
@@ -10,3 +10,4 @@ function NotificationCtrl($scope, $timeout) {
         }, 5000);
     });
 }
+NotificationCtrl.$inject = ['$scope', '$timeout'];

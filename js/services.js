@@ -2,7 +2,7 @@
 
 /* Services */
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '1.1');
+serviceModule.value('version', 1.2);
 
 serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (esFactory, configuration, $q) {
     function ElasticService(esFactory, configuration, $q) {
@@ -269,7 +269,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
 
         function createEsFactory() {
 //            return esFactory({"host": serverUrl, "apiVersion":"1.0","sniffOnStart": false,"sniffInterval": 60000});
-            return esFactory({"host": serverUrl, "apiVersion": "1.1"});
+            return esFactory({"host": serverUrl, "apiVersion": "1.4"});
         }
 
         function indexIsNotIgnored(index) {

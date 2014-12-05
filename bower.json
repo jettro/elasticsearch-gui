@@ -1,0 +1,24 @@
+{
+  "name": "elasticsearch-gui",
+  "version": "1.2.0",
+  "homepage": "https://github.com/jettro/elasticsearch-gui",
+  "authors": [
+    "jettro <jettro@gridshore.nl>"
+  ],
+  "license": "Apache-2",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "ui-bootstrap": "~0.11.0",
+    "angular": "~1.2.16",
+    "angular-route": "~1.2.27",
+    "c3": "~0.4.7",
+    "elasticsearch": "~3.0.1"
+  }
+}

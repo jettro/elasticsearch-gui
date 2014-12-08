@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v1.2.0 - 2014-12-05
+/*! elasticsearch-gui - v1.2.0 - 2014-12-08
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2014 ; Licensed  */
 (function(window, document, undefined) {'use strict';
@@ -80733,14 +80733,25 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
         }
 
         function indexIsNotIgnored(index) {
-            var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
             var ignore = false;
-            angular.forEach(excludedIndexes, function (excludedIndex) {
-                var indexToCheck = excludedIndex.trim();
-                if (index.substring(0, indexToCheck.length) === indexToCheck) {
-                    ignore = true;
-                }
-            });
+            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
+                ignore = true;
+                var includedIndexes = (configuration.includedIndexes) ? configuration.includedIndexes.split(",") : [];
+                angular.forEach(includedIndexes, function (includedIndex) {
+                    var indexToCheck = includedIndex.trim();
+                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
+                        ignore = false;
+                    }
+                });
+            } else {
+                var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
+                angular.forEach(excludedIndexes, function (excludedIndex) {
+                    var indexToCheck = excludedIndex.trim();
+                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
+                        ignore = true;
+                    }
+                });
+            }
 
             return !ignore;
         }

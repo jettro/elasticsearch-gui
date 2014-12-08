@@ -273,14 +273,25 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
         }
 
         function indexIsNotIgnored(index) {
-            var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
             var ignore = false;
-            angular.forEach(excludedIndexes, function (excludedIndex) {
-                var indexToCheck = excludedIndex.trim();
-                if (index.substring(0, indexToCheck.length) === indexToCheck) {
-                    ignore = true;
-                }
-            });
+            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
+                ignore = true;
+                var includedIndexes = (configuration.includedIndexes) ? configuration.includedIndexes.split(",") : [];
+                angular.forEach(includedIndexes, function (includedIndex) {
+                    var indexToCheck = includedIndex.trim();
+                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
+                        ignore = false;
+                    }
+                });
+            } else {
+                var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
+                angular.forEach(excludedIndexes, function (excludedIndex) {
+                    var indexToCheck = excludedIndex.trim();
+                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
+                        ignore = true;
+                    }
+                });
+            }
 
             return !ignore;
         }

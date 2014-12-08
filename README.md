@@ -14,7 +14,12 @@ Since we use mainly JavaScript, it is possible to connect to a remote elasticsea
 That way you can use my installed version of the plugin to connect to your local elasticsearch instance. You can find it at the following url:
 [Remote installed plugin @gridshore](http://www.gridshore.nl/esgui)
 
-# Older versions
-Currently we develop agains elasticsearch v1.0. Due to some api changes you cannot use it with older elasticsearch installations. You can however use the older version in branch v0.90.8+. On my website you can also access the older version using the url:
+Starting from elasticsearch 1.4 there have been some security measures. One thing is that CORS is now by default disabled. This is smart from security perspective but prevents this plugin from running if you are not coming from the same host as the elasticsearch server. If you still want this to work add the following properties to elasticsearch.yml: 
+http.cors.enabled: true
+http.cors.allow-origin: "http://www.gridshore.nl"
 
+# Older versions
+Currently we develop agains elasticsearch v1.4. Due to some api changes you cannot use it with older elasticsearch installations. You can however use the older versions in branch v1.1.x and v0.90.8+. On my website you can also access the older version using the url:
+
+[Remote installed plugin @gridshore (v1.1)](http://www.gridshore.nl/esgui_1_1)
 [Remote installed plugin @gridshore (v0.90)](http://www.gridshore.nl/esgui_0_90)

@@ -1,9 +1,3 @@
-'use strict';
-
-/* Services */
-var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', 1.2);
-
 serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (esFactory, configuration, $q) {
     function ElasticService(esFactory, configuration, $q) {
         var serverUrl = configuration.serverUrl;
@@ -45,7 +39,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
 
         this.obtainShards = function(callback) {
             es.cluster.state({"metric":["routing_table","nodes"]}).then(function(data) {
-               callback(data.nodes,data.routing_nodes.nodes);
+                callback(data.nodes,data.routing_nodes.nodes);
             });
         };
 
@@ -268,7 +262,6 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
         };
 
         function createEsFactory() {
-//            return esFactory({"host": serverUrl, "apiVersion":"1.0","sniffOnStart": false,"sniffInterval": 60000});
             return esFactory({"host": serverUrl, "apiVersion": "1.4"});
         }
 
@@ -298,131 +291,4 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
     }
 
     return new ElasticService(esFactory, configuration, $q);
-}]);
-
-serviceModule.factory('configuration', ['$rootScope', 'localStorage', '$location', function ($rootScope, localStorage, $location) {
-    function LocalStorageService(localStorage) {
-        var LOCAL_STORAGE_ID = 'es-config',
-                configurationString = localStorage[LOCAL_STORAGE_ID];
-
-        var configuration;
-        if (configurationString) {
-            configuration = JSON.parse(configurationString);
-        } else {
-            var host;
-            if ($location.host() == 'www.gridshore.nl') {
-                host = "http://localhost:9200";
-            } else {
-                host = $location.protocol() + "://" + $location.host() + ":" + $location.port();
-            }
-
-            configuration = {
-                title: undefined,
-                description: undefined,
-                exludedIndexes: undefined,
-                serverUrl: host
-            };
-        }
-
-        $rootScope.$watch(function () {
-            return configuration;
-        }, function () {
-            localStorage[LOCAL_STORAGE_ID] = JSON.stringify(configuration);
-        }, true);
-
-        return configuration;
-    }
-
-    return new LocalStorageService(localStorage);
-}]);
-
-serviceModule.factory('queryStorage', ['localStorage', function (localStorage) {
-    function QueryStorage(localStorage) {
-        var LOCAL_STORAGE_ID_QUERY = 'es-query';
-        var LOCAL_STORAGE_ID_SEARCH = 'es-search';
-
-        this.loadQuery = function (callback) {
-            var query = localStorage[LOCAL_STORAGE_ID_QUERY];
-            callback(JSON.parse(query));
-        };
-
-        this.saveQuery = function (query) {
-            localStorage[LOCAL_STORAGE_ID_QUERY] = JSON.stringify(query);
-        };
-
-        this.loadSearch = function (callback) {
-            var search = localStorage[LOCAL_STORAGE_ID_SEARCH];
-            callback(JSON.parse(search));
-        };
-
-        this.saveSearch = function (search) {
-            localStorage[LOCAL_STORAGE_ID_SEARCH] = JSON.stringify(search);
-        };
-    }
-
-    return new QueryStorage(localStorage);
-}]);
-
-serviceModule.factory('serverConfig', ['$location', function ($location) {
-    function ServerConfig(location) {
-        if (location.host() == 'www.gridshore.nl') {
-            this.host = "http://localhost:9200";
-        } else {
-            this.host = location.protocol() + "://" + location.host() + ":" + location.port();
-        }
-    }
-
-    return new ServerConfig($location);
-}]);
-
-serviceModule.factory('aggregateBuilder', function () {
-    function AggregateBuilder() {
-        this.build = function (aggs) {
-            var queryaggs = {};
-
-            angular.forEach(aggs, function (aggregation, key) {
-                if (aggregation.aggsType === 'term') {
-                    queryaggs[aggregation.name] = {"terms": {"field": aggregation.field}};
-                } else if (aggregation.aggsType === 'range') {
-                    var ranges = [];
-                    for (var j = 0; j < aggregation.ranges.length; j++) {
-                        var range = aggregation.ranges[j];
-                        if (range[0] == undefined) {
-                            ranges.push({"to": range[1]})
-                        } else if (range[1] == undefined) {
-                            ranges.push({"from": range[0]})
-                        } else {
-                            ranges.push({"from": range[0], "to": range[1]});
-                        }
-                    }
-                    queryaggs[aggregation.name] = {"range": {"field": aggregation.field, "ranges": ranges}};
-                } else if (aggregation.aggsType === 'datehistogram') {
-                    queryaggs[aggregation.name] = {"date_histogram": {"field": aggregation.field, "interval": aggregation.interval}};
-                } else if (aggregation.aggsType === 'histogram') {
-                    queryaggs[aggregation.name] = {"histogram": {"field": aggregation.field, "interval": aggregation.interval}};
-                }
-            });
-            return queryaggs;
-        }
-    }
-
-    return new AggregateBuilder();
-});
-
-serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {
-    function ErrorHandling(rootScope) {
-        this.add = function (message) {
-            var errorMessage;
-            if (message && typeof message === "object") {
-                if (message.hasOwnProperty('message')) {
-                    errorMessage = message.message;
-                }
-            } else {
-                errorMessage = message;
-            }
-            rootScope.$broadcast('msg:notification', 'error', errorMessage);
-        };
-    }
-
-    return new ErrorHandling($rootScope);
 }]);

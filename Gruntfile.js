@@ -22,7 +22,7 @@ module.exports = function (grunt) {
                     'bower_components/d3/d3.js',
                     'bower_components/c3/c3.js',
                     'js/c3js-directive.js',
-                    'js/app.js','js/controllers/*','js/directives.js','js/filters.js','js/services.js'
+                    'js/app.js','js/controllers/*','js/directives.js','js/filters.js','js/services/*'
                     ],
                 dest: 'assets/js/<%= pkg.name %>.js'
             }

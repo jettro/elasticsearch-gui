@@ -23,3 +23,6 @@ myApp.factory('$exceptionHandler',['$injector', function($injector) {
         throw exception;
     };
 }]);
+
+var serviceModule = angular.module('myApp.services', []);
+serviceModule.value('version', 1.2);

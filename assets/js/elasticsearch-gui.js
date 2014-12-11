@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v1.2.0 - 2014-12-10
+/*! elasticsearch-gui - v1.2.0 - 2014-12-11
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2014 ; Licensed  */
 (function(window, document, undefined) {'use strict';
@@ -79246,8 +79246,9 @@ var myApp = angular.module('myApp', ['ngRoute','myApp.filters', 'myApp.services'
             $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: SearchCtrl});
             $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: QueryCtrl});
             $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: GraphCtrl});
-            $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: ToolCtrl});
+            $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: SuggestionsCtrl});
             $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: WhereShardsCtrl});
+            $routeProvider.when('/tools/snapshots', {templateUrl: 'partials/snapshots.html', controller: SnapshotsCtrl});
             $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
             $routeProvider.otherwise({redirectTo: '/dashboard'});
         }]);
@@ -80267,7 +80268,11 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 }
 SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
-function ToolCtrl($scope, elastic) {
+function SnapshotsCtrl($scope, elastic) {
+}
+SnapshotsCtrl.$inject = ['$scope', 'elastic'];
+
+function SuggestionsCtrl($scope, elastic) {
     $scope.suggest = {};
     $scope.suggest.index = '';
     $scope.suggest.field = '';
@@ -80328,7 +80333,7 @@ function ToolCtrl($scope, elastic) {
 
     $scope.loadIndices();
 }
-ToolCtrl.$inject = ['$scope', 'elastic'];
+SuggestionsCtrl.$inject = ['$scope', 'elastic'];
 
 function WhereShardsCtrl($scope, $timeout, elastic) {
     $scope.shardsInfo = {};

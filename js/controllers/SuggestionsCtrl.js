@@ -1,4 +1,4 @@
-function ToolCtrl($scope, elastic) {
+function SuggestionsCtrl($scope, elastic) {
     $scope.suggest = {};
     $scope.suggest.index = '';
     $scope.suggest.field = '';
@@ -59,4 +59,4 @@ function ToolCtrl($scope, elastic) {
 
     $scope.loadIndices();
 }
-ToolCtrl.$inject = ['$scope', 'elastic'];
+SuggestionsCtrl.$inject = ['$scope', 'elastic'];

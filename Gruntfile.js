@@ -8,6 +8,12 @@ module.exports = function (grunt) {
         '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
         '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' +
         ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
+        watch: {
+            js: {
+                files: '<%= jshint.all %>',
+                tasks: ['concat']
+            }
+        },
         concat: {
             options: {
                 banner: '<%= banner %>',
@@ -34,7 +40,9 @@ module.exports = function (grunt) {
             },
             all: [
                 'Gruntfile.js',
-                'assets/js/elasticsearch-gui.js'
+                'js/controllers/*',
+                'js/services/*',
+                'js/*.js'
             ]
         },
         uglify: {
@@ -54,6 +62,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
+    grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('combine',['concat:dist','uglify:dist']);
 };

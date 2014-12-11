@@ -1,1 +1,73 @@
-<p>Snapshots</p>
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-info">On this page you can check the snapshots that are created in your cluster. You can
+            also execute some basic actions that are snapshot related. You can create file system based repositories,
+            start snapshots within a repository, remove snapshots and restore snapshots.
+        </div>
+    </div>
+</div>
+
+
+<h2>Repositories</h2>
+<table class="table table-bordered table-hover">
+    <caption>Click on a row to select that specific repository, green means the repository is selected.</caption>
+    <thead>
+        <tr>
+            <th>Repository name</th>
+            <th>Type</th>
+            <th>Location</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr ng-repeat="(key,value) in repositories" ng-class="{success: selectedRepository === key}"
+            ng-click="selectRepository(key)">
+            <td>{{key}}</td>
+            <td>{{value.type}}</td>
+            <td><span ng-show="value.type=='fs'">{{value.settings.location}}</span></td>
+        </tr>
+    </tbody>
+</table>
+<div ng-show="snapshots">
+    <table class="table table-bordered table-hover" ng-hide="snapshotsStatus">
+        <caption>This table contains the snapshots in the selected repository.</caption>
+        <thead>
+        <tr>
+            <th>Snapshot name</th>
+            <th>Indices</th>
+            <th>Start time</th>
+            <th>End time</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="snapshot in snapshots">
+            <td>{{snapshot.snapshot}}</td>
+            <td>{{snapshot.indices}}</td>
+            <td>{{snapshot.start_time}}</td>
+            <td>{{snapshot.end_time}}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div ng-show="snapshotsStatus">
+        <div ng-repeat="snapshot in snapshots">
+            <h3>{{snapshot.snapshot}} ({{snapshot.state}})</h3>
+            <div>Number of files - {{snapshot.stats.number_of_files}}, Processed files - {{snapshot.stats.processed_files}}</div>
+            <table class="table table-condensed">
+                <thead>
+                    <tr>
+                        <th>index</th>
+                        <th>Number of files</th>
+                        <th>Processed files</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="(key,value) in snapshot.indices" ng-class="{warning: value.stats.number_of_files !== value.stats.processed_files}">
+                        <td>{{key}}</td>
+                        <td>{{value.stats.number_of_files}}</td>
+                        <td>{{value.stats.processed_files}}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

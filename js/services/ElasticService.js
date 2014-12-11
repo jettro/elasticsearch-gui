@@ -189,6 +189,24 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             });
         };
 
+        this.snapshotRepositories = function(callback) {
+            es.snapshot.getRepository().then(function(data) {
+                callback(data);
+            }, logErrors);
+        };
+
+        this.obtainSnapshots = function(repository,callback) {
+            es.snapshot.get({"repository":repository,"snapshot":"_all"}).then(function(data){
+                callback(data.snapshots);
+            }, logErrors);
+        };
+
+        this.obtainSnapshotStatus = function(callback) {
+            es.snapshot.status().then(function(data){
+                callback(data.snapshots);
+            }, logErrors);
+        };
+
         function handleSubfields(field, fieldName, myFields, nestedPath) {
             if (field.hasOwnProperty("properties")) {
                 var nested = (field.type == "nested" | field.type == "object");
@@ -287,6 +305,10 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             }
 
             return !ignore;
+        }
+
+        var logErrors = function(errors) {
+            console.log(errors);
         }
     }
 

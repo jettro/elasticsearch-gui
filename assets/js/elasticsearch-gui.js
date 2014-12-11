@@ -80269,6 +80269,41 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
 SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
 function SnapshotsCtrl($scope, elastic) {
+    $scope.repositories = [];
+    $scope.selectedRepository = "";
+    $scope.snapshots = [];
+    $scope.snapshotsStatus = false;
+
+    $scope.$watch('selectedRepository', function () {
+        if ($scope.selectedRepository !== "") {
+            elastic.obtainSnapshotStatus(function(snapshots) {
+                if (snapshots.length > 0) {
+                    $scope.snapshotsStatus = true;
+                    $scope.snapshots = snapshots;
+
+                } else {
+                    elastic.obtainSnapshots($scope.selectedRepository, function(snapshots) {
+                        $scope.snapshotsStatus = false;
+                        $scope.snapshots = snapshots;
+                    });
+                }
+            });
+        }
+    });
+
+    $scope.listRepositories = function() {
+        elastic.snapshotRepositories(function(data) {
+            $scope.repositories = data;
+        });
+    };
+
+    $scope.selectRepository = function(name) {
+        $scope.selectedRepository = name;
+    };
+
+    $scope.$on('$viewContentLoaded', function () {
+        $scope.listRepositories();
+    });
 }
 SnapshotsCtrl.$inject = ['$scope', 'elastic'];
 
@@ -80727,6 +80762,24 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             });
         };
 
+        this.snapshotRepositories = function(callback) {
+            es.snapshot.getRepository().then(function(data) {
+                callback(data);
+            }, logErrors);
+        };
+
+        this.obtainSnapshots = function(repository,callback) {
+            es.snapshot.get({"repository":repository,"snapshot":"_all"}).then(function(data){
+                callback(data.snapshots);
+            }, logErrors);
+        };
+
+        this.obtainSnapshotStatus = function(callback) {
+            es.snapshot.status().then(function(data){
+                callback(data.snapshots);
+            }, logErrors);
+        };
+
         function handleSubfields(field, fieldName, myFields, nestedPath) {
             if (field.hasOwnProperty("properties")) {
                 var nested = (field.type == "nested" | field.type == "object");
@@ -80825,6 +80878,10 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             }
 
             return !ignore;
+        }
+
+        var logErrors = function(errors) {
+            console.log(errors);
         }
     }
 

@@ -1,5 +1,5 @@
-serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (esFactory, configuration, $q) {
-    function ElasticService(esFactory, configuration, $q) {
+serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScope', function (esFactory, configuration, $q, $rootScope) {
+    function ElasticService(esFactory, configuration, $q, $rootScope) {
         var serverUrl = configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
@@ -207,6 +207,24 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
             }, logErrors);
         };
 
+        this.removeSnapshot = function(repository,snapshot,callback) {
+            es.snapshot.delete({"repository":repository,"snapshot":snapshot}).then(function(data) {
+                callback();
+            }, logErrors);
+        };
+
+        this.restoreSnapshot = function(repository,snapshot,callback) {
+            es.snapshot.restore({"repository":repository,"snapshot":snapshot}).then(function(data) {
+                callback();
+            }, broadcastError);
+        };
+
+        this.createSnapshot = function(newSnapshot,callback) {
+            es.snapshot.create(newSnapshot).then(function(data) {
+                callback();
+            }, logErrors);
+        };
+
         function handleSubfields(field, fieldName, myFields, nestedPath) {
             if (field.hasOwnProperty("properties")) {
                 var nested = (field.type == "nested" | field.type == "object");
@@ -309,8 +327,12 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', function (
 
         var logErrors = function(errors) {
             console.log(errors);
-        }
+        };
+
+        var broadcastError = function(error) {
+            $rootScope.$broadcast('msg:notification', 'error', error.message);
+        };
     }
 
-    return new ElasticService(esFactory, configuration, $q);
+    return new ElasticService(esFactory, configuration, $q, $rootScope);
 }]);

@@ -7,7 +7,7 @@ function NotificationCtrl($scope, $timeout){
 
         $timeout(function () {
             delete $scope.alerts[id];
-        }, 5000);
+        }, 10000);
     });
 }
 NotificationCtrl.$inject = ['$scope', '$timeout'];

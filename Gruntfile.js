@@ -27,6 +27,7 @@ module.exports = function (grunt) {
                     'bower_components/elasticsearch/elasticsearch.angular.js',
                     'bower_components/d3/d3.js',
                     'bower_components/c3/c3.js',
+                    'bower_components/moment/moment.js',
                     'js/c3js-directive.js',
                     'js/app.js','js/controllers/*','js/directives.js','js/filters.js','js/services/*'
                     ],

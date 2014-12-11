@@ -8,66 +8,93 @@
 </div>
 
 
-<h2>Repositories</h2>
-<table class="table table-bordered table-hover">
-    <caption>Click on a row to select that specific repository, green means the repository is selected.</caption>
-    <thead>
-        <tr>
-            <th>Repository name</th>
-            <th>Type</th>
-            <th>Location</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr ng-repeat="(key,value) in repositories" ng-class="{success: selectedRepository === key}"
-            ng-click="selectRepository(key)">
-            <td>{{key}}</td>
-            <td>{{value.type}}</td>
-            <td><span ng-show="value.type=='fs'">{{value.settings.location}}</span></td>
-        </tr>
-    </tbody>
-</table>
-<div ng-show="snapshots">
-    <table class="table table-bordered table-hover" ng-hide="snapshotsStatus">
-        <caption>This table contains the snapshots in the selected repository.</caption>
-        <thead>
-        <tr>
-            <th>Snapshot name</th>
-            <th>Indices</th>
-            <th>Start time</th>
-            <th>End time</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="snapshot in snapshots">
-            <td>{{snapshot.snapshot}}</td>
-            <td>{{snapshot.indices}}</td>
-            <td>{{snapshot.start_time}}</td>
-            <td>{{snapshot.end_time}}</td>
-        </tr>
-        </tbody>
-    </table>
+<div class="row">
+    <div class="col-md-12">
+        <h2>Repositories</h2>
+        <table class="table table-bordered table-hover">
+            <caption>Click on a row to select that specific repository, green means the repository is selected.</caption>
+            <thead>
+                <tr>
+                    <th>Repository name</th>
+                    <th>Type</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="(key,value) in repositories" ng-class="{success: selectedRepository === key}"
+                    ng-click="selectRepository(key)">
+                    <td>{{key}}</td>
+                    <td>{{value.type}}</td>
+                    <td><span ng-show="value.type=='fs'">{{value.settings.location}}</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-    <div ng-show="snapshotsStatus">
-        <div ng-repeat="snapshot in snapshots">
-            <h3>{{snapshot.snapshot}} ({{snapshot.state}})</h3>
-            <div>Number of files - {{snapshot.stats.number_of_files}}, Processed files - {{snapshot.stats.processed_files}}</div>
-            <table class="table table-condensed">
-                <thead>
-                    <tr>
-                        <th>index</th>
-                        <th>Number of files</th>
-                        <th>Processed files</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="(key,value) in snapshot.indices" ng-class="{warning: value.stats.number_of_files !== value.stats.processed_files}">
-                        <td>{{key}}</td>
-                        <td>{{value.stats.number_of_files}}</td>
-                        <td>{{value.stats.processed_files}}</td>
-                    </tr>
-                </tbody>
-            </table>
+<div class="row" ng-show="snapshots">
+    <div class="col-md-12">
+        <h2>Snapshots</h2>
+        <button type="button" class="btn btn-default" ng-click="listSnapshots()">
+            <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Refresh</button>
+        <button type="button" class="btn btn-default" ng-click="openCreateSnapshot()">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Create</button>
+    </div>
+</div>
+
+<div class="row" ng-show="snapshots">
+    <div class="col-md-12">
+        <table class="table table-bordered table-hover" ng-hide="snapshotsStatus">
+            <caption>This table contains the snapshots in the selected repository.</caption>
+            <thead>
+            <tr>
+                <th>Snapshot name</th>
+                <th>Indices</th>
+                <th>Start time</th>
+                <th>End time</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="snapshot in snapshots">
+                <td>{{snapshot.snapshot}}</td>
+                <td>{{snapshot.indices}}</td>
+                <td>{{snapshot.start_time}}</td>
+                <td>{{snapshot.end_time}}</td>
+                <td nowrap>
+                    <button confirmed-click="removeSnapshot(snapshot.snapshot)"
+                            ng-confirm-click="Do you want to remove the snapshot {{snapshot.snapshot}}"
+                            class="btn btn-link" title="Remove snapshot"><span class=" glyphicon glyphicon-trash"></span></button>
+                    <button confirmed-click="restoreSnapshot(snapshot.snapshot)"
+                            ng-confirm-click="Do you want to restore the snapshot {{snapshot.snapshot}}"
+                            class="btn btn-link" title="Restore snapshot"><span class=" glyphicon glyphicon-repeat"></span></button>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div ng-show="snapshotsStatus">
+            <div ng-repeat="snapshot in snapshots">
+                <h3>{{snapshot.snapshot}} ({{snapshot.state}})</h3>
+                <div>Number of files - <span class="text-info">{{snapshot.stats.number_of_files}}</span>,
+                    Processed files - <span class="text-info">{{snapshot.stats.processed_files}}</span></div>
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>index</th>
+                            <th>Number of files</th>
+                            <th>Processed files</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="(key,value) in snapshot.indices" ng-class="{warning: value.stats.number_of_files !== value.stats.processed_files}">
+                            <td>{{key}}</td>
+                            <td>{{value.stats.number_of_files}}</td>
+                            <td>{{value.stats.processed_files}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

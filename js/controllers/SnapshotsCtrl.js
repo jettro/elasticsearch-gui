@@ -67,10 +67,32 @@ function SnapshotsCtrl($scope, elastic, $modal) {
                     newSnapshot.snapshot = result.prefix + "-" + now;
                 }
                 newSnapshot.indices = result.indices;
-                newSnapshot.ignore_unavailable = result.ignoreUnavailable;
-                newSnapshot.include_global_state = result.includeGlobalState;
+                newSnapshot.ignoreUnavailable = result.ignoreUnavailable;
+                newSnapshot.includeGlobalState = result.includeGlobalState;
                 elastic.createSnapshot(newSnapshot, function() {
                     $scope.listSnapshots();
+                });
+            }
+        }, function () {
+            // Nothing to do here
+        });
+    };
+
+    $scope.openCreateSnapshotRepository = function () {
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/createsnapshotrepository.html',
+            controller: 'CreateSnapshotRepositoryCtrl'
+        };
+        var modalInstance = $modal.open(opts);
+        modalInstance.result.then(function (result) {
+            console.log(result);
+            if (result) {
+                elastic.createRepository(result, function() {
+                    $scope.listRepositories();
+                    $scope.selectedRepository = "";
                 });
             }
         }, function () {

@@ -53330,7 +53330,7 @@ api.snapshot.prototype.create = ca({
       }
     }
   },
-  method: 'POST'
+  method: 'PUT'
 });
 
 /**
@@ -59314,7 +59314,7 @@ api.snapshot.prototype.create = ca({
       }
     }
   },
-  method: 'POST'
+  method: 'PUT'
 });
 
 /**
@@ -82252,6 +82252,16 @@ function CreateSnapshotCtrl ($scope, $modalInstance) {
 }
 CreateSnapshotCtrl.$inject = ['$scope', '$modalInstance'];
 
+function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
+    $scope.dialog = {};
+
+    $scope.close = function (result) {
+        $modalInstance.close(result);
+    };
+
+}
+CreateSnapshotRepositoryCtrl.$inject = ['$scope', '$modalInstance'];
+
 function DashboardCtrl($scope, elastic) {
     $scope.health = {};
     $scope.nodes = [];
@@ -83285,10 +83295,32 @@ function SnapshotsCtrl($scope, elastic, $modal) {
                     newSnapshot.snapshot = result.prefix + "-" + now;
                 }
                 newSnapshot.indices = result.indices;
-                newSnapshot.ignore_unavailable = result.ignoreUnavailable;
-                newSnapshot.include_global_state = result.includeGlobalState;
+                newSnapshot.ignoreUnavailable = result.ignoreUnavailable;
+                newSnapshot.includeGlobalState = result.includeGlobalState;
                 elastic.createSnapshot(newSnapshot, function() {
                     $scope.listSnapshots();
+                });
+            }
+        }, function () {
+            // Nothing to do here
+        });
+    };
+
+    $scope.openCreateSnapshotRepository = function () {
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/createsnapshotrepository.html',
+            controller: 'CreateSnapshotRepositoryCtrl'
+        };
+        var modalInstance = $modal.open(opts);
+        modalInstance.result.then(function (result) {
+            console.log(result);
+            if (result) {
+                elastic.createRepository(result, function() {
+                    $scope.listRepositories();
+                    $scope.selectedRepository = "";
                 });
             }
         }, function () {
@@ -83763,6 +83795,22 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             }, logErrors);
         };
 
+        this.createRepository = function(newRepository,callback) {
+            var createrepo = {
+                "repository":newRepository.repository,
+                "body": {
+                    "type":"fs",
+                    "settings": {
+                        "location":newRepository.location
+                    }
+                }
+            };
+            es.snapshot.createRepository(createrepo).then(function(data) {
+                callback();
+            }, broadcastError)
+        };
+
+
         this.obtainSnapshots = function(repository,callback) {
             es.snapshot.get({"repository":repository,"snapshot":"_all"}).then(function(data){
                 callback(data.snapshots);
@@ -83788,6 +83836,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         this.createSnapshot = function(newSnapshot,callback) {
+            console.log(newSnapshot);
             es.snapshot.create(newSnapshot).then(function(data) {
                 callback();
             }, logErrors);

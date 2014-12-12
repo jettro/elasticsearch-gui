@@ -195,6 +195,22 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             }, logErrors);
         };
 
+        this.createRepository = function(newRepository,callback) {
+            var createrepo = {
+                "repository":newRepository.repository,
+                "body": {
+                    "type":"fs",
+                    "settings": {
+                        "location":newRepository.location
+                    }
+                }
+            };
+            es.snapshot.createRepository(createrepo).then(function(data) {
+                callback();
+            }, broadcastError)
+        };
+
+
         this.obtainSnapshots = function(repository,callback) {
             es.snapshot.get({"repository":repository,"snapshot":"_all"}).then(function(data){
                 callback(data.snapshots);
@@ -220,6 +236,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         this.createSnapshot = function(newSnapshot,callback) {
+            console.log(newSnapshot);
             es.snapshot.create(newSnapshot).then(function(data) {
                 callback();
             }, logErrors);

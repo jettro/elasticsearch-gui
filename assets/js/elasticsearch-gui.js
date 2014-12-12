@@ -83246,6 +83246,15 @@ function SnapshotsCtrl($scope, elastic, $modal) {
         $scope.selectedRepository = name;
     };
 
+    $scope.deleteRepository = function(name) {
+        elastic.deleteRepository(name, function(data) {
+            if ($scope.selectedRepository === name) {
+                $scope.selectedRepository = "";
+            }
+            $scope.listRepositories();
+        });
+    };
+
     $scope.listSnapshots = function() {
         if ($scope.selectedRepository !== "") {
             elastic.obtainSnapshotStatus(function (snapshots) {
@@ -83265,6 +83274,12 @@ function SnapshotsCtrl($scope, elastic, $modal) {
 
     $scope.removeSnapshot = function(snapshot) {
         elastic.removeSnapshot($scope.selectedRepository, snapshot, function() {
+            $scope.listSnapshots();
+        });
+    };
+
+    $scope.removeSnapshotFromRepository = function(repository,snapshot) {
+        elastic.removeSnapshot(repository, snapshot, function() {
             $scope.listSnapshots();
         });
     };
@@ -83316,7 +83331,6 @@ function SnapshotsCtrl($scope, elastic, $modal) {
         };
         var modalInstance = $modal.open(opts);
         modalInstance.result.then(function (result) {
-            console.log(result);
             if (result) {
                 elastic.createRepository(result, function() {
                     $scope.listRepositories();
@@ -83620,7 +83634,6 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
                 callback(msg, statussus[data.status]);
             }, function (reason) {
-                console.log(reason);
                 callback("No connection", "error");
             });
         };
@@ -83754,9 +83767,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                         i++;
                     }
                     callback(analyzedFields);
-                }, function (error) {
-                    console.log(error);
-                }, function (notify) {
+                }, logErrors, function (notify) {
                 });
             });
         };
@@ -83810,6 +83821,11 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             }, broadcastError)
         };
 
+        this.deleteRepository = function(repository, callback) {
+            es.snapshot.deleteRepository({"repository":repository}).then(function(data) {
+                callback();
+            }, broadcastError)
+        };
 
         this.obtainSnapshots = function(repository,callback) {
             es.snapshot.get({"repository":repository,"snapshot":"_all"}).then(function(data){
@@ -83836,8 +83852,16 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         this.createSnapshot = function(newSnapshot,callback) {
-            console.log(newSnapshot);
-            es.snapshot.create(newSnapshot).then(function(data) {
+            var aSnapshot = {
+                "repository":newSnapshot.repository,
+                "snapshot":newSnapshot.snapshot,
+                "body": {
+                    "indices":newSnapshot.indices,
+                    "ignore_unavailable":newSnapshot.ignoreUnavailable,
+                    "include_global_state":newSnapshot.includeGlobalState
+                }
+            };
+            es.snapshot.create(aSnapshot).then(function(data) {
                 callback();
             }, logErrors);
         };
@@ -83909,9 +83933,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 }
 
                 resultCallback(suggested);
-            }, function (errors) {
-                console.log(errors);
-            });
+            }, logErrors);
         };
 
         function createEsFactory() {

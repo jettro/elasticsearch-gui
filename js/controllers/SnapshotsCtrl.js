@@ -18,6 +18,15 @@ function SnapshotsCtrl($scope, elastic, $modal) {
         $scope.selectedRepository = name;
     };
 
+    $scope.deleteRepository = function(name) {
+        elastic.deleteRepository(name, function(data) {
+            if ($scope.selectedRepository === name) {
+                $scope.selectedRepository = "";
+            }
+            $scope.listRepositories();
+        });
+    };
+
     $scope.listSnapshots = function() {
         if ($scope.selectedRepository !== "") {
             elastic.obtainSnapshotStatus(function (snapshots) {
@@ -37,6 +46,12 @@ function SnapshotsCtrl($scope, elastic, $modal) {
 
     $scope.removeSnapshot = function(snapshot) {
         elastic.removeSnapshot($scope.selectedRepository, snapshot, function() {
+            $scope.listSnapshots();
+        });
+    };
+
+    $scope.removeSnapshotFromRepository = function(repository,snapshot) {
+        elastic.removeSnapshot(repository, snapshot, function() {
             $scope.listSnapshots();
         });
     };
@@ -88,7 +103,6 @@ function SnapshotsCtrl($scope, elastic, $modal) {
         };
         var modalInstance = $modal.open(opts);
         modalInstance.result.then(function (result) {
-            console.log(result);
             if (result) {
                 elastic.createRepository(result, function() {
                     $scope.listRepositories();

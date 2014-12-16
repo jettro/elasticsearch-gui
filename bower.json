@@ -5,7 +5,7 @@
     "angular": "~1.2.16",
     "angular-route": "~1.2.27",
     "c3": "~0.4.7",
-    "elasticsearch": "~3.0.1",
+    "elasticsearch": "~3.0.2",
     "moment": "~2.8.4"
   }
 }

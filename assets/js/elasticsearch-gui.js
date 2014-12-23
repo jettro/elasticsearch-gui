@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v1.2.0 - 2014-12-16
+/*! elasticsearch-gui - v1.2.0 - 2014-12-23
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2014 ; Licensed  */
 (function(window, document, undefined) {'use strict';

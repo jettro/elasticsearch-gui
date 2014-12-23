@@ -12,6 +12,10 @@ module.exports = function (grunt) {
             js: {
                 files: '<%= jshint.all %>',
                 tasks: ['concat']
+            },
+            sass: {
+                files: ['sass/*.scss'],
+                tasks: ['sass']
             }
         },
         concat: {
@@ -57,6 +61,18 @@ module.exports = function (grunt) {
                 src: '<%= concat.dist.dest %>',
                 dest: 'assets/js/<%= pkg.name %>.min.js'
             }
+        },
+        sass: {
+            dist: {
+                options: {
+                    sourcemap: true,
+                    style: 'compressed'
+                },
+                files: {
+                    // 'assets/vendor/bootstrap.min.css': 'src/scss/bootstrap/bootstrap.scss',
+                    'assets/css/app.min.css': 'sass/style.scss'
+                }
+            }
         }
     });
 
@@ -64,6 +80,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-sass');
 
     grunt.registerTask('combine',['concat:dist','uglify:dist']);
 };

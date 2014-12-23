@@ -6,6 +6,7 @@
     "angular-route": "~1.2.27",
     "c3": "~0.4.7",
     "elasticsearch": "~3.0.2",
-    "moment": "~2.8.4"
+    "moment": "~2.8.4",
+    "bootstrap-sass-official": "~3.1.1"
   }
 }

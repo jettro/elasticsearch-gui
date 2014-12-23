@@ -32,8 +32,12 @@ module.exports = function (grunt) {
                     'bower_components/d3/d3.js',
                     'bower_components/c3/c3.js',
                     'bower_components/moment/moment.js',
-                    'js/c3js-directive.js',
-                    'js/app.js','js/controllers/*','js/directives.js','js/filters.js','js/services/*'
+                    'javascript/c3js-directive.js',
+                    'javascript/app.js',
+                    'javascript/controllers/*',
+                    'javascript/directives.js',
+                    'javascript/filters.js',
+                    'javascript/services/*'
                     ],
                 dest: 'assets/js/<%= pkg.name %>.js'
             }
@@ -45,9 +49,9 @@ module.exports = function (grunt) {
             },
             all: [
                 'Gruntfile.js',
-                'js/controllers/*',
-                'js/services/*',
-                'js/*.js'
+                'javascript/controllers/*',
+                'javascript/services/*',
+                'javascript/*.js'
             ]
         },
         uglify: {
@@ -69,11 +73,38 @@ module.exports = function (grunt) {
                     style: 'compressed'
                 },
                 files: {
-                    // 'assets/vendor/bootstrap.min.css': 'src/scss/bootstrap/bootstrap.scss',
                     'assets/css/app.min.css': 'sass/style.scss'
                 }
             }
+        },
+        rsync: {
+            options: {
+                src: "./",
+                args: ["--verbose"],
+                exclude: ['.git*',
+                    '.idea',
+                    '.sass-cache',
+                    'bower_components',
+                    'node_modules',
+                    'sass',
+                    '.jshintrc',
+                    'bower.json',
+                    '*.iml',
+                    'Gruntfile.js',
+                    'package.json',
+                    '.DS_Store',
+                    'README.md'
+                ],
+                recursive: true,
+                syncDestIgnoreExcl: true
+            },
+            staging: {
+                options: {
+                    dest: "/Users/jettrocoenradie/temp/gridshoregui"
+                }
+            }
         }
+
     });
 
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -81,6 +112,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-sass');
+    grunt.loadNpmTasks('grunt-rsync');
 
     grunt.registerTask('combine',['concat:dist','uglify:dist']);
 };

@@ -85,6 +85,7 @@ module.exports = function (grunt) {
                     '.idea',
                     '.sass-cache',
                     'bower_components',
+                    'javascript',
                     'node_modules',
                     'sass',
                     '.jshintrc',

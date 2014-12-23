@@ -2,7 +2,7 @@
     <div class="col-md-12">
         <div class="alert alert-info">
             <p>This page is about providing a very basic search and check the query that is created. This way you
-                can learn about creating queries and the result of those query against the data in your Elasticsearch
+                can learn about creating queries and the result of those queries against the data in your Elasticsearch
                 instance.</p>
         </div>
     </div>
@@ -94,24 +94,22 @@
         <div class="col-md-2">
             <span class="text-info">Query config</span>
             <button type="button" popover-placement="right"
-                    popover="Here you can configure some additional items on the query. You can change the default OR searching to AND searching and even PHRASE searching. All queries use the Match query type. If you want to do more advanced queries using search by field for instance use another part of this application.
-                    If you select the explain option you'll learn more about the scoring of the returned results. When selecting highlighting we also show the highlighted fields."
+                    popover="Here you can configure some additional items on the query. All queries use the Match query
+                    type. You can select the multi search option, than you can add multiple fields, values to search for
+                    and the type (or, and, phrase). If you select the explain option you'll learn more about the scoring
+                    of the returned results. When selecting highlighting we also show the highlighted fields."
                     class="btn btn-link"><span class="glyphicon glyphicon-question-sign"></span></button>
 
         </div>
         <div class="col-md-9">
             <button class="btn btn-info btn-sm" ng-click="resetQuery()" title="Reset all choices"><span
-                    class="glyphicon glyphicon-refresh glyphicon-white"></span></button>
-            <span class="text-info">Query Type</span>
-            <label class="radio-inline">
-                <input type="radio" ng-model="query.type" value="or">OR
-            </label>
-            <label class="radio-inline">
-                <input type="radio" ng-model="query.type" value="and">AND
-            </label>
-            <label class="radio-inline">
-                <input type="radio" ng-model="query.type" value="phrase">PHRASE
-            </label>
+                    class="glyphicon glyphicon-refresh glyphicon-white"></span> Reset</button>
+            <button class="btn btn-info btn-sm" ng-click="saveQuery()"><span
+                    class="glyphicon glyphicon-share glyphicon-white"></span> save
+            </button>
+            <button class="btn btn-info btn-sm" ng-click="loadQuery()"><span
+                    class="glyphicon glyphicon-download-alt glyphicon-white"></span> load
+            </button>
             <span class="text-info">    Use explain:</span>
             <label class="checkbox-inline"><input type="checkbox" ng-model="query.explain"/></label>
             <span class="text-info">, Use highlighting:</span>
@@ -127,38 +125,51 @@
                                           placeholder="Enter search term"/></span>
             <button type="submit" class="btn btn-primary" title="Execute query">Query <span
                     class="glyphicon glyphicon-search glyphicon-white"></span></button>
-            <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span
-                    class="glyphicon glyphicon-share"></span> save
-            </button>
-            <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span
-                    class="glyphicon glyphicon-download-alt"></span> load
-            </button>
+            <span class="text-info">Query Type</span>
+            <label class="radio-inline">
+                <input type="radio" ng-model="query.type" value="or">OR
+            </label>
+            <label class="radio-inline">
+                <input type="radio" ng-model="query.type" value="and">AND
+            </label>
+            <label class="radio-inline">
+                <input type="radio" ng-model="query.type" value="phrase">PHRASE
+            </label>
         </div>
         <div class="col-md-12 alert alert-info" ng-show="query.multiSearch">
-            <div>
-                <div class="col-xs-4">
+            <div class="row">
+                <div class="col-xs-3">
                     <select class="form-control" ng-model="query.advanced.newField"
                             ng-options="key as value.forPrint for (key,value) in fields">
                         <option value="">-- chose field --</option>
                     </select>
                 </div>
-                <div class="col-xs-4">
+                <div class="col-xs-3">
                     <input class="form-control" type="search" ng-model="query.advanced.newText" autofocus="true"
                            placeholder="Type your search string"/>
                 </div>
+                <div class="col-xs-1">
+                    <select class="form-control" ng-model="query.advanced.newType">
+                        <option value="or" selected>OR</option>
+                        <option value="and">AND</option>
+                        <option value="phrase">PHRASE</option>
+                    </select>
+                </div>
                 <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
             </div>
-            <div>
-                <div ng-repeat="searchField in query.advanced.searchFields">
-                    {{searchField.field}} = {{searchField.text}} <button class="btn btn-link" ng-click="removeSearchField($index)"><span
-                        class="glyphicon glyphicon-remove"></span></button>
+            <div class="row">
+                <div class="col-md-12">
+                    <div ng-repeat="searchField in query.advanced.searchFields">
+                        {{searchField.field}} = {{searchField.text}} ({{searchField.type}}) <button class="btn btn-link" ng-click="removeSearchField($index)"><span
+                            class="glyphicon glyphicon-remove"></span></button>
+                    </div>
                 </div>
-                <br/>
-
-                <div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
                     <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
-                    <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> save</button>
-                    <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> load</button>
+                    <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> Save</button>
+                    <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> Load</button>
                 </div>
             </div>
         </div>

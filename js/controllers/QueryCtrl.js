@@ -14,6 +14,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
     $scope.query.types = {};
     $scope.query.advanced = {};
     $scope.query.advanced.searchFields = [];
+    $scope.query.advanced.newType = 'or';
     $scope.query.multiSearch=false;
 
 
@@ -126,6 +127,7 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         var searchField = {};
         searchField.field = $scope.query.advanced.newField;
         searchField.text = $scope.query.advanced.newText;
+        searchField.type = $scope.query.advanced.newType;
         $scope.query.advanced.searchFields.push(searchField);
     };
 
@@ -174,6 +176,10 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         $scope.query.chosenFields = [];
         $scope.query.advanced = {};
         $scope.query.advanced.searchFields = [];
+        $scope.query.advanced.newType = 'or';
+        $scope.query.advanced.newText = null;
+        $scope.query.advanced.newField = null;
+
         $scope.query.multiSearch=false;
 
         $scope.changeQuery();
@@ -244,12 +250,11 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
             query.fields = $scope.query.chosenFields.toString();
         }
         if ($scope.query.multiSearch && $scope.query.advanced.searchFields.length > 0) {
-            // Check query type, if and use must else use should
             var tree = {};
             for (var i = 0; i < $scope.query.advanced.searchFields.length; i++) {
                 var searchField = $scope.query.advanced.searchFields[i];
                 var fieldForSearch = $scope.fields[searchField.field];
-                recurseTree(tree, searchField.field, searchField.text);
+                recurseTree(tree, searchField.field, searchField.text, searchField.type);
                 if (fieldForSearch.nestedPath) {
                     defineNestedPathInTree(tree, fieldForSearch.nestedPath, fieldForSearch.nestedPath);
                 }
@@ -303,7 +308,8 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
                 if ($scope.query.type === 'phrase') {
                     matchQuery[fieldName].type = "phrase";
                 } else {
-                    matchQuery[fieldName].operator = $scope.query.type;
+                    console.log(tree[prop] + '-' + tree['_type_'+prop]);
+                    matchQuery[fieldName].operator = tree['_type_'+prop];
                 }
                 boolQuery.bool.must.push({"match": matchQuery});
             }
@@ -333,17 +339,18 @@ function QueryCtrl($scope, $modal, elastic, aggregateBuilder, queryStorage) {
 
     }
 
-    function recurseTree(tree, newKey, value) {
+    function recurseTree(tree, newKey, value, type) {
         var newKeys = newKey.split(".");
 
         if (newKeys.length > 1) {
             if (!tree.hasOwnProperty(newKeys[0])) {
                 tree[newKeys[0]] = {};
             }
-            recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value);
+            recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value, type);
         } else {
             if (!tree.hasOwnProperty(newKey)) {
                 tree[newKey] = value;
+                tree['_type_' + newKey] = type;
             }
         }
     }

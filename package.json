@@ -1,6 +1,6 @@
 {
   "name": "elasticsearch-gui",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Elasticsearch plugin to show you what you have fot and learn about queries",
   "main": "index.html",
   "repository": {

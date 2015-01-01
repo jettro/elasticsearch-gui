@@ -1,6 +1,6 @@
-/*! elasticsearch-gui - v1.2.0 - 2014-12-23
+/*! elasticsearch-gui - v1.2.1 - 2015-01-01
 * https://github.com/jettro/elasticsearch-gui
-* Copyright (c) 2014 ; Licensed  */
+* Copyright (c) 2015 ; Licensed  */
 (function(window, document, undefined) {'use strict';
 
 /**
@@ -66,7 +66,7 @@ function minErr(module) {
       return match;
     });
 
-    message = message + '\nhttp://errors.angularjs.org/1.2.27/' +
+    message = message + '\nhttp://errors.angularjs.org/1.2.28-build.571+sha.bb3b653/' +
       (module ? module + '/' : '') + code;
     for (i = 2; i < arguments.length; i++) {
       message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
@@ -232,8 +232,8 @@ if ('i' !== 'I'.toLowerCase()) {
 }
 
 
-var /** holds major version number for IE or NaN for real browsers */
-    msie,
+var
+    msie,             // holds major version number for IE, or NaN if UA is not IE.
     jqLite,           // delay binding since jQuery could be loaded after us.
     jQuery,           // delay binding
     slice             = [].slice,
@@ -1985,11 +1985,11 @@ function setupModuleLoader(window) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.2.27',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.2.28-build.571+sha.bb3b653',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 2,
-  dot: 27,
-  codeName: 'prime-factorization'
+  dot: 28,
+  codeName: 'snapshot'
 };
 
 
@@ -5809,6 +5809,21 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
     };
 
     Attributes.prototype = {
+      /**
+       * @ngdoc method
+       * @name $compile.directive.Attributes#$normalize
+       * @kind function
+       *
+       * @description
+       * Converts an attribute name (e.g. dash/colon/underscore-delimited string, optionally prefixed with `x-` or
+       * `data-`) to its normalized, camelCase form.
+       *
+       * Also there is special case for Moz prefix starting with upper case letter.
+       *
+       * For further information check out the guide on {@link guide/directive#matching-directives Matching Directives}
+       *
+       * @param {string} name Name to normalize
+       */
       $normalize: directiveNormalize,
 
 
@@ -7142,13 +7157,6 @@ function $CompileProvider($provide, $$sanitizeUriProvider) {
 var PREFIX_REGEXP = /^(x[\:\-_]|data[\:\-_])/i;
 /**
  * Converts all accepted directives format into proper directive name.
- * All of these will become 'myDirective':
- *   my:Directive
- *   my-directive
- *   x-my-directive
- *   data-my:directive
- *
- * Also there is special case for Moz prefix starting with upper case letter.
  * @param name Name to normalize
  */
 function directiveNormalize(name) {
@@ -7707,6 +7715,21 @@ function $HttpProvider() {
      * In addition, you can supply a `headers` property in the config object passed when
      * calling `$http(config)`, which overrides the defaults without changing them globally.
      *
+     * To explicitly remove a header automatically added via $httpProvider.defaults.headers on a per request basis,
+     * Use the `headers` property, setting the desired header to `undefined`. For example:
+     *
+     * ```js
+     * var req = {
+     *  method: 'POST',
+     *  url: 'http://example.com',
+     *  headers: {
+     *    'Content-Type': undefined
+     *  },
+     *  data: { test: 'test' },
+     * }
+     *
+     * $http(req).success(function(){...}).error(function(){...});
+     * ```
      *
      * # Transforming Requests and Responses
      *
@@ -10873,7 +10896,7 @@ Parser.prototype = {
       ensureSafeObject(context, parser.text);
       ensureSafeFunction(fnPtr, parser.text);
 
-      // IE stupidity! (IE doesn't have apply for some native functions)
+      // IE doesn't have apply for some native functions
       var v = fnPtr.apply
             ? fnPtr.apply(context, args)
             : fnPtr(args[0], args[1], args[2], args[3], args[4]);
@@ -15807,9 +15830,8 @@ var htmlAnchorDirective = valueFn({
  * make the link go to the wrong URL if the user clicks it before
  * Angular has a chance to replace the `{{hash}}` markup with its
  * value. Until Angular replaces the markup the link will be broken
- * and will most likely return a 404 error.
- *
- * The `ngHref` directive solves this problem.
+ * and will most likely return a 404 error. The `ngHref` directive
+ * solves this problem.
  *
  * The wrong way to write it:
  * ```html
@@ -21429,7 +21451,6 @@ var scriptDirective = ['$templateCache', function($templateCache) {
     compile: function(element, attr) {
       if (attr.type == 'text/ng-template') {
         var templateUrl = attr.id,
-            // IE is not consistent, in scripts we have to read .text but in other nodes we have to read .textContent
             text = element[0].text;
 
         $templateCache.put(templateUrl, text);
@@ -22708,7 +22729,7 @@ function $RouteProvider(){
         if (i === 0) {
           result.push(segment);
         } else {
-          var segmentMatch = segment.match(/(\w+)(.*)/);
+          var segmentMatch = segment.match(/(\w+)(?:[?*])?(.*)/);
           var key = segmentMatch[1];
           result.push(params[key]);
           result.push(segmentMatch[2] || '');
@@ -71944,7 +71965,7 @@ module.exports = utils;
 
     /*global define, module, exports, require */
 
-    var c3 = { version: "0.4.7" };
+    var c3 = { version: "0.4.8" };
 
     var c3_chart_fn, c3_chart_internal_fn;
 
@@ -72055,7 +72076,7 @@ module.exports = utils;
 
         $$.xOrient = config.axis_rotated ? "left" : "bottom";
         $$.yOrient = config.axis_rotated ? (config.axis_y_inner ? "top" : "bottom") : (config.axis_y_inner ? "right" : "left");
-        $$.y2Orient = config.axis_rotated ? (config.axis_y_inner ? "bottom" : "top") : (config.axis_y_inner ? "left" : "right");
+        $$.y2Orient = config.axis_rotated ? (config.axis_y2_inner ? "bottom" : "top") : (config.axis_y2_inner ? "left" : "right");
         $$.subXOrient = config.axis_rotated ? "left" : "bottom";
 
         $$.isLegendRight = config.legend_position === 'right';
@@ -72679,8 +72700,14 @@ module.exports = utils;
         return d ? this.x(d.x) : null;
     };
     c3_chart_internal_fn.xv = function (d) {
-        var $$ = this;
-        return Math.ceil($$.x($$.isTimeSeries() ? $$.parseDate(d.value) : d.value));
+        var $$ = this, value = d.value;
+        if ($$.isTimeSeries()) {
+            value = $$.parseDate(d.value);
+        }
+        else if ($$.isCategorized() && typeof d.value === 'string') {
+            value = $$.config.axis_x_categories.indexOf(d.value);
+        }
+        return Math.ceil($$.x(value));
     };
     c3_chart_internal_fn.yv = function (d) {
         var $$ = this,
@@ -72853,8 +72880,8 @@ module.exports = utils;
         var $$ = this, parsedDate;
         if (date instanceof Date) {
             parsedDate = date;
-        } else if (typeof date === 'number') {
-            parsedDate = new Date(date);
+        } else if (typeof date === 'number' || !isNaN(date)) {
+            parsedDate = new Date(+date);
         } else {
             parsedDate = $$.dataTimeFormat($$.config.data_xFormat).parse(date);
         }
@@ -73296,9 +73323,9 @@ module.exports = utils;
         domainLength = Math.abs(yDomainMax - yDomainMin);
         padding = padding_top = padding_bottom = domainLength * 0.1;
 
-        if (center) {
+        if (typeof center !== 'undefined') {
             yDomainAbs = Math.max(Math.abs(yDomainMin), Math.abs(yDomainMax));
-            yDomainMax = yDomainAbs - center;
+            yDomainMax = center + yDomainAbs;
             yDomainMin = center - yDomainAbs;
         }
         // add padding for data label
@@ -73310,16 +73337,16 @@ module.exports = utils;
             padding_bottom += domainLength * (ratio[0] / (1 - ratio[0] - ratio[1]));
         } else if (showVerticalDataLabel) {
             lengths = $$.getDataLabelLength(yDomainMin, yDomainMax, axisId, 'height');
-            padding_top += lengths[1];
-            padding_bottom += lengths[0];
+            padding_top += this.convertPixelsToAxisPadding(lengths[1], domainLength);
+            padding_bottom += this.convertPixelsToAxisPadding(lengths[0], domainLength);
         }
         if (axisId === 'y' && notEmpty(config.axis_y_padding)) {
-            padding_top = $$.getAxisPadding(config.axis_y_padding, 'top', padding, domainLength);
-            padding_bottom = $$.getAxisPadding(config.axis_y_padding, 'bottom', padding, domainLength);
+            padding_top = $$.getAxisPadding(config.axis_y_padding, 'top', padding_top, domainLength);
+            padding_bottom = $$.getAxisPadding(config.axis_y_padding, 'bottom', padding_bottom, domainLength);
         }
         if (axisId === 'y2' && notEmpty(config.axis_y2_padding)) {
-            padding_top = $$.getAxisPadding(config.axis_y2_padding, 'top', padding, domainLength);
-            padding_bottom = $$.getAxisPadding(config.axis_y2_padding, 'bottom', padding, domainLength);
+            padding_top = $$.getAxisPadding(config.axis_y2_padding, 'top', padding_top, domainLength);
+            padding_bottom = $$.getAxisPadding(config.axis_y2_padding, 'bottom', padding_bottom, domainLength);
         }
         // Bar/Area chart should be 0-based if all positive|negative
         if (isZeroBased) {
@@ -74460,7 +74487,7 @@ module.exports = utils;
         } else if (config.axis_rotated) {
             return defaultPadding + legendWidthOnRight;
         } else if (!config.axis_y2_show || config.axis_y2_inner) { // && !config.axis_rotated
-            return defaultPadding + legendWidthOnRight + ($$.getY2AxisLabelPosition().isOuter ? 20 : 0);
+            return 2 + legendWidthOnRight + ($$.getY2AxisLabelPosition().isOuter ? 20 : 0);
         } else {
             return ceil10($$.getAxisWidthByAxisId('y2')) + legendWidthOnRight;
         }
@@ -74488,9 +74515,10 @@ module.exports = utils;
 
     c3_chart_internal_fn.getSvgLeft = function (withoutRecompute) {
         var $$ = this, config = $$.config,
+            hasLeftAxisRect = config.axis_rotated || (!config.axis_rotated && !config.axis_y_inner),
             leftAxisClass = config.axis_rotated ? CLASS.axisX : CLASS.axisY,
             leftAxis = $$.main.select('.' + leftAxisClass).node(),
-            svgRect = leftAxis ? leftAxis.getBoundingClientRect() : {right: 0},
+            svgRect = leftAxis && hasLeftAxisRect ? leftAxis.getBoundingClientRect() : {right: 0},
             chartRect = $$.selectChart.node().getBoundingClientRect(),
             hasArc = $$.hasArcType(),
             svgLeft = svgRect.right - chartRect.left - (hasArc ? 0 : $$.getCurrentPaddingLeft(withoutRecompute));
@@ -75173,7 +75201,15 @@ module.exports = utils;
         } else {
             xPos = $$.hasType('bar') ? (points[2][0] + points[0][0]) / 2 : points[0][0];
         }
-        return d.value !== null ? xPos : xPos > $$.width ? $$.width - box.width : xPos;
+        // show labels regardless of the domain if value is null
+        if (d.value === null) {
+            if (xPos > $$.width) {
+                xPos = $$.width - box.width;
+            } else if (xPos < 0) {
+                xPos = 4;
+            }
+        }
+        return xPos;
     };
     c3_chart_internal_fn.getYForText = function (points, d, textElement) {
         var $$ = this,
@@ -75183,7 +75219,15 @@ module.exports = utils;
         } else {
             yPos = points[2][1] + (d.value < 0 ? box.height : $$.isBarType(d) ? -3 : -6);
         }
-        return d.value !== null ? yPos : yPos < box.height ? box.height : yPos;
+        // show labels regardless of the domain if value is null
+        if (d.value === null && !$$.config.axis_rotated) {
+            if (yPos < box.height) {
+                yPos = box.height;
+            } else if (yPos > this.height) {
+                yPos = this.height - 4;
+            }
+        }
+        return yPos;
     };
 
     c3_chart_internal_fn.setTargetType = function (targetIds, type) {
@@ -76255,9 +76299,19 @@ module.exports = utils;
             .text($$.textForY2AxisLabel.bind($$));
     };
 
-    c3_chart_internal_fn.getAxisPadding = function (padding, key, defaultValue, all) {
-        var ratio = padding.unit === 'ratio' ? all : 1;
-        return isValue(padding[key]) ? padding[key] * ratio : defaultValue;
+    c3_chart_internal_fn.getAxisPadding = function (padding, key, defaultValue, domainLength) {
+        if (!isValue(padding[key])) {
+            return defaultValue;
+        }
+        if (padding.unit === 'ratio') {
+            return padding[key] * domainLength;
+        }
+        // assume padding is pixels if unit is not specified
+        return this.convertPixelsToAxisPadding(padding[key], domainLength);
+    };
+    c3_chart_internal_fn.convertPixelsToAxisPadding = function (pixels, domainLength) {
+        var length = this.config.axis_rotated ? this.width : this.height;
+        return domainLength * (pixels / length);
     };
 
     c3_chart_internal_fn.generateTickValues = function (values, tickCount, forTimeSeries) {
@@ -76618,15 +76672,18 @@ module.exports = utils;
         mainArc.enter().append('path')
             .attr("class", $$.classArc.bind($$))
             .style("fill", function (d) { return $$.color(d.data); })
-            .style("cursor", function (d) { return config.data_selection_isselectable(d) ? "pointer" : null; })
+            .style("cursor", function (d) { return config.interaction_enabled && config.data_selection_isselectable(d) ? "pointer" : null; })
             .style("opacity", 0)
             .each(function (d) {
                 if ($$.isGaugeType(d.data)) {
                     d.startAngle = d.endAngle = -1 * (Math.PI / 2);
                 }
                 this._current = d;
-            })
-            .on('mouseover', function (d) {
+            });
+        mainArc
+            .attr("transform", function (d) { return !$$.isGaugeType(d.data) && withTransform ? "scale(0)" : ""; })
+            .style("opacity", function (d) { return d === this._current ? 0 : 1; })
+            .on('mouseover', config.interaction_enabled ? function (d) {
                 var updated, arcData;
                 if ($$.transiting) { // skip while transiting
                     return;
@@ -76638,14 +76695,14 @@ module.exports = utils;
                 $$.api.focus(updated.data.id);
                 $$.toggleFocusLegend(updated.data.id, true);
                 $$.config.data_onmouseover(arcData, this);
-            })
-            .on('mousemove', function (d) {
+            } : null)
+            .on('mousemove', config.interaction_enabled ? function (d) {
                 var updated = $$.updateAngle(d),
                     arcData = $$.convertToArcData(updated),
                     selectedData = [arcData];
                 $$.showTooltip(selectedData, d3.mouse(this));
-            })
-            .on('mouseout', function (d) {
+            } : null)
+            .on('mouseout', config.interaction_enabled ? function (d) {
                 var updated, arcData;
                 if ($$.transiting) { // skip while transiting
                     return;
@@ -76658,16 +76715,13 @@ module.exports = utils;
                 $$.revertLegend();
                 $$.hideTooltip();
                 $$.config.data_onmouseout(arcData, this);
-            })
-            .on('click', function (d, i) {
+            } : null)
+            .on('click', config.interaction_enabled ? function (d, i) {
                 var updated = $$.updateAngle(d),
                     arcData = $$.convertToArcData(updated);
                 if ($$.toggleShape) { $$.toggleShape(this, arcData, i); }
                 $$.config.data_onclick.call($$.api, arcData, this);
-            });
-        mainArc
-            .attr("transform", function (d) { return !$$.isGaugeType(d.data) && withTransform ? "scale(0)" : ""; })
-            .style("opacity", function (d) { return d === this._current ? 0 : 1; })
+            } : null)
             .each(function () { $$.transiting = true; })
             .transition().duration(duration)
             .attrTween("d", function (d) {
@@ -77633,7 +77687,7 @@ module.exports = utils;
             $$.unexpandArc(targetIds);
         }
         if ($$.config.legend_show) {
-            $$.showLegend(targetIds);
+            $$.showLegend(targetIds.filter($$.isLegendToShow.bind($$)));
         }
 
         $$.focusedTargetIds = [];
@@ -78558,7 +78612,7 @@ module.exports = utils;
                     var dy = sizeFor1Char.h;
                     if (i === 0) {
                         if (orient === 'left' || orient === 'right') {
-                            dy = -((counts[d.index] - 1) * (sizeFor1Char.h / 2) - (params.isCategory ? 2 : 3));
+                            dy = -((counts[d.index] - 1) * (sizeFor1Char.h / 2) - 3);
                         } else {
                             dy = ".71em";
                         }
@@ -78567,7 +78621,7 @@ module.exports = utils;
                 }
 
                 function tickSize(d) {
-                    var tickPosition = scale(d) + tickOffset;
+                    var tickPosition = scale(d) + (tickCentered ? 0 : tickOffset);
                     return range[0] < tickPosition && tickPosition < range[1] ? innerTickSize : 0;
                 }
 
@@ -81660,7 +81714,6 @@ angular.module('gridshore.c3js.chart', [])
 	$scope.chartSize = null;
 	$scope.colors = null;
 	$scope.jsonKeys = null;
-    $scope.config = null;
 
 	this.showGraph = function() {
 		var config = {};			
@@ -81710,16 +81763,16 @@ angular.module('gridshore.c3js.chart', [])
 			config.color = {"pattern":$scope.colors};
 		}
 
-        $scope.config = config;
+		$scope.config = config;
 
-        if ($scope.chartData && $scope.chartColumns) {
-            $scope.$watchCollection('chartData', function () {
-                loadChartData();
-            });
-        } else {
-            $scope.chart = c3.generate($scope.config);
-        }
-    };
+		if ($scope.chartData && $scope.chartColumns) {
+			$scope.$watchCollection('chartData', function() {
+				loadChartData();
+			});
+		} else {
+			$scope.chart = c3.generate($scope.config);				
+		}
+	};
 
 	this.addColumn = function(column,columnType,columnName,columnColor) {
 		$scope.columns.push(column);
@@ -81764,17 +81817,17 @@ angular.module('gridshore.c3js.chart', [])
 			$scope.grid = {};
 		}
 		if (axis === "x") {
-			if ($scope.grid.x == undefined) {
+			if ($scope.grid.x === undefined) {
 				$scope.grid.x = {};
 			}
-			if ($scope.grid.x.lines == undefined) {
+			if ($scope.grid.x.lines === undefined) {
 				$scope.grid.x.lines = [];
 			}
 		} else {
-			if ($scope.grid.y == undefined) {
+			if ($scope.grid.y === undefined) {
 				$scope.grid.y = {};
 			}
-			if ($scope.grid.y.lines == undefined) {
+			if ($scope.grid.y.lines === undefined) {
 				$scope.grid.y.lines = [];
 			}
 
@@ -81782,7 +81835,7 @@ angular.module('gridshore.c3js.chart', [])
 		if (axis === "y2") {
 			$scope.grid.y.lines.push({"value":value,"text":text,"axis":"y2"});
 		} else {
-			$scope.grid[axis].lines.push({"value":value,"text":text})
+			$scope.grid[axis].lines.push({"value":value,"text":text});
 		}
 	};
 
@@ -81821,7 +81874,6 @@ angular.module('gridshore.c3js.chart', [])
 	}
 
 	function loadChartData() {
-        // TODO come up with a better solution for the a-sync part of these kind of fields
         $scope.jsonKeys = {};
         $scope.jsonKeys.value=[];
         angular.forEach($scope.chartColumns, function(column) {
@@ -81842,13 +81894,15 @@ angular.module('gridshore.c3js.chart', [])
         $scope.config.data.json=$scope.chartData;
 
         $scope.chart = c3.generate($scope.config);
+
+		// $scope.chart.load(data);
 	}
 }])
-.directive('c3chart',['$timeout', function($timeout) {
+.directive('c3chart', ['$timeout', function($timeout) {
 	var chartLinker = function(scope,element,attrs,chartCtrl) {
 		// Trick to wait for all rendering of the DOM to be finished.
 		$timeout(function() {
-			chartCtrl.showGraph()
+			chartCtrl.showGraph();
 		});
 	};
 
@@ -81868,13 +81922,13 @@ angular.module('gridshore.c3js.chart', [])
 		"replace":true,
 		"transclude":true,
 		"link": chartLinker
-	}
+	};
 }])
 .directive('chartColumn', function() {
 	var columnLinker = function(scope,element,attrs,chartCtrl) {
-		var column = attrs['columnValues'].split(",");
-		column.unshift(attrs['columnId']);
-		chartCtrl.addColumn(column,attrs['columnType'],attrs['columnName'],attrs['columnColor']);
+		var column = attrs.columnValues.split(",");
+		column.unshift(attrs.columnId);
+		chartCtrl.addColumn(column,attrs.columnType,attrs.columnName,attrs.columnColor);
 	};
 
 	return {
@@ -81883,27 +81937,27 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": columnLinker
-	}
+	};
 })
 .directive('chartAxes', function() {
 	var axesLinker = function(scope,element,attrs,chartCtrl) {
-		var x = attrs['valuesX'];
+		var x = attrs.valuesX;
 		if (x) {
 			chartCtrl.addXAxisValues(x);
 		}
 
-		var y = attrs['y'];
-		var y2 = attrs['y2'];
+		var y = attrs.y;
+		var y2 = attrs.y2;
 		var yAxis = {};
 		if (y2) {
 			var items = y2.split(",");
-			for (item in items) {
+			for (var item in items) {
 				yAxis[items[item]] = "y2";
 			}
 			if (y) {
-				var items = y.split(",");
-				for (item in items) {
-					yAxis[items[item]] = "y";
+				var yItems = y.split(",");
+				for (var yItem in yItems) {
+					yAxis[yItems[yItem]] = "y";
 				}
 			}
 			chartCtrl.addYAxis(yAxis);
@@ -81916,11 +81970,11 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": axesLinker
-	}
+	};
 })
 .directive('chartAxis', function() {
 	var axisLinker = function(scope,element,attrs,chartCtrl) {
-		var rotate = attrs['axisRotate'];
+		var rotate = attrs.axisRotate;
 		if (rotate) {
 			chartCtrl.rotateAxis();
 		}
@@ -81934,22 +81988,21 @@ angular.module('gridshore.c3js.chart', [])
 		"template": "<div ng-transclude></div>",
 		"replace":true,
 		"link": axisLinker
-	}
-
+	};
 })
 .directive('chartAxisX', function() {
 	var axisLinker = function(scope,element,attrs,chartCtrl) {
-		var position=attrs['axisPosition'];
-		var label=attrs['axisLabel'];
+		var position=attrs.axisPosition;
+		var label=attrs.axisLabel;
 
 		var axis={"label":{"text":label,"position":position}};
 
-		var type=attrs['axisType'];
+		var type=attrs.axisType;
 		if (type) {
 			axis.type=type;
 		}
 		// TODO has a strange effect on the graph, need to evaluate
-		var height = attrs['axisHeight'];
+		var height = attrs.axisHeight;
 		if (height) {
 			axis.height=height;
 		}
@@ -81964,27 +82017,27 @@ angular.module('gridshore.c3js.chart', [])
 		"template": "<div ng-transclude></div>",
 		"replace":true,
 		"link": axisLinker
-	}
+	};
 })
 .directive('chartAxisY', function() {
 	var axisLinker = function(scope,element,attrs,chartCtrl) {
-		var id=attrs['axisId'];
-		var position=attrs['axisPosition'];
-		var label=attrs['axisLabel'];
+		var id=attrs.axisId;
+		var position=attrs.axisPosition;
+		var label=attrs.axisLabel;
 
 		var axis={"label":{"text":label,"position":position}};
 		if (id === 'y2') {
 			axis.show=true;
 		}
-		var paddingTop = attrs['paddingTop'];
-		var paddingBottom = attrs['paddingBottom'];
-		if (paddingTop | paddingBottom) {
+		var paddingTop = attrs.paddingTop;
+		var paddingBottom = attrs.paddingBottom;
+		if (paddingTop || paddingBottom) {
 			paddingTop = (paddingTop) ? paddingTop : 0;
 			paddingBottom = (paddingBottom)? paddingBottom : 0;
 			axis.padding = {"top":parseInt(paddingTop),"bottom":parseInt(paddingBottom)};
 		}
-		var rangeMax = attrs['rangeMax'];
-		var rangeMin = attrs['rangeMin'];
+		var rangeMax = attrs.rangeMax;
+		var rangeMin = attrs.rangeMin;
 		if (rangeMax) {
 			axis.max = parseInt(rangeMax);
 		}
@@ -82001,19 +82054,19 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": axisLinker
-	}
+	};
 })
 .directive('chartGrid', function() {
 	var gridLinker = function(scope,element,attrs,chartCtrl) {
-		var showX = attrs["showX"];
+		var showX = attrs.showX;
 		if (showX && showX === "true") {
 			chartCtrl.addGrid("x");
 		}
-		var showY = attrs["showY"];
+		var showY = attrs.showY;
 		if (showY && showY === "true") {
 			chartCtrl.addGrid("y");
 		}
-		var showY2 = attrs["showY2"];
+		var showY2 = attrs.showY2;
 		if (showY2 && showY2 === "true") {
 			chartCtrl.addGrid("y2");
 		}
@@ -82027,13 +82080,13 @@ angular.module('gridshore.c3js.chart', [])
 		"link": gridLinker,
 		"transclude": true,
 		"template": "<div ng-transclude></div>"
-	}
+	};
 })
 .directive('chartGridOptional', function() {
 	var gridLinker = function(scope,element,attrs,chartCtrl) {
-		var axisId = attrs["axisId"];
-		var value = attrs["gridValue"];
-		var text = attrs["gridText"];
+		var axisId = attrs.axisId;
+		var value = attrs.gridValue;
+		var text = attrs.gridText;
 
 		chartCtrl.addGridLine(axisId,value,text);
 	};
@@ -82044,34 +82097,34 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": gridLinker
-	}
+	};
 })
 .directive('chartAxisXTick', function() {
 	var tickLinker = function(scope,element,attrs,chartCtrl) {
 		var tick = {};
 
-		var count = attrs['tickCount'];
+		var count = attrs.tickCount;
 		if (count) {
 			tick.count = count;
 		}
 
 		// TODO, dit lijkt nog niet echt iets te doen
-		var format = attrs['tickFormat'];
+		var format = attrs.tickFormat;
 		if (format) {
 			tick.format = format;
 		}
 
-		var culling = attrs['tickCulling'];
+		var culling = attrs.tickCulling;
 		if (culling) {
 			tick.culling = culling;
 		}
 
-		var rotate = attrs['tickRotate'];
+		var rotate = attrs.tickRotate;
 		if (rotate) {
 			tick.rotate = rotate;
 		}
 
-		var fit = attrs['tickFit'];
+		var fit = attrs.tickFit;
 		if (fit) {
 			tick.fit = fit;
 		}
@@ -82085,17 +82138,17 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": tickLinker
-	}
+	};
 
 })
 .directive('chartLegend', function() {
 	var legendLinker = function(scope,element,attrs,chartCtrl) {
 		var legend = null;
-		var show = attrs["showLegend"];
+		var show = attrs.showLegend;
 		if (show && show === "false") {
 			legend = {"show":false};
 		} else {
-			var position = attrs["legendPosition"];
+			var position = attrs.legendPosition;
 			if (position) {
 				legend = {"position":position};
 			}
@@ -82112,17 +82165,17 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": legendLinker
-	}
+	};
 
 })
 .directive('chartTooltip', function() {
 	var tooltipLinker = function(scope,element,attrs,chartCtrl) {
 		var tooltip = null;
-		var show = attrs["showTooltip"];
+		var show = attrs.showTooltip;
 		if (show && show === "false") {
 			tooltip = {"show":false};
 		} else {
-			var grouped = attrs["groupTooltip"];
+			var grouped = attrs.groupTooltip;
 			if (grouped && grouped === "false") {
 				tooltip = {"grouped":false};
 			}
@@ -82139,14 +82192,14 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": tooltipLinker
-	}
+	};
 
 })
 .directive('chartSize', function() {
 	var sizeLinker = function(scope,element,attrs,chartCtrl) {
 		var chartSize = null;
-		var width = attrs["chartWidth"];
-		var height = attrs["chartHeight"]
+		var width = attrs.chartWidth;
+		var height = attrs.chartHeight;
 		if (width || height) {
 			chartSize = {};
 			if (width) {
@@ -82165,12 +82218,12 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": sizeLinker
-	}
+	};
 
 })
 .directive('chartColors', function() {
 	var colorsLinker = function(scope,element,attrs,chartCtrl) {
-		var pattern = attrs["colorPattern"];
+		var pattern = attrs.colorPattern;
 		if (pattern) {
 			chartCtrl.addColors(pattern.split(","));
 		}
@@ -82182,7 +82235,7 @@ angular.module('gridshore.c3js.chart', [])
 		"scope": {},
 		"replace":true,
 		"link": colorsLinker
-	}
+	};
 
 });
 //'use strict';
@@ -82206,7 +82259,7 @@ myApp.value('localStorage', window.localStorage);
 
 myApp.factory('$exceptionHandler',['$injector', function($injector) {
     return function(exception, cause) {
-        console.log(exception);Moved
+        console.log(exception);
         var errorHandling = $injector.get('errorHandling');
         errorHandling.add(exception.message);
         throw exception;
@@ -82214,7 +82267,7 @@ myApp.factory('$exceptionHandler',['$injector', function($injector) {
 }]);
 
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', 1.2);
+serviceModule.value('version', '1.2.1');
 function AggregateDialogCtrl ($scope, $modalInstance, fields) {
     $scope.fields = fields;
     $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];

@@ -19,7 +19,7 @@ myApp.value('localStorage', window.localStorage);
 
 myApp.factory('$exceptionHandler',['$injector', function($injector) {
     return function(exception, cause) {
-        console.log(exception);Moved
+        console.log(exception);
         var errorHandling = $injector.get('errorHandling');
         errorHandling.add(exception.message);
         throw exception;
@@ -27,4 +27,4 @@ myApp.factory('$exceptionHandler',['$injector', function($injector) {
 }]);
 
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', 1.2);
+serviceModule.value('version', '1.2.1');

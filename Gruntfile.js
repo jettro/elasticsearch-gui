@@ -32,7 +32,7 @@ module.exports = function (grunt) {
                     'bower_components/d3/d3.js',
                     'bower_components/c3/c3.js',
                     'bower_components/moment/moment.js',
-                    'javascript/c3js-directive.js',
+                    'bower_components/c3-angular/c3js-directive.js',
                     'javascript/app.js',
                     'javascript/controllers/*',
                     'javascript/directives.js',

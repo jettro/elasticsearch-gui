@@ -1,5 +1,5 @@
 /* Controllers */
-function DashboardCtrl($scope, elastic) {
+function DashboardCtrl($scope, elastic,$modal,indexService) {
     $scope.health = {};
     $scope.nodes = [];
     $scope.plugins = [];
@@ -20,6 +20,34 @@ function DashboardCtrl($scope, elastic) {
     $scope.closeIndex = function (index) {
         elastic.closeIndex(index, function () {
             indexDetails();
+        });
+    };
+
+    $scope.openChangeReplicas = function (index) {
+        indexService.name = index.name;
+        if (!isNaN(parseInt(index.numReplicas)) && isFinite(index.numReplicas)) {
+            indexService.numReplicas = parseInt(index.numReplicas);
+        }
+
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/numreplicas.html',
+            controller: 'ChangeNumReplicasCtrl',
+            resolve: {fields: function () {
+                return angular.copy(indexService);
+            }}
+        };
+        var modalInstance = $modal.open(opts);
+        modalInstance.result.then(function (result) {
+            if (result) {
+                elastic.changeReplicas(result.name,result.numReplicas, function() {
+                    indexDetails();
+                });
+            }
+        }, function () {
+            // Nothing to do here
         });
     };
 
@@ -46,4 +74,4 @@ function DashboardCtrl($scope, elastic) {
         refreshData();
     });
 }
-DashboardCtrl.$inject = ['$scope', 'elastic'];
+DashboardCtrl.$inject = ['$scope', 'elastic', '$modal', 'indexService'];

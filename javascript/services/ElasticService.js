@@ -185,6 +185,20 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 callback(myFields);
             });
         };
+        
+        this.changeReplicas = function(index,numReplicas,callback) {
+            var changeSettings = {
+                "index":index,
+                "body": {
+                    "index": {
+                        "number_of_replicas":numReplicas
+                    }
+                }
+            };
+            es.indices.putSettings(changeSettings).then(function(data){
+                callback(data);
+            }, logErrors);
+        };
 
         this.snapshotRepositories = function(callback) {
             es.snapshot.getRepository().then(function(data) {
@@ -204,7 +218,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             };
             es.snapshot.createRepository(createrepo).then(function(data) {
                 callback();
-            }, broadcastError)
+            }, broadcastError);
         };
 
         this.deleteRepository = function(repository, callback) {

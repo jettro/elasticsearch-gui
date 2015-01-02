@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v1.2.1 - 2015-01-01
+/*! elasticsearch-gui - v1.2.1 - 2015-01-03
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function(window, document, undefined) {'use strict';
@@ -82298,6 +82298,19 @@ function AggregateDialogCtrl ($scope, $modalInstance, fields) {
     }
 }
 AggregateDialogCtrl.$inject = ['$scope', '$modalInstance', 'fields'];
+function ChangeNumReplicasCtrl ($scope, $modalInstance, indexService) {
+    $scope.dialog = {
+        "numReplicas": indexService.numReplicas,
+        "name": indexService.name
+    };
+
+    $scope.close = function (result) {
+        $modalInstance.close(result);
+    };
+
+}
+ChangeNumReplicasCtrl.$inject = ['$scope', '$modalInstance', 'indexService'];
+
 function ConfigDialogCtrl($scope, $modalInstance, configuration){
     $scope.configuration = configuration;
 
@@ -82327,7 +82340,7 @@ function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
 }
 CreateSnapshotRepositoryCtrl.$inject = ['$scope', '$modalInstance'];
 
-function DashboardCtrl($scope, elastic) {
+function DashboardCtrl($scope, elastic,$modal,indexService) {
     $scope.health = {};
     $scope.nodes = [];
     $scope.plugins = [];
@@ -82348,6 +82361,34 @@ function DashboardCtrl($scope, elastic) {
     $scope.closeIndex = function (index) {
         elastic.closeIndex(index, function () {
             indexDetails();
+        });
+    };
+
+    $scope.openChangeReplicas = function (index) {
+        indexService.name = index.name;
+        if (!isNaN(parseInt(index.numReplicas)) && isFinite(index.numReplicas)) {
+            indexService.numReplicas = parseInt(index.numReplicas);
+        }
+
+        var opts = {
+            backdrop: true,
+            keyboard: true,
+            backdropClick: true,
+            templateUrl: 'template/dialog/numreplicas.html',
+            controller: 'ChangeNumReplicasCtrl',
+            resolve: {fields: function () {
+                return angular.copy(indexService);
+            }}
+        };
+        var modalInstance = $modal.open(opts);
+        modalInstance.result.then(function (result) {
+            if (result) {
+                elastic.changeReplicas(result.name,result.numReplicas, function() {
+                    indexDetails();
+                });
+            }
+        }, function () {
+            // Nothing to do here
         });
     };
 
@@ -82374,7 +82415,7 @@ function DashboardCtrl($scope, elastic) {
         refreshData();
     });
 }
-DashboardCtrl.$inject = ['$scope', 'elastic'];
+DashboardCtrl.$inject = ['$scope', 'elastic', '$modal', 'indexService'];
 
 function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
@@ -83871,6 +83912,20 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 callback(myFields);
             });
         };
+        
+        this.changeReplicas = function(index,numReplicas,callback) {
+            var changeSettings = {
+                "index":index,
+                "body": {
+                    "index": {
+                        "number_of_replicas":numReplicas
+                    }
+                }
+            };
+            es.indices.putSettings(changeSettings).then(function(data){
+                callback(data);
+            }, logErrors);
+        };
 
         this.snapshotRepositories = function(callback) {
             es.snapshot.getRepository().then(function(data) {
@@ -83890,7 +83945,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             };
             es.snapshot.createRepository(createrepo).then(function(data) {
                 callback();
-            }, broadcastError)
+            }, broadcastError);
         };
 
         this.deleteRepository = function(repository, callback) {
@@ -84064,6 +84119,15 @@ serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {
     }
 
     return new ErrorHandling($rootScope);
+}]);
+
+serviceModule.factory('indexService', [function () {
+    function IndexService() {
+        this.name = "unknown";
+        this.numReplicas = 0;
+    }
+
+    return new IndexService();
 }]);
 
 serviceModule.factory('queryStorage', ['localStorage', function (localStorage) {

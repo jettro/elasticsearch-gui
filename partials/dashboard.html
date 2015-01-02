@@ -40,7 +40,8 @@
                         <td>{{index.size}}</td>
                         <td>{{index.numDocs}}</td>
                         <td>{{index.numShards}}</td>
-                        <td>{{index.numReplicas}}</td>
+                        <!--<td>{{index.numReplicas}}</td>-->
+                        <td><button type="button" class="btn btn-link" ng-click="openChangeReplicas(index)">{{index.numReplicas}}</button></td>
                         <td><button confirmed-click="removeIndex(index.name)"
                                   ng-confirm-click="Do you want to remove the index {{index.key}}"
                                   class="btn btn-link" title="Remove index"><span class=" glyphicon glyphicon-trash"></span></button>

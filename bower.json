@@ -2,12 +2,15 @@
   "name": "elasticsearch-gui",
   "dependencies": {
     "ui-bootstrap": "~0.11.0",
-    "angular": "~1.2.16",
-    "angular-route": "~1.2.27",
+    "angular": "~1.2",
+    "angular-route": "~1.2",
     "c3": "~0.4.7",
-    "elasticsearch": "~3.0.2",
+    "elasticsearch": "~3",
     "moment": "~2.8.4",
     "bootstrap-sass-official": "~3.1.1",
-    "c3-angular": "~0.2.0"
+    "c3-angular": "~0.2"
+  },
+  "resolutions": {
+    "angular": "~1.2"
   }
 }

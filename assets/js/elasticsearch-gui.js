@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v1.2.1 - 2015-01-03
+/*! elasticsearch-gui - v1.2.1 - 2015-02-07
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function(window, document, undefined) {'use strict';
@@ -66,7 +66,7 @@ function minErr(module) {
       return match;
     });
 
-    message = message + '\nhttp://errors.angularjs.org/1.2.28-build.571+sha.bb3b653/' +
+    message = message + '\nhttp://errors.angularjs.org/1.2.28/' +
       (module ? module + '/' : '') + code;
     for (i = 2; i < arguments.length; i++) {
       message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
@@ -1985,11 +1985,11 @@ function setupModuleLoader(window) {
  * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.2.28-build.571+sha.bb3b653',    // all of these placeholder strings will be replaced by grunt's
+  full: '1.2.28',    // all of these placeholder strings will be replaced by grunt's
   major: 1,    // package task
   minor: 2,
   dot: 28,
-  codeName: 'snapshot'
+  codeName: 'finnish-disembarkation'
 };
 
 
@@ -9019,33 +9019,33 @@ function $IntervalProvider() {
       *             // Don't start a new fight if we are already fighting
       *             if ( angular.isDefined(stop) ) return;
       *
-      *           stop = $interval(function() {
-      *             if ($scope.blood_1 > 0 && $scope.blood_2 > 0) {
-      *               $scope.blood_1 = $scope.blood_1 - 3;
-      *               $scope.blood_2 = $scope.blood_2 - 4;
-      *             } else {
-      *               $scope.stopFight();
+      *             stop = $interval(function() {
+      *               if ($scope.blood_1 > 0 && $scope.blood_2 > 0) {
+      *                 $scope.blood_1 = $scope.blood_1 - 3;
+      *                 $scope.blood_2 = $scope.blood_2 - 4;
+      *               } else {
+      *                 $scope.stopFight();
+      *               }
+      *             }, 100);
+      *           };
+      *
+      *           $scope.stopFight = function() {
+      *             if (angular.isDefined(stop)) {
+      *               $interval.cancel(stop);
+      *               stop = undefined;
       *             }
-      *           }, 100);
-      *         };
+      *           };
       *
-      *         $scope.stopFight = function() {
-      *           if (angular.isDefined(stop)) {
-      *             $interval.cancel(stop);
-      *             stop = undefined;
-      *           }
-      *         };
+      *           $scope.resetFight = function() {
+      *             $scope.blood_1 = 100;
+      *             $scope.blood_2 = 120;
+      *           };
       *
-      *         $scope.resetFight = function() {
-      *           $scope.blood_1 = 100;
-      *           $scope.blood_2 = 120;
-      *         };
-      *
-      *         $scope.$on('$destroy', function() {
-      *           // Make sure that the interval is destroyed too
-      *           $scope.stopFight();
-      *         });
-      *       }])
+      *           $scope.$on('$destroy', function() {
+      *             // Make sure that the interval is destroyed too
+      *             $scope.stopFight();
+      *           });
+      *         }])
       *       // Register the 'myCurrentTime' directive factory method.
       *       // We inject $interval and dateFilter service since the factory method is DI.
       *       .directive('myCurrentTime', ['$interval', 'dateFilter',
@@ -26918,9 +26918,9 @@ angular.module('ui.bootstrap.typeahead', ['ui.bootstrap.position', 'ui.bootstrap
     };
   });
 
-/*! elasticsearch - v3.0.2 - 2014-12-12
+/*! elasticsearch - v3.1.2 - 2015-02-02
  * http://www.elasticsearch.org/guide/en/elasticsearch/client/javascript-api/current/index.html
- * Copyright (c) 2014 Elasticsearch BV; Licensed Apache 2.0 */
+ * Copyright (c) 2015 Elasticsearch BV; Licensed Apache 2.0 */
 ;(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);throw new Error("Cannot find module '"+o+"'")}var f=n[o]={exports:{}};t[o][0].call(f.exports,function(e){var n=t[o][1][e];return s(n?n:e)},f,f.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
 },{}],2:[function(require,module,exports){
@@ -29543,8 +29543,8 @@ function Buffer(subject, encoding, offset) {
         break;
 
       default:
-        throw new Error('First argument needs to be a number, ' +
-                        'array or string.');
+        throw new TypeError('First argument needs to be a number, ' +
+                            'array or string.');
     }
 
     // Treat array-ish objects as a byte array.
@@ -29554,7 +29554,10 @@ function Buffer(subject, encoding, offset) {
           this[i] = subject.readUInt8(i);
         }
         else {
-          this[i] = subject[i];
+          // Round-up subject[i] to a UInt8.
+          // e.g.: ((-432 % 256) + 256) % 256 = (-176 + 256) % 256
+          //                                  = 80
+          this[i] = ((subject[i] % 256) + 256) % 256;
         }
       }
     } else if (type == 'string') {
@@ -29735,9 +29738,9 @@ Buffer.prototype.hexWrite = function(string, offset, length) {
     length = strLen / 2;
   }
   for (var i = 0; i < length; i++) {
-    var byte = parseInt(string.substr(i * 2, 2), 16);
-    if (isNaN(byte)) throw new Error('Invalid hex string');
-    this[offset + i] = byte;
+    var b = parseInt(string.substr(i * 2, 2), 16);
+    if (isNaN(b)) throw new Error('Invalid hex string');
+    this[offset + i] = b;
   }
   Buffer._charsWritten = i * 2;
   return i;
@@ -29896,7 +29899,7 @@ Buffer.prototype.fill = function fill(value, start, end) {
 
 // Static methods
 Buffer.isBuffer = function isBuffer(b) {
-  return b instanceof Buffer || b instanceof Buffer;
+  return b instanceof Buffer;
 };
 
 Buffer.concat = function (list, totalLength) {
@@ -47308,6 +47311,7 @@ api.scroll = ca({
       fmt: '/_search/scroll'
     }
   ],
+  paramAsBody: 'scrollId',
   method: 'POST'
 });
 
@@ -52957,6 +52961,7 @@ api.scroll = ca({
       fmt: '/_search/scroll'
     }
   ],
+  paramAsBody: 'scrollId',
   method: 'POST'
 });
 
@@ -52970,6 +52975,7 @@ api.scroll = ca({
  * @param {String} params.df - The field to use as default where no field prefix is given in the query string
  * @param {Boolean} params.explain - Specify whether to return detailed information about score computation as part of a hit
  * @param {String, String[], Boolean} params.fields - A comma-separated list of fields to return as part of a hit
+ * @param {String, String[], Boolean} params.fielddataFields - A comma-separated list of fields to return as the field data representation of a field for each hit
  * @param {Number} params.from - Starting offset (default: 0)
  * @param {Boolean} params.ignoreUnavailable - Whether specified concrete indices should be ignored when unavailable (missing or closed)
  * @param {Boolean} params.allowNoIndices - Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
@@ -53025,6 +53031,10 @@ api.search = ca({
     },
     fields: {
       type: 'list'
+    },
+    fielddataFields: {
+      type: 'list',
+      name: 'fielddata_fields'
     },
     from: {
       type: 'number'
@@ -54884,7 +54894,9 @@ api.count = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -54967,7 +54979,9 @@ api.countPercolate = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -55157,7 +55171,9 @@ api.deleteByQuery = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -55895,7 +55911,9 @@ api.indices.prototype.clearCache = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -55959,7 +55977,9 @@ api.indices.prototype.close = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -56181,7 +56201,9 @@ api.indices.prototype.exists = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56229,7 +56251,9 @@ api.indices.prototype.existsAlias = ca({
       ],
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56319,7 +56343,9 @@ api.indices.prototype.existsType = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56378,7 +56404,9 @@ api.indices.prototype.flush = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -56406,7 +56434,7 @@ api.indices.prototype.flush = ca({
  * @param {Boolean} params.local - Return local information, do not retrieve the state from master node (default: false)
  * @param {Boolean} params.ignoreUnavailable - Ignore unavailable indexes (default: false)
  * @param {Boolean} params.allowNoIndices - Ignore if a wildcard expression resolves to no concrete indices (default: false)
- * @param {String, String[], Boolean} params.expandWildcards - Whether wildcard expressions should get expanded to open or closed indices (default: open)
+ * @param {String} [params.expandWildcards=open] - Whether wildcard expressions should get expanded to open or closed indices (default: open)
  * @param {String, String[], Boolean} params.index - A comma-separated list of index names
  * @param {String, String[], Boolean} params.feature - A comma-separated list of features
  */
@@ -56424,7 +56452,14 @@ api.indices.prototype.get = ca({
       name: 'allow_no_indices'
     },
     expandWildcards: {
-      type: 'list',
+      type: 'enum',
+      'default': 'open',
+      options: [
+        'open',
+        'closed',
+        'none',
+        'all'
+      ],
       name: 'expand_wildcards'
     }
   },
@@ -56477,7 +56512,9 @@ api.indices.prototype.getAlias = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56603,7 +56640,9 @@ api.indices.prototype.getFieldMapping = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56665,7 +56704,7 @@ api.indices.prototype.getFieldMapping = ca({
  * @param {Object} params - An object with parameters used to carry out this action
  * @param {Boolean} params.ignoreUnavailable - Whether specified concrete indices should be ignored when unavailable (missing or closed)
  * @param {Boolean} params.allowNoIndices - Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
- * @param {String, String[], Boolean} [params.expandWildcards=open] - Whether to expand wildcard expression to concrete indices that are open, closed or both.
+ * @param {String} [params.expandWildcards=open] - Whether to expand wildcard expression to concrete indices that are open, closed or both.
  * @param {Boolean} params.local - Return local information, do not retrieve the state from master node (default: false)
  * @param {String, String[], Boolean} params.index - A comma-separated list of index names
  * @param {String, String[], Boolean} params.type - A comma-separated list of document types
@@ -56681,11 +56720,13 @@ api.indices.prototype.getMapping = ca({
       name: 'allow_no_indices'
     },
     expandWildcards: {
-      type: 'list',
+      type: 'enum',
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56757,7 +56798,9 @@ api.indices.prototype.getSettings = ca({
       ],
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56861,7 +56904,9 @@ api.indices.prototype.getUpgrade = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -56912,7 +56957,9 @@ api.indices.prototype.getWarmer = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57001,7 +57048,9 @@ api.indices.prototype.open = ca({
       'default': 'closed',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -57050,7 +57099,9 @@ api.indices.prototype.optimize = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57171,7 +57222,9 @@ api.indices.prototype.putMapping = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -57231,7 +57284,9 @@ api.indices.prototype.putSettings = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57332,7 +57387,9 @@ api.indices.prototype.putWarmer = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -57442,7 +57499,9 @@ api.indices.prototype.refresh = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57496,7 +57555,9 @@ api.indices.prototype.segments = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57672,7 +57733,9 @@ api.indices.prototype.status = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57750,7 +57813,9 @@ api.indices.prototype.upgrade = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -57811,7 +57876,9 @@ api.indices.prototype.validateQuery = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -58073,7 +58140,9 @@ api.mpercolate = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -58651,7 +58720,9 @@ api.percolate = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -58861,6 +58932,7 @@ api.scroll = ca({
       fmt: '/_search/scroll'
     }
   ],
+  paramAsBody: 'scrollId',
   method: 'POST'
 });
 
@@ -58874,6 +58946,7 @@ api.scroll = ca({
  * @param {String} params.df - The field to use as default where no field prefix is given in the query string
  * @param {Boolean} params.explain - Specify whether to return detailed information about score computation as part of a hit
  * @param {String, String[], Boolean} params.fields - A comma-separated list of fields to return as part of a hit
+ * @param {String, String[], Boolean} params.fielddataFields - A comma-separated list of fields to return as the field data representation of a field for each hit
  * @param {Number} params.from - Starting offset (default: 0)
  * @param {Boolean} params.ignoreUnavailable - Whether specified concrete indices should be ignored when unavailable (missing or closed)
  * @param {Boolean} params.allowNoIndices - Whether to ignore if a wildcard indices expression resolves into no concrete indices. (This includes `_all` string or when no indices have been specified)
@@ -58892,6 +58965,7 @@ api.scroll = ca({
  * @param {String, String[], Boolean} params._source - True or false to return the _source field or not, or a list of fields to return
  * @param {String, String[], Boolean} params._sourceExclude - A list of fields to exclude from the returned _source field
  * @param {String, String[], Boolean} params._sourceInclude - A list of fields to extract and return from the _source field
+ * @param {Number} params.terminateAfter - The maximum number of documents to collect for each shard, upon reaching which the query execution will terminate early.
  * @param {String, String[], Boolean} params.stats - Specific 'tag' of the request for logging and statistical purposes
  * @param {String} params.suggestField - Specify which field to use for suggestions
  * @param {String} [params.suggestMode=missing] - Specify suggest mode
@@ -58931,6 +59005,10 @@ api.search = ca({
     fields: {
       type: 'list'
     },
+    fielddataFields: {
+      type: 'list',
+      name: 'fielddata_fields'
+    },
     from: {
       type: 'number'
     },
@@ -58947,7 +59025,9 @@ api.search = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -59005,6 +59085,10 @@ api.search = ca({
     _sourceInclude: {
       type: 'list',
       name: '_source_include'
+    },
+    terminateAfter: {
+      type: 'number',
+      name: 'terminate_after'
     },
     stats: {
       type: 'list'
@@ -59102,7 +59186,9 @@ api.searchExists = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -59184,7 +59270,9 @@ api.searchShards = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     }
@@ -59245,7 +59333,9 @@ api.searchTemplate = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -59622,7 +59712,9 @@ api.suggest = ca({
       'default': 'open',
       options: [
         'open',
-        'closed'
+        'closed',
+        'none',
+        'all'
       ],
       name: 'expand_wildcards'
     },
@@ -60004,7 +60096,17 @@ function ClientAction(spec) {
 }
 
 var castType = {
-  'enum': function (param, val, name) {
+  'enum': function validSelection(param, val, name) {
+    if (_.isString(val) && val.indexOf(',') > -1) {
+      val = val.split(',');
+    }
+
+    if (_.isArray(val)) {
+      return val.map(function (v) {
+        return validSelection(param, v, name);
+      }).join(',');
+    }
+
     /* jshint eqeqeq: false */
     for (var i = 0; i < param.options.length; i++) {
       if (param.options[i] == val) {
@@ -60150,6 +60252,11 @@ function exec(transport, spec, params, cb) {
   // pass the timeout from the spec
   if (spec.requestTimeout) {
     request.requestTimeout = spec.requestTimeout;
+  }
+
+  if (!params.body && spec.paramAsBody) {
+    params.body = params[spec.paramAsBody];
+    delete params[spec.paramAsBody];
   }
 
   // verify that we have the body if needed
@@ -60880,19 +60987,25 @@ _.inherits(errors.RequestTypeError, ErrorAbstract);
 var statusCodes = {
 
   /**
-   * Service Unavailable
+   * GatewayTimeout
+   * @param {String} [msg] - An error message that will probably end up in a log.
+   */
+  504: 'Gateway Timeout',
+
+  /**
+   * ServiceUnavailable
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
   503: 'Service Unavailable',
 
   /**
-   * Internal Server Error
+   * InternalServerError
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
   500: 'Internal Server Error',
 
   /**
-   * Precondition Failed
+   * PreconditionFailed
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
   412: 'Precondition Failed',
@@ -60904,25 +61017,31 @@ var statusCodes = {
   409: 'Conflict',
 
   /**
-   * Forbidden
+   * AuthorizationException
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
-  403: 'Forbidden',
+  403: 'Authorization Exception',
 
   /**
-   * Not Found
+   * NotFound
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
   404: 'Not Found',
 
   /**
-   * Bad Request
+   * AuthenticationException
+   * @param {String} [msg] - An error message that will probably end up in a log.
+   */
+  401: 'Authentication Exception',
+
+  /**
+   * BadRequest
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
   400: 'Bad Request',
 
   /**
-   * Moved Permanently
+   * MovedPermanently
    * @param {String} [msg] - An error message that will probably end up in a log.
    */
   301: 'Moved Permanently'
@@ -60932,14 +61051,13 @@ _.each(statusCodes, function (name, status) {
   var className = _.studlyCase(name);
 
   function StatusCodeError(msg) {
-    ErrorAbstract.call(this, msg || name, errors[className]);
+    ErrorAbstract.call(this, msg || name, StatusCodeError);
   }
 
   _.inherits(StatusCodeError, ErrorAbstract);
   errors[className] = StatusCodeError;
   errors[status] = StatusCodeError;
 });
-
 },{"./utils":214}],201:[function(require,module,exports){
 /**
  * Class to wrap URLS, formatting them and maintaining their separate details
@@ -60966,6 +61084,17 @@ var urlParseFields = [
 
 var simplify = ['host', 'path'];
 
+var sslDefaults = {
+  pfx: null,
+  key: null,
+  passphrase: null,
+  cert: null,
+  ca: null,
+  ciphers: null,
+  rejectUnauthorized: false,
+  secureProtocol: null
+};
+
 // simple reference used when formatting as a url
 // and defines when parsing from a string
 Host.defaultPorts = {
@@ -60986,6 +61115,8 @@ function Host(config, globalConfig) {
   this.query = null;
   this.headers = null;
   this.suggestCompression = !!globalConfig.suggestCompression;
+
+  this.ssl = _.defaults({}, config.ssl || {}, globalConfig.ssl || {}, sslDefaults);
 
   if (typeof config === 'string') {
     var firstColon = config.indexOf(':');

@@ -1,4 +1,6 @@
 # Introduction
+
+[![Join the chat at https://gitter.im/jettro/elasticsearch-gui](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jettro/elasticsearch-gui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 Welcome to the Gui plugin for elasticsearch. Using this plugin you can explore your elasticsearch index. This plugin gives you a few different ways to start exploring. There is a way to search the repository in a way you would do it on a web site. You can enter keywords, do advanced search, use facets. Another way to explore the index is focussed on learning the structure of the actual executed query. You can enter a number of items to include in the query. You can enter fields, facets, highlighting, limit the indexes, limit the types. Finally there is a way to show some of the data in a graph.
 
 # Installation

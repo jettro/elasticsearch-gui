@@ -1,4 +1,5 @@
-function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+controllerModule.controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
+function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
@@ -364,5 +365,4 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             $scope.metaResults.errors.push(errors.message);
         }
     }
-}
-SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+}]);

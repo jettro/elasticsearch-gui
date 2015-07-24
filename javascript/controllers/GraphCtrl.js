@@ -1,4 +1,5 @@
-function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
+controllerModule.controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
+function ($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
     $scope.types = [];
     $scope.fields = [];
@@ -91,5 +92,4 @@ function GraphCtrl($scope, $modal, elastic, aggregateBuilder) {
     $scope.loadIndices();
     $scope.loadTypes();
     $scope.loadFields();
-}
-GraphCtrl.$inject = ['$scope', '$modal', 'elastic', 'aggregateBuilder'];
+}]);

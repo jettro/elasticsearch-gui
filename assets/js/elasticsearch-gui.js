@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v1.2.1 - 2015-07-25
+/*! elasticsearch-gui - v1.2.1 - 2015-07-28
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function(window, document, undefined) {'use strict';
@@ -93447,6 +93447,11 @@ function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage
     };
 
     $scope.init = function () {
+        // elastic.indexes(function (data) {
+        //     // just to initialize the indices in the service
+        //     // TODO would be better to move this to the service itself
+        // });
+
         elastic.fields([], [], function (data) {
             $scope.fields = data;
             if (!$scope.configure.title) {
@@ -93480,7 +93485,7 @@ function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage
         var query = {};
         query.index = "";
         query.body = {};
-        query.fields = $scope.configure.title + "," + $scope.configure.description;
+        // query.fields = $scope.configure.title + "," + $scope.configure.description;
 
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
@@ -93636,8 +93641,9 @@ function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage
     };
 
     $scope.showAnalysis = function (index, type, id) {
-        elastic.documentTerms(index, type, id, $scope.fields, function (result) {
-            $scope.tokensPerField = result;
+        $scope.tokensPerField = {"id": index+type+id};
+        elastic.documentTerms(index, type, id, function (result) {
+            $scope.tokensPerField.tokens = result;
         });
     };
 
@@ -94183,6 +94189,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         this.changeServerAddress = function (serverAddress) {
             serverUrl = serverAddress;
             es = createEsFactory();
+            this.indexes();
         };
 
         this.obtainServerAddress = function () {
@@ -94233,7 +94240,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                     }
                 }
                 activeIndexes = indices;
-                callback(indices);
+                if (callback) {
+                    callback(indices);
+                }
             });
         };
 
@@ -94303,34 +94312,31 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             });
         };
 
-        this.documentTerms = function (index, type, id, fields, callback) {
-            es.get({"index": index, "type": type, "id": id}).then(function (result) {
-                var actions = [];
-                var analyzedFields = [];
-                for (var field in fields) {
-                    if (fields[field].type === "string") {
-                        var sourceField = field;
-                        if (field.indexOf(".") > -1) {
-                            sourceField = field.substr(0, field.indexOf("."));
-                        }
-                        var text = result._source[sourceField];
-                        if (text) {
-                            analyzedFields.push({"field": field, "value": text});
-                            actions.push(es.indices.analyze({"field": field, "text": text, "index": index, "format": "text"}));
-                        }
+        this.documentTerms = function (index, type, id, callback) {
+            es.termvector(
+                {   
+                    "index": index, 
+                    "type": type, 
+                    "id": id,
+                    "body":{
+                        "fields":["*"],
+                        "field_statistics": false,
+                        "term_statistics": true
                     }
-                }
-
-                $q.all(actions).then(function (results) {
-                    var i = 0;
-                    while (i < analyzedFields.length) {
-                        analyzedFields[i].tokens = results[i].tokens;
-                        i++;
+                })
+                .then(function(result) {
+                    var fieldTerms = {};
+                    if (result.term_vectors) {
+                        angular.forEach(result.term_vectors, function(value,key) {
+                            var terms = [];
+                            angular.forEach(value.terms, function(term, termKey) {
+                                terms.push(termKey);
+                            });
+                            fieldTerms[key] = terms;
+                        });
+                        callback(fieldTerms);
                     }
-                    callback(analyzedFields);
-                }, logErrors, function (notify) {
                 });
-            });
         };
 
         this.fields = function (selectedIndex, selectedType, callback) {
@@ -94546,6 +94552,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         var broadcastError = function(error) {
             $rootScope.$broadcast('msg:notification', 'error', error.message);
         };
+
+        // just to initialize the indices
+        this.indexes();
     }
 
     return new ElasticService(esFactory, configuration, $q, $rootScope);

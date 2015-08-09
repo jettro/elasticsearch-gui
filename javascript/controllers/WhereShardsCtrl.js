@@ -1,3 +1,4 @@
+controllerModule.controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
 function WhereShardsCtrl($scope, $timeout, elastic) {
     $scope.shardsInfo = {};
     $scope.nodeInfo = {};
@@ -31,5 +32,4 @@ function WhereShardsCtrl($scope, $timeout, elastic) {
             obtainShardsInfo();
         }, 5000);
     }
-}
-WhereShardsCtrl.$inject = ['$scope', '$timeout', 'elastic'];
+}]);

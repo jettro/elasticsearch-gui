@@ -1,9 +1,9 @@
-function ConfigDialogCtrl($scope, $modalInstance, configuration){
+controllerModule.controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
+function ($scope, $modalInstance, configuration){
     $scope.configuration = configuration;
 
     $scope.close = function (result) {
         $modalInstance.close($scope.configuration);
     };
 
-}
-ConfigDialogCtrl.$inject = ['$scope', '$modalInstance', 'configuration'];
+}]);

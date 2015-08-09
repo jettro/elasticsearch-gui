@@ -1,4 +1,5 @@
-function SnapshotsCtrl($scope, elastic, $modal) {
+controllerModule.controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
+function ($scope, elastic, $modal) {
     $scope.repositories = [];
     $scope.selectedRepository = "";
     $scope.snapshots = [];
@@ -117,5 +118,4 @@ function SnapshotsCtrl($scope, elastic, $modal) {
     $scope.$on('$viewContentLoaded', function () {
         $scope.listRepositories();
     });
-}
-SnapshotsCtrl.$inject = ['$scope', 'elastic', '$modal'];
+}]);

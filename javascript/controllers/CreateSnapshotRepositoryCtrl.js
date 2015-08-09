@@ -1,3 +1,4 @@
+controllerModule.controller('CreateSnapshotRepositoryCtrl',['$scope', '$modalInstance',
 function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
     $scope.dialog = {};
 
@@ -5,5 +6,4 @@ function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
         $modalInstance.close(result);
     };
 
-}
-CreateSnapshotRepositoryCtrl.$inject = ['$scope', '$modalInstance'];
+}])

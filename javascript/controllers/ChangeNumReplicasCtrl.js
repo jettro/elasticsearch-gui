@@ -1,4 +1,5 @@
-function ChangeNumReplicasCtrl ($scope, $modalInstance, indexService) {
+controllerModule.controller('ChangeNumReplicasCtrl',['$scope', '$modalInstance', 'indexService',
+function ($scope, $modalInstance, indexService) {
     $scope.dialog = {
         "numReplicas": indexService.numReplicas,
         "name": indexService.name
@@ -8,5 +9,4 @@ function ChangeNumReplicasCtrl ($scope, $modalInstance, indexService) {
         $modalInstance.close(result);
     };
 
-}
-ChangeNumReplicasCtrl.$inject = ['$scope', '$modalInstance', 'indexService'];
+}]);

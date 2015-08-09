@@ -1,4 +1,6 @@
-function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
+controllerModule.controller('NavbarCtrl',['$scope', '$timeout', '$modal', 'elastic', 'configuration',
+
+function ($scope, $timeout, $modal, elastic, configuration) {
     $scope.statusCluster = {};
     $scope.serverUrl = elastic.obtainServerAddress();
     $scope.configureServerUrl = false;
@@ -67,4 +69,4 @@ function NavbarCtrl($scope, $timeout, $modal, elastic, configuration) {
 
     doCheckStatus();
 }
-NavbarCtrl.$inject = ['$scope', '$timeout', '$modal', 'elastic', 'configuration'];
+]);

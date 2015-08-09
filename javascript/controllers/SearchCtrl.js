@@ -1,4 +1,5 @@
-function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+controllerModule.controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
+function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
     $scope.fields = [];
@@ -26,6 +27,11 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     };
 
     $scope.init = function () {
+        // elastic.indexes(function (data) {
+        //     // just to initialize the indices in the service
+        //     // TODO would be better to move this to the service itself
+        // });
+
         elastic.fields([], [], function (data) {
             $scope.fields = data;
             if (!$scope.configure.title) {
@@ -59,7 +65,7 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
         var query = {};
         query.index = "";
         query.body = {};
-        query.fields = $scope.configure.title + "," + $scope.configure.description;
+        // query.fields = $scope.configure.title + "," + $scope.configure.description;
 
         query.size = $scope.pageSize;
         query.from = ($scope.currentPage - 1) * $scope.pageSize;
@@ -215,8 +221,9 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
     };
 
     $scope.showAnalysis = function (index, type, id) {
-        elastic.documentTerms(index, type, id, $scope.fields, function (result) {
-            $scope.tokensPerField = result;
+        $scope.tokensPerField = {"id": index+type+id};
+        elastic.documentTerms(index, type, id, function (result) {
+            $scope.tokensPerField.tokens = result;
         });
     };
 
@@ -364,5 +371,4 @@ function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, qu
             $scope.metaResults.errors.push(errors.message);
         }
     }
-}
-SearchCtrl.$inject = ['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+}]);

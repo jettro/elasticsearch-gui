@@ -1,5 +1,5 @@
-/* Controllers */
-function DashboardCtrl($scope, elastic,$modal,indexService) {
+controllerModule.controller('DashboardCtrl',['$scope', 'elastic', '$modal', 'indexService',
+function ($scope, elastic,$modal,indexService) {
     $scope.health = {};
     $scope.nodes = [];
     $scope.plugins = [];
@@ -73,5 +73,4 @@ function DashboardCtrl($scope, elastic,$modal,indexService) {
         indexDetails();
         refreshData();
     });
-}
-DashboardCtrl.$inject = ['$scope', 'elastic', '$modal', 'indexService'];
+}]);

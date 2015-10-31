@@ -37,9 +37,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             });
         };
 
-        this.obtainShards = function(callback) {
-            es.cluster.state({"metric":["routing_table","nodes"]}).then(function(data) {
-                callback(data.nodes,data.routing_nodes.nodes);
+        this.obtainShards = function (callback) {
+            es.cluster.state({"metric": ["routing_table", "nodes"]}).then(function (data) {
+                callback(data.nodes, data.routing_table.indices);
             });
         };
 
@@ -50,9 +50,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         this.indexes = function (callback) {
-            es.indices.status({"ignoreUnavailable": true}).then(function (data) {
+            es.cluster.state({"ignoreUnavailable": true}).then(function (data) {
                 var indices = [];
-                for (var index in data.indices) {
+                for (var index in data.metadata.indices) {
                     var ignored = indexIsNotIgnored(index);
                     if (indexIsNotIgnored(index)) {
                         indices.push(index);
@@ -84,29 +84,31 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         this.indexesDetails = function (callback) {
-            es.indices.status({"human": true, "recovery": false}).then(function (statusData) {
+            es.indices.stats({"human": true, "recovery": false}).then(function (statusData) {
                 var indexesStatus = statusData.indices;
-
-                es.indices.getSettings().then(function (settings) {
-                    es.cluster.state({"metric": "metadata"}).then(function (stateData) {
-                        var indexesState = stateData.metadata.indices;
-                        var indices = [];
-                        angular.forEach(indexesState, function (value, key) {
-                            var newIndex = {};
-                            newIndex.name = key;
-                            if (value.state === 'open') {
-                                newIndex.size = indexesStatus[key].index.size;
-                                newIndex.numDocs = indexesStatus[key].docs.num_docs;
-                                newIndex.state = true;
-                                newIndex.numShards = settings[key].settings.index.number_of_shards;
-                                newIndex.numReplicas = settings[key].settings.index.number_of_replicas
+                es.cluster.state({"metric": "metadata"}).then(function (stateData) {
+                    var indexesState = stateData.metadata.indices;
+                    var indices = [];
+                    angular.forEach(indexesState, function (value, key) {
+                        var newIndex = {};
+                        newIndex.name = key;
+                        if (value.state === 'open') {
+                            if (indexesStatus[key]) {
+                                newIndex.size = indexesStatus[key].total.store.size;
+                                newIndex.numDocs = indexesStatus[key].total.docs.count;
                             } else {
-                                newIndex.state = false;
+                                newIndex.size = "unknown";
+                                newIndex.numDocs = "unknown";
                             }
-                            indices.push(newIndex);
-                        });
-                        callback(indices);
+                            newIndex.state = true;
+                            newIndex.numShards = value.settings.index.number_of_shards;
+                            newIndex.numReplicas = value.settings.index.number_of_replicas
+                        } else {
+                            newIndex.state = false;
+                        }
+                        indices.push(newIndex);
                     });
+                    callback(indices);
                 });
             });
         };
@@ -132,23 +134,24 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         this.documentTerms = function (index, type, id, callback) {
-            es.termvector(
-                {   
-                    "index": index, 
-                    "type": type, 
+            es.termvectors(
+                {
+                    "index": index,
+                    "type": type,
                     "id": id,
-                    "body":{
-                        "fields":["*"],
+                    "routing":id,
+                    "body": {
+                        "fields": ["*"],
                         "field_statistics": false,
                         "term_statistics": true
                     }
                 })
-                .then(function(result) {
+                .then(function (result) {
                     var fieldTerms = {};
                     if (result.term_vectors) {
-                        angular.forEach(result.term_vectors, function(value,key) {
+                        angular.forEach(result.term_vectors, function (value, key) {
                             var terms = [];
-                            angular.forEach(value.terms, function(term, termKey) {
+                            angular.forEach(value.terms, function (term, termKey) {
                                 terms.push(termKey);
                             });
                             fieldTerms[key] = terms;
@@ -185,83 +188,83 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 callback(myFields);
             });
         };
-        
-        this.changeReplicas = function(index,numReplicas,callback) {
+
+        this.changeReplicas = function (index, numReplicas, callback) {
             var changeSettings = {
-                "index":index,
+                "index": index,
                 "body": {
                     "index": {
-                        "number_of_replicas":numReplicas
+                        "number_of_replicas": numReplicas
                     }
                 }
             };
-            es.indices.putSettings(changeSettings).then(function(data){
+            es.indices.putSettings(changeSettings).then(function (data) {
                 callback(data);
             }, logErrors);
         };
 
-        this.snapshotRepositories = function(callback) {
-            es.snapshot.getRepository().then(function(data) {
+        this.snapshotRepositories = function (callback) {
+            es.snapshot.getRepository().then(function (data) {
                 callback(data);
             }, logErrors);
         };
 
-        this.createRepository = function(newRepository,callback) {
+        this.createRepository = function (newRepository, callback) {
             var createrepo = {
-                "repository":newRepository.repository,
+                "repository": newRepository.repository,
                 "body": {
-                    "type":"fs",
+                    "type": "fs",
                     "settings": {
-                        "location":newRepository.location
+                        "location": newRepository.location
                     }
                 }
             };
-            es.snapshot.createRepository(createrepo).then(function(data) {
+            es.snapshot.createRepository(createrepo).then(function (data) {
                 callback();
             }, broadcastError);
         };
 
-        this.deleteRepository = function(repository, callback) {
-            es.snapshot.deleteRepository({"repository":repository}).then(function(data) {
+        this.deleteRepository = function (repository, callback) {
+            es.snapshot.deleteRepository({"repository": repository}).then(function (data) {
                 callback();
             }, broadcastError)
         };
 
-        this.obtainSnapshots = function(repository,callback) {
-            es.snapshot.get({"repository":repository,"snapshot":"_all"}).then(function(data){
+        this.obtainSnapshots = function (repository, callback) {
+            es.snapshot.get({"repository": repository, "snapshot": "_all"}).then(function (data) {
                 callback(data.snapshots);
             }, logErrors);
         };
 
-        this.obtainSnapshotStatus = function(callback) {
-            es.snapshot.status().then(function(data){
+        this.obtainSnapshotStatus = function (callback) {
+            es.snapshot.status().then(function (data) {
                 callback(data.snapshots);
             }, logErrors);
         };
 
-        this.removeSnapshot = function(repository,snapshot,callback) {
-            es.snapshot.delete({"repository":repository,"snapshot":snapshot}).then(function(data) {
+        this.removeSnapshot = function (repository, snapshot, callback) {
+            es.snapshot.delete({"repository": repository, "snapshot": snapshot}).then(function (data) {
                 callback();
             }, logErrors);
         };
 
-        this.restoreSnapshot = function(repository,snapshot,callback) {
-            es.snapshot.restore({"repository":repository,"snapshot":snapshot}).then(function(data) {
+        this.restoreSnapshot = function (repository, snapshot, callback) {
+            es.snapshot.restore({"repository": repository, "snapshot": snapshot}).then(function (data) {
                 callback();
             }, broadcastError);
         };
 
-        this.createSnapshot = function(newSnapshot,callback) {
+        this.createSnapshot = function (newSnapshot, callback) {
             var aSnapshot = {
-                "repository":newSnapshot.repository,
-                "snapshot":newSnapshot.snapshot,
+                "repository": newSnapshot.repository,
+                "snapshot": newSnapshot.snapshot,
                 "body": {
-                    "indices":newSnapshot.indices,
-                    "ignore_unavailable":newSnapshot.ignoreUnavailable,
-                    "include_global_state":newSnapshot.includeGlobalState
+                    "indices": newSnapshot.indices,
+                    "ignore_unavailable": newSnapshot.ignoreUnavailable,
+                    "include_global_state": newSnapshot.includeGlobalState
                 }
             };
-            es.snapshot.create(aSnapshot).then(function(data) {
+            es.snapshot.create(aSnapshot).then(function (data) {
                 callback();
             }, logErrors);
         };
@@ -337,7 +340,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
         };
 
         function createEsFactory() {
-            return esFactory({"host": serverUrl, "apiVersion": "1.4"});
+            return esFactory({"host": serverUrl, "apiVersion": "2.0"});
         }
 
         function indexIsNotIgnored(index) {
@@ -364,11 +367,11 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             return !ignore;
         }
 
-        var logErrors = function(errors) {
+        var logErrors = function (errors) {
             console.log(errors);
         };
 
-        var broadcastError = function(error) {
+        var broadcastError = function (error) {
             $rootScope.$broadcast('msg:notification', 'error', error.message);
         };
 

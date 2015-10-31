@@ -7,7 +7,7 @@ Welcome to the Gui plugin for elasticsearch. Using this plugin you can explore y
 ## local installation
 You can install the plugin in your own elasticsearch instance using the following command in the elasticsearch folder:
 ```
-[~/elasticsearch] $ bin/plugin --install jettro/elasticsearch-gui 
+[~/elasticsearch] $ bin/plugin install jettro/elasticsearch-gui 
 ```
 Next you can browse to you elasticsearch instance: http://localhost:9200/_plugin/gui/index.html
 ## use deployed installation

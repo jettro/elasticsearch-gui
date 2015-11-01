@@ -25,21 +25,13 @@ module.exports = function (grunt) {
             },
             dist: {
                 src: [
-                    'bower_components/angular/angular.js',
-                    'bower_components/angular-route/angular-route.js',
-                    'bower_components/ui-bootstrap/dist/ui-bootstrap-0.12.1.js',
-                    'bower_components/elasticsearch/elasticsearch.angular.js',
-                    'bower_components/d3/d3.js',
-                    'bower_components/c3/c3.js',
-                    'bower_components/moment/moment.js',
-                    'bower_components/c3-angular/c3js-directive.js',
                     'javascript/app.js',
                     'javascript/controllers/*',
                     'javascript/directives.js',
                     'javascript/filters.js',
                     'javascript/services/*'
                     ],
-                dest: 'assets/js/<%= pkg.name %>.js'
+                dest: '_site/assets/js/<%= pkg.name %>.js'
             }
         },
         jshint: {
@@ -57,13 +49,13 @@ module.exports = function (grunt) {
         uglify: {
             options: {
                 banner: '<%= banner %>',
-                sourceMap: 'assets/js/<%= pkg.name %>.js.map',
-                sourceMappingURL: 'assets/js/<%= pkg.name %>.js.map',
+                sourceMap: '_site/assets/js/<%= pkg.name %>.js.map',
+                sourceMappingURL: '_site/assets/js/<%= pkg.name %>.js.map',
                 sourceMapPrefix: 2
             },
             dist: {
                 src: '<%= concat.dist.dest %>',
-                dest: 'assets/js/<%= pkg.name %>.min.js'
+                dest: '_site/assets/js/<%= pkg.name %>.min.js'
             }
         },
         sass: {
@@ -73,39 +65,73 @@ module.exports = function (grunt) {
                     style: 'compressed'
                 },
                 files: {
-                    'assets/css/app.min.css': 'sass/style.scss'
+                    '_site/assets/css/app.min.css': 'sass/style.scss'
                 }
             }
         },
         rsync: {
-            options: {
-                src: "./",
-                args: ["--verbose"],
-                exclude: ['.git*',
-                    '.idea',
-                    '.sass-cache',
-                    'bower_components',
-                    'javascript',
-                    'node_modules',
-                    'sass',
-                    '.jshintrc',
-                    'bower.json',
-                    '*.iml',
-                    'Gruntfile.js',
-                    'package.json',
-                    '.DS_Store',
-                    'README.md'
-                ],
-                recursive: true,
-                syncDestIgnoreExcl: true
-            },
-            staging: {
+            git: {
                 options: {
-                    dest: "/Users/jettrocoenradie/temp/gridshoregui"
+                    src: ["./"],
+                    args: ["--verbose"],
+                    exclude: ['.git*',
+                        '.idea',
+                        '.sass-cache',
+                        'bower_components',
+                        'javascript',
+                        'node_modules',
+                        'sass',
+                        '.jshintrc',
+                        'bower.json',
+                        '*.iml',
+                        'Gruntfile.js',
+                        'package.json',
+                        '.DS_Store',
+                        'README.md',
+                        "plugin-descriptor.properties"
+                    ],
+                    recursive: true,
+                    syncDestIgnoreExcl: true,
+                    dest: "./_site/"
+                }
+            },
+            libs: {
+                options: {
+                    src: [
+                        "bower_components/angular/angular.min.js",
+                        "bower_components/angular-route/angular-route.min.js",
+                        "bower_components/c3/c3.min.js",
+                        "bower_components/d3/d3.min.js",
+                        "bower_components/c3-angular/c3-angular.min.js",
+                        "bower_components/elasticsearch/elasticsearch.angular.min.js",
+                        "bower_components/moment/min/moment.min.js",
+                        "bower_components/ui-bootstrap/dist/ui-bootstrap-0.12.1.min.js"
+                    ],
+                    args: ["--verbose"],
+                    recursive: true,
+                    syncDestIgnoreExcl: true,
+                    dest: "./_site/assets/libs/"
+                }
+            },
+            deploy: {
+                options: {
+                    src: ["_site","plugin-descriptor.properties"],
+                    args: ["--verbose"],
+                    exclude: [
+                    ],
+                    recursive: true,
+                    syncDestIgnoreExcl: true,
+                    dest: "/Users/jettrocoenradie/javalibs/elasticsearch/plugins2/gui/"
                 }
             }
+        },
+        devserver: {
+            options: {
+                port : 8888,
+                base : "_site"
+            },
+            server: {}
         }
-
     });
 
     grunt.loadNpmTasks('grunt-contrib-concat');
@@ -114,6 +140,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-sass');
     grunt.loadNpmTasks('grunt-rsync');
+    grunt.loadNpmTasks('grunt-devserver');
 
     grunt.registerTask('combine',['concat:dist','uglify:dist']);
 };

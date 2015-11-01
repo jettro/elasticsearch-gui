@@ -27,7 +27,7 @@ myApp.factory('$exceptionHandler',['$injector', function($injector) {
 }]);
 
 var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '1.3.0');
+serviceModule.value('version', '2.0.0');
 
 // TODO jettro: Come up with better separation. Create some actual modules
 var controllerModule = angular.module('myApp.controllers',[]);

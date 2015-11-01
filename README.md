@@ -7,7 +7,7 @@ Welcome to the Gui plugin for elasticsearch. Using this plugin you can explore y
 ## local installation
 You can install the plugin in your own elasticsearch instance using the following command in the elasticsearch folder:
 ```
-[~/elasticsearch] $ bin/plugin --install jettro/elasticsearch-gui 
+[~/elasticsearch] $ bin/plugin install jettro/elasticsearch-gui 
 ```
 Next you can browse to you elasticsearch instance: http://localhost:9200/_plugin/gui/index.html
 ## use deployed installation
@@ -21,7 +21,8 @@ Starting from elasticsearch 1.4 there have been some security measures. One thin
 *http.cors.allow-origin: "http://www.gridshore.nl"
 
 # Older versions
-Currently we develop agains elasticsearch v1.4. Due to some api changes you cannot use it with older elasticsearch installations. You can however use the older versions in branch v1.1.x and v0.90.8+. On my website you can also access the older version using the url:
+Currently we develop agains elasticsearch v2.0. Due to some api changes you cannot use it with older elasticsearch installations. You can however use the older versions in branch v1.1.x and v0.90.8+. On my website you can also access the older version using the url:
 
+[Remote installed plugin @gridshore (v1.2)](http://www.gridshore.nl/esgui_1_2)
 [Remote installed plugin @gridshore (v1.1)](http://www.gridshore.nl/esgui_1_1)
 [Remote installed plugin @gridshore (v0.90)](http://www.gridshore.nl/esgui_0_90)

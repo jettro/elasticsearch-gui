@@ -17,7 +17,7 @@ function ($scope, elastic) {
     $scope.unbind.indicesScope = function () {
     };
 
-    $scope.suggest = function () {
+    $scope.doSuggest = function () {
         var request = {};
         request.index = $scope.suggest.index.name;
         request.field = $scope.suggest.field;

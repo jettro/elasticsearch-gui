@@ -37,7 +37,7 @@
 			            <label>Term to find suggestions for</label>
 			            <input type="text" class="form-control" ng-model="suggest.query"/>
 			        </div>
-			        <button ng-click="suggest()" ng-disabled="!(suggest.index&&suggest.field&&suggest.query)" class="btn btn-primary">Find suggestions</button>
+			        <button ng-click="doSuggest()" ng-disabled="!(suggest.index&&suggest.field&&suggest.query)" class="btn btn-primary">Find suggestions</button>
 			    </form>
 			</div>
 			<div class="col-md-8">

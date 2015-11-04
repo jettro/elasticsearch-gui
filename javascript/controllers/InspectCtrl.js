@@ -1,38 +1,31 @@
-controllerModule.controller('InspectCtrl',['$scope', 'elastic',
-function ($scope, elastic) {
+controllerModule.controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
+function ($scope, $routeParams, $location, elastic) {
     $scope.inspect = {};
     $scope.inspect.index = '';
     $scope.inspect.id = '';
 
     $scope.sourcedata = {};
     $scope.sourcedata.indices = [];
-    $scope.sourcedata.fields = [];
 
-    $scope.results = {};
-
-    $scope.unbind = {};
-    $scope.unbind.indicesScope = function () {
-    };
+    if ($routeParams.id) {
+        $scope.inspect.id = $routeParams.id;
+    }
 
     $scope.doInspect = function () {
-        var request = {};
-        request.index = $scope.inspect.index.name;
-        request.query = $scope.inspect.id;
-        
-        alert("not yet implemented");
+        $location.path("/inspect/" + $scope.inspect.index.name + "/" + $scope.inspect.id);
     };
 
     $scope.loadIndices = function () {
-        $scope.unbind.indicesScope();
         elastic.indexes(function (data) {
             if (data) {
                 for (var i = 0; i < data.length; i++) {
                     $scope.sourcedata.indices[i] = {"name": data[i]};
+                    if ($routeParams.index && $routeParams.index == data[i]) {
+                        $scope.inspect.index = $scope.sourcedata.indices[i];
+                    }
                 }
-                $scope.unbind.indicesScope = $scope.$watch('inspect.index', $scope.loadFields, true);
             } else {
                 $scope.sourcedata.indices = [];
-                $scope.sourcedata.fields = [];
             }
         });
     };

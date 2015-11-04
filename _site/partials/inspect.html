@@ -1,0 +1,37 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            <p>Inspect an object.</p>
+        </div>
+    </div>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <h3 class="panel-title">Inspect</h3>
+    </div>
+    <div class="panel-body">
+		<form role="form">
+		    <div class="row">
+			    <div class="col-md-4">
+			        <div class="form-group">
+			            <label>Index</label>
+		                <select class="form-control" ng-model="inspect.index" ng-options="index.name for index in sourcedata.indices">
+			                <option value="">-- chose field --</option>
+		    	        </select>
+			        </div>
+			    </div>
+                <div class="col-md-8">
+			        <div class="form-group">
+			            <label>Object id</label>
+			            <input type="text" class="form-control" ng-model="inspect.id"/>
+			        </div>
+			    </div>
+			</div>
+			<div class="row">			    
+			    <div class="col-md-12 text-right">
+			        <button ng-click="doInspect()" ng-disabled="!(inspect.index&&inspect.id)" class="btn btn-primary">Inspect</button>
+			    </div>
+		    </div>
+		</form>
+	</div>
+</div>

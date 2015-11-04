@@ -289,8 +289,28 @@ function ($scope, $routeParams, $location, elastic) {
     $scope.sourcedata = {};
     $scope.sourcedata.indices = [];
 
-    if ($routeParams.id) {
+    if ($routeParams.id && $routeParams.index) {
         $scope.inspect.id = $routeParams.id;
+        
+        var query = {
+            "index": $routeParams.index,
+            "body": {
+                "query": {
+                    "match": {
+                        "_id": $routeParams.id
+                    }
+                }
+            },
+            "size": 1
+        };
+
+        elastic.doSearch(query, function(result) {
+            $scope.result = result.hits.hits[0];
+        }, function(errors) {
+            $scope.metaResults.failedShards = 1;
+            $scope.metaResults.errors = [];
+            $scope.metaResults.errors.push(errors.error);
+        });
     }
 
     $scope.doInspect = function () {

@@ -16,3 +16,7 @@
     Twitter Bootstrap
     AngularJS
     HTML5, CSS3
+    C3
+    D3
+    C3-angular
+    moment

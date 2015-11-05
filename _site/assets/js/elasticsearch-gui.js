@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-04
+/*! elasticsearch-gui - v2.0.0 - 2015-11-05
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 //'use strict';
@@ -430,8 +430,8 @@ function ($scope, $timeout){
     });
 }]);
 
-controllerModule.controller('QueryCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder', 'queryStorage',
-function ($scope, $modal, elastic, aggregateBuilder, queryStorage) {
+controllerModule.controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
+function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
 
@@ -653,6 +653,9 @@ function ($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         });
     };
 
+    $scope.inspect = function(doc) {
+        $location.path("/inspect/" + doc._index + "/" + doc._id);
+    };
 
     function createQuery() {
         var query = {};

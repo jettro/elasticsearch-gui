@@ -1,4 +1,5 @@
-function MonitoringCtrl($scope, elastic, $interval) {
+controllerModule.controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
+    function ($scope, elastic, $interval) {
     $scope.dataNodes=[];
     $scope.columnsNodes=[{"id":"num-nodes","type":"line","name":"Number of nodes"}];
     $scope.datax={"id":"x"};
@@ -41,5 +42,4 @@ function MonitoringCtrl($scope, elastic, $interval) {
 
     $scope.loadNodes();
     // TODO add stop function
-}
-MonitoringCtrl.$inject = ['$scope', 'elastic', '$interval'];
+}]);

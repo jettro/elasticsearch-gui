@@ -4,6 +4,7 @@
 # TEAM
 
     Jettro Coenradie -- Owner and Developer -- @gridshore
+    Achim Settelmeier/Netpioneer GmbH -- Contributor
 
 # THANKS
 

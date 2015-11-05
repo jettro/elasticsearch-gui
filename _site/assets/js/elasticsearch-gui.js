@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-05
+/*! elasticsearch-gui - v2.0.0 - 2015-11-06
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 //'use strict';
@@ -10,6 +10,8 @@ var myApp = angular.module('myApp', ['ngRoute','myApp.filters', 'myApp.services'
             $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
             $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
             $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
+            $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
+            $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
             $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: 'GraphCtrl'});
             $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
             $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
@@ -279,6 +281,61 @@ function ($scope, $modal, elastic, aggregateBuilder) {
     $scope.loadFields();
 }]);
 
+controllerModule.controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
+function ($scope, $routeParams, $location, elastic) {
+    $scope.inspect = {};
+    $scope.inspect.index = '';
+    $scope.inspect.id = '';
+
+    $scope.sourcedata = {};
+    $scope.sourcedata.indices = [];
+
+    if ($routeParams.id && $routeParams.index) {
+        $scope.inspect.id = $routeParams.id;
+        
+        var query = {
+            "index": $routeParams.index,
+            "body": {
+                "query": {
+                    "match": {
+                        "_id": $routeParams.id
+                    }
+                }
+            },
+            "size": 1
+        };
+
+        elastic.doSearch(query, function(result) {
+            $scope.result = result.hits.hits[0];
+        }, function(errors) {
+            $scope.metaResults.failedShards = 1;
+            $scope.metaResults.errors = [];
+            $scope.metaResults.errors.push(errors.error);
+        });
+    }
+
+    $scope.doInspect = function () {
+        $location.path("/inspect/" + $scope.inspect.index.name + "/" + $scope.inspect.id);
+    };
+
+    $scope.loadIndices = function () {
+        elastic.indexes(function (data) {
+            if (data) {
+                for (var i = 0; i < data.length; i++) {
+                    $scope.sourcedata.indices[i] = {"name": data[i]};
+                    if ($routeParams.index && $routeParams.index == data[i]) {
+                        $scope.inspect.index = $scope.sourcedata.indices[i];
+                    }
+                }
+            } else {
+                $scope.sourcedata.indices = [];
+            }
+        });
+    };
+
+    $scope.loadIndices();
+}]);
+
 controllerModule.controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
     function ($scope, elastic, $interval) {
     $scope.dataNodes=[];
@@ -420,8 +477,8 @@ function ($scope, $timeout){
     });
 }]);
 
-controllerModule.controller('QueryCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder', 'queryStorage',
-function ($scope, $modal, elastic, aggregateBuilder, queryStorage) {
+controllerModule.controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
+function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
 
@@ -643,6 +700,9 @@ function ($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         });
     };
 
+    $scope.inspect = function(doc) {
+        $location.path("/inspect/" + doc._index + "/" + doc._id);
+    };
 
     function createQuery() {
         var query = {};

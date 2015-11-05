@@ -1,5 +1,5 @@
-controllerModule.controller('QueryCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder', 'queryStorage',
-function ($scope, $modal, elastic, aggregateBuilder, queryStorage) {
+controllerModule.controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
+function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
 
@@ -221,6 +221,9 @@ function ($scope, $modal, elastic, aggregateBuilder, queryStorage) {
         });
     };
 
+    $scope.inspect = function(doc) {
+        $location.path("/inspect/" + doc._index + "/" + doc._id);
+    };
 
     function createQuery() {
         var query = {};

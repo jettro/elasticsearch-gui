@@ -1,4 +1,4 @@
-controllerModule.controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
+angular.module('guiapp').controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
 function WhereShardsCtrl($scope, $timeout, elastic) {
     $scope.shardsInfo = {};
     $scope.nodeInfo = {};

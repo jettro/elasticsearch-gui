@@ -1,4 +1,4 @@
-controllerModule.controller('NotificationCtrl',['$scope', '$timeout',
+angular.module('guiapp').controller('NotificationCtrl',['$scope', '$timeout',
 function ($scope, $timeout){
     $scope.alerts = {};
 

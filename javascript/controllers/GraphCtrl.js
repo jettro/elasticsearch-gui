@@ -1,4 +1,4 @@
-controllerModule.controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
+angular.module('guiapp').controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
 function ($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
     $scope.types = [];

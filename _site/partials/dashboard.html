@@ -35,20 +35,19 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="index in indices">
+                    <tr ng-repeat="index in vm.indices">
                         <td>{{index.name}}</td>
                         <td>{{index.size}}</td>
                         <td>{{index.numDocs}}</td>
                         <td>{{index.numShards}}</td>
-                        <!--<td>{{index.numReplicas}}</td>-->
-                        <td><button type="button" class="btn btn-link" ng-click="openChangeReplicas(index)">{{index.numReplicas}}</button></td>
-                        <td><button confirmed-click="removeIndex(index.name)"
+                        <td><button type="button" class="btn btn-link" ng-click="vm.openChangeReplicas(index)">{{index.numReplicas}}</button></td>
+                        <td><button confirmed-click="vm.removeIndex(index.name)"
                                   ng-confirm-click="Do you want to remove the index {{index.key}}"
                                   class="btn btn-link" title="Remove index"><span class=" glyphicon glyphicon-trash"></span></button>
-                            <button confirmed-click="openIndex(index.name)" ng-hide="index.state"
-                                  ng-confirm-click="Do you want to open the index {{index.key}}"
+                            <button confirmed-click="vm.openIndex(index.name)" ng-hide="index.state"
+                                  ng-confirm-click="Do you want to open the index {{vm.index.key}}"
                                   class="btn btn-link" title="Open index"><span class=" glyphicon glyphicon-play-circle"></span></button>
-                            <button confirmed-click="closeIndex(index.name)" ng-show="index.state"
+                            <button confirmed-click="vm.closeIndex(index.name)" ng-show="index.state"
                                   ng-confirm-click="Do you want to close the index {{index.key}}"
                                   class="btn btn-link" title="Close index"><span class="glyphicon glyphicon-eject"></span></button>
                         </td>
@@ -69,14 +68,14 @@
             <table class="table table-condensed">
                 <thead></thead>
                 <tbody>
-                    <tr><th>Cluster name</th><td>{{health.cluster_name}}</td></tr>
-                    <tr><th>Number of nodes</th><td>{{health.number_of_nodes}}</td></tr>
-                    <tr><th>Number of data nodes</th><td>{{health.number_of_data_nodes}}</td></tr>
-                    <tr><th>Active primary shards</th><td>{{health.active_primary_shards}}</td></tr>
-                    <tr><th>Active shards</th><td>{{health.active_shards}}</td></tr>
-                    <tr><th>Relocating shards</th><td>{{health.relocating_shards}}</td></tr>
-                    <tr><th>Initializing shards</th><td>{{health.initializing_shards}}</td></tr>
-                    <tr><th>Unassigned shards</th><td>{{health.unassigned_shards}}</td></tr>
+                    <tr><th>Cluster name</th><td>{{vm.health.cluster_name}}</td></tr>
+                    <tr><th>Number of nodes</th><td>{{vm.health.number_of_nodes}}</td></tr>
+                    <tr><th>Number of data nodes</th><td>{{vm.health.number_of_data_nodes}}</td></tr>
+                    <tr><th>Active primary shards</th><td>{{vm.health.active_primary_shards}}</td></tr>
+                    <tr><th>Active shards</th><td>{{vm.health.active_shards}}</td></tr>
+                    <tr><th>Relocating shards</th><td>{{vm.health.relocating_shards}}</td></tr>
+                    <tr><th>Initializing shards</th><td>{{vm.health.initializing_shards}}</td></tr>
+                    <tr><th>Unassigned shards</th><td>{{vm.health.unassigned_shards}}</td></tr>
                 </tbody>
             </table>
         </div>
@@ -96,7 +95,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="(key,value) in nodes">
+                    <tr ng-repeat="(key,value) in vm.nodes">
                         <td>{{value.name}}</td>
                         <td>{{value.version}}</td>
                         <td ng-show="value.attributes.client">
@@ -114,10 +113,10 @@
                 <h3 class="panel-title">Site plugins per node</h3>
             </div>
             <div class="panel-body">
-                <dl ng-repeat="node in nodes">
+                <dl ng-repeat="node in vm.nodes">
                     <dt>{{node.name}}</dt>
                     <dd ng-repeat="plugin in node.plugins">
-                        <a href="{{serverUrl}}{{plugin.url}}" target="_blank">{{plugin.name}}</a>
+                        <a href="{{vm.serverUrl}}{{plugin.url}}" target="_blank">{{plugin.name}}</a>
                     </dd>
                 </dl>
             </div>

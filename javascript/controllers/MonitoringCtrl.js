@@ -1,4 +1,4 @@
-controllerModule.controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
+angular.module('guiapp').controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
     function ($scope, elastic, $interval) {
     $scope.dataNodes=[];
     $scope.columnsNodes=[{"id":"num-nodes","type":"line","name":"Number of nodes"}];

@@ -1,4 +1,4 @@
-controllerModule.controller('SuggestionsCtrl',['$scope', 'elastic',
+angular.module('guiapp').controller('SuggestionsCtrl',['$scope', 'elastic',
 function ($scope, elastic) {
     $scope.suggest = {};
     $scope.suggest.index = '';

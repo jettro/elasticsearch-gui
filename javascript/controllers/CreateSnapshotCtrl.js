@@ -1,4 +1,4 @@
-controllerModule.controller('CreateSnapshotCtrl',['$scope', '$modalInstance',
+angular.module('guiapp').controller('CreateSnapshotCtrl',['$scope', '$modalInstance',
 function ($scope, $modalInstance) {
     $scope.dialog = {"includeGlobalState":true,"ignoreUnavailable":false};
 

@@ -20,8 +20,8 @@
                 <a class="navbar-link" href="https://www.linkedin.com/in/jettro"><img src="assets/img/linkedin_logo.png"/></a>
             </div>
             <ul class="nav navbar-nav navbar-right">
-                <li><a class="btn btn-lg" ng-click="openDialog()"><span class=" glyphicon glyphicon-cog"></span></a></li>
-                <li><p class="navbar-text"><span class="text-{{statusCluster.state}}">{{statusCluster.message}}</span></p></li>
+                <li><a class="btn btn-lg" ng-click="vm.openDialog()"><span class=" glyphicon glyphicon-cog"></span></a></li>
+                <li><p class="navbar-text"><span class="text-{{vm.statusCluster.state}}">{{vm.statusCluster.message}}</span></p></li>
                 <li>&nbsp;</li>
             </ul>
         </div>

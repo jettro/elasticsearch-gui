@@ -1,4 +1,10 @@
-serviceModule.factory('aggregateBuilder', function () {
+(function () {
+    'use strict';
+
+    angular
+        .module('guiapp.services')
+        .factory('aggregateBuilder', AggregateBuilder);
+
     function AggregateBuilder() {
         this.build = function (aggs) {
             var queryaggs = {};
@@ -20,14 +26,22 @@ serviceModule.factory('aggregateBuilder', function () {
                     }
                     queryaggs[aggregation.name] = {"range": {"field": aggregation.field, "ranges": ranges}};
                 } else if (aggregation.aggsType === 'datehistogram') {
-                    queryaggs[aggregation.name] = {"date_histogram": {"field": aggregation.field, "interval": aggregation.interval}};
+                    queryaggs[aggregation.name] = {
+                        "date_histogram": {
+                            "field": aggregation.field,
+                            "interval": aggregation.interval
+                        }
+                    };
                 } else if (aggregation.aggsType === 'histogram') {
-                    queryaggs[aggregation.name] = {"histogram": {"field": aggregation.field, "interval": aggregation.interval}};
+                    queryaggs[aggregation.name] = {
+                        "histogram": {
+                            "field": aggregation.field,
+                            "interval": aggregation.interval
+                        }
+                    };
                 }
             });
             return queryaggs;
         }
     }
-
-    return new AggregateBuilder();
-});
+})();

@@ -1,73 +1,624 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-06
+/*! elasticsearch-gui - v2.0.0 - 2015-11-08
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
-//'use strict';
+(function() {
+    'use strict';
+        var guiapp = angular.module('guiapp',
+            [
+                'ngRoute',
+                'guiapp.filters',
+                'guiapp.directives',
+                'ui.bootstrap',
+                'elasticsearch',
+                'gridshore.c3js.chart',
+                'guiapp.services',
+                'guiapp.dashboard',
+                'guiapp.navbar'
+            ]);
 
-// Declare app level module which depends on filters, and services
-var myApp = angular.module('myApp', ['ngRoute','myApp.filters', 'myApp.services', 'myApp.directives', 'myApp.controllers','ui.bootstrap','elasticsearch','gridshore.c3js.chart']).
-        config(['$routeProvider', function ($routeProvider) {
-            $routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: 'DashboardCtrl'});
-            $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
-            $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
-            $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
-            $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
-            $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
-            $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: 'GraphCtrl'});
-            $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
-            $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
-            $routeProvider.when('/tools/snapshots', {templateUrl: 'partials/snapshots.html', controller: 'SnapshotsCtrl'});
-            $routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
-            $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
-            $routeProvider.otherwise({redirectTo: '/dashboard'});
-        }]);
+    guiapp.config(['$routeProvider', function ($routeProvider) {
+        //$routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: 'DashboardCtrl'});
+        $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
+        $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
+        $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
+        $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
+        $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
+        $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: 'GraphCtrl'});
+        $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
+        $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
+        $routeProvider.when('/tools/snapshots', {templateUrl: 'partials/snapshots.html', controller: 'SnapshotsCtrl'});
+        $routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
+        $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
+        $routeProvider.otherwise({redirectTo: '/dashboard'});
+    }]);
 
-myApp.value('localStorage', window.localStorage);
+    guiapp.value('localStorage', window.localStorage);
 
-myApp.factory('$exceptionHandler',['$injector', function($injector) {
-    return function(exception, cause) {
-        console.log(exception);
-        var errorHandling = $injector.get('errorHandling');
-        errorHandling.add(exception.message);
-        throw exception;
-    };
-}]);
+    guiapp.factory('$exceptionHandler',['$injector', function($injector) {
+        return function(exception, cause) {
+            console.log(exception);
+            var errorHandling = $injector.get('errorHandling');
+            errorHandling.add(exception.message);
+            throw exception;
+        };
+    }]);
 
-var serviceModule = angular.module('myApp.services', []);
-serviceModule.value('version', '2.0.0');
+})();
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.dashboard', ['guiapp.services','ngRoute']);
+})();
 
-// TODO jettro: Come up with better separation. Create some actual modules
-var controllerModule = angular.module('myApp.controllers',[]);
-controllerModule.controller('AggregateDialogCtrl',['$scope', '$modalInstance', 'fields',
-function ($scope, $modalInstance, fields) {
-    $scope.fields = fields;
-    $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
-    $scope.ranges = [];
-    $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
+(function() {
+    'use strict';
 
-    $scope.close = function (result) {
-        var dialogResult = {};
-        dialogResult.field = result.field;
-        dialogResult.name = result.name;
-        if (result.aggstype === 'Term') {
-            dialogResult.aggsType = 'term';
-        } else if (result.aggstype === 'Range') {
-            dialogResult.aggsType = 'range';
-            dialogResult.ranges = $scope.ranges;
-        } else if (result.aggstype === 'DateHistogram') {
-            dialogResult.aggsType = 'datehistogram';
-            dialogResult.interval = result.interval;
-        } else if (result.aggstype === 'Histogram') {
-            dialogResult.aggsType = 'histogram';
-            dialogResult.interval = result.interval;
+    angular
+        .module('guiapp.navbar', ['guiapp.services']);
+})();
+
+(function() {
+    'use strict';
+    var services = angular.module('guiapp.services', ['elasticsearch']);
+
+    services.value('version', '2.0.0');
+})();
+
+(function () {
+    'use strict';
+
+    angular
+    .module('guiapp.services')
+        .factory('configuration', LocalStorageService);
+
+    LocalStorageService.$inject = ['$rootScope', 'localStorage', '$location'];
+
+    function LocalStorageService($rootScope, localStorage, $location) {
+        var LOCAL_STORAGE_ID = 'es-config';
+
+        var service = {
+            configuration:{},
+            changeConfiguration: changeConfiguration
+        };
+
+        initConfiguration();
+
+        return service;
+
+        function initConfiguration() {
+            var configurationString = localStorage[LOCAL_STORAGE_ID];
+            if (configurationString) {
+                changeConfiguration(JSON.parse(configurationString));
+            } else {
+                var host;
+                if ($location.host() == 'www.gridshore.nl') {
+                    host = "http://localhost:9200";
+                } else {
+                    host = $location.protocol() + "://" + $location.host() + ":" + $location.port();
+                }
+
+                changeConfiguration({
+                    title: undefined,
+                    description: undefined,
+                    excludedIndexes: undefined,
+                    serverUrl: host
+                });
+            }
+
+            $rootScope.$watch(function () {
+                return service.configuration;
+            }, function () {
+                localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
+            }, true);
         }
-        $modalInstance.close(dialogResult);
-    };
 
-    $scope.addRangeField = function (data) {
-        $scope.ranges.push([data.range.from, data.range.to]);
+        function changeConfiguration(configuration) {
+            service.configuration = configuration;
+        }
     }
-}]);
-controllerModule.controller('ChangeNumReplicasCtrl',['$scope', '$modalInstance', 'indexService',
+})();
+
+(function () {
+    'use strict';
+    angular
+        .module('guiapp.services')
+        .factory('elastic', ElasticService);
+
+    ElasticService.$inject = ['esFactory', 'configuration', '$rootScope'];
+
+    function ElasticService(esFactory, configuration, $rootScope) {
+        var serverUrl = configuration.serverUrl;
+        var statussus = {"green": "success", "yellow": "warning", "red": "error"};
+        var es = createEsFactory();
+        var activeIndexes = [];
+
+        var service = {
+            changeServerAddress: changeServerAddress,
+            obtainServerAddress: function(){return serverUrl},
+            clusterStatus: clusterStatus,
+            clusterHealth: clusterHealth,
+            clusterNodes: clusterNodes,
+            obtainShards: obtainShards,
+            nodeInfo: nodeInfo,
+            indexes: indexes,
+            removeIndex: removeIndex,
+            openIndex: openIndex,
+            closeIndex: closeIndex,
+            indexesDetails: indexesDetails,
+            types: types,
+            documentTerms: documentTerms,
+            fields: fields,
+            changeReplicas: changeReplicas,
+            snapshotRepositories: snapshotRepositories,
+            createRepository: createRepository,
+            deleteRepository: deleteRepository,
+            obtainSnapshots: obtainSnapshots,
+            obtainSnapshotStatus: obtainSnapshotStatus,
+            removeSnapshot: removeSnapshot,
+            restoreSnapshot: restoreSnapshot,
+            createSnapshot: createSnapshot,
+            doSearch: doSearch,
+            suggest: suggest
+        };
+
+        // just to initialize the indices
+        //indexes();
+
+        return service;
+
+        function changeServerAddress (serverAddress) {
+            serverUrl = serverAddress;
+            es = createEsFactory();
+            indexes();
+        }
+
+        function clusterStatus (callback) {
+            es.cluster.health({}).then(function (data) {
+                var numClients = data.number_of_nodes - data.number_of_data_nodes;
+                var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
+                callback(msg, statussus[data.status]);
+            }, function (reason) {
+                callback("No connection", "error");
+            });
+        }
+
+        function clusterHealth(callback) {
+            es.cluster.health().then(function (data) {
+                callback(data);
+            });
+        }
+
+        function clusterNodes (callback) {
+            es.nodes.info().then(function (data) {
+                callback(data.nodes);
+            });
+        }
+
+        function obtainShards (callback) {
+            es.cluster.state({"metric": ["routing_table", "nodes"]}).then(function (data) {
+                callback(data.nodes, data.routing_table.indices);
+            });
+        }
+
+        function nodeInfo(nodeId, callback) {
+            es.nodes.info({"nodeId": nodeId, "human": true}).then(function (data) {
+                callback(data.nodes[nodeId]);
+            });
+        }
+
+        function indexes (callback) {
+            es.cluster.state({"ignoreUnavailable": true}).then(function (data) {
+                var indices = [];
+                for (var index in data.metadata.indices) {
+                    var ignored = indexIsNotIgnored(index);
+                    if (indexIsNotIgnored(index)) {
+                        indices.push(index);
+                    }
+                }
+                activeIndexes = indices;
+                if (callback) {
+                    callback(indices);
+                }
+            });
+        }
+
+        function removeIndex(index, callback) {
+            es.indices.delete({"index": index}).then(function (data) {
+                callback();
+            });
+        }
+
+        function openIndex(index, callback) {
+            es.indices.open({"index": index}).then(function (data) {
+                callback();
+            });
+        }
+
+        function closeIndex (index, callback) {
+            es.indices.close({"index": index}).then(function (data) {
+                callback();
+            });
+        }
+
+        function indexesDetails(callback) {
+            es.indices.stats({"human": true, "recovery": false}).then(function (statusData) {
+                var indexesStatus = statusData.indices;
+                es.cluster.state({"metric": "metadata"}).then(function (stateData) {
+                    var indexesState = stateData.metadata.indices;
+                    var indices = [];
+                    angular.forEach(indexesState, function (value, key) {
+                        var newIndex = {};
+                        newIndex.name = key;
+                        if (value.state === 'open') {
+                            if (indexesStatus[key]) {
+                                newIndex.size = indexesStatus[key].total.store.size;
+                                newIndex.numDocs = indexesStatus[key].total.docs.count;
+                            } else {
+                                newIndex.size = "unknown";
+                                newIndex.numDocs = "unknown";
+                            }
+                            newIndex.state = true;
+                            newIndex.numShards = value.settings.index.number_of_shards;
+                            newIndex.numReplicas = value.settings.index.number_of_replicas
+                        } else {
+                            newIndex.state = false;
+                        }
+                        indices.push(newIndex);
+                    });
+                    callback(indices);
+                });
+            });
+        }
+
+        function types (selectedIndex, callback) {
+            var mappingFilter = {};
+            if (selectedIndex.length > 0) {
+                mappingFilter.index = selectedIndex.toString();
+            }
+            es.indices.getMapping(mappingFilter).then(function (data) {
+                var myTypes = [];
+                for (var index in data) {
+                    if (indexIsNotIgnored(index)) {
+                        for (var type in data[index].mappings) {
+                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
+                                myTypes.push(type);
+                            }
+                        }
+                    }
+                }
+                callback(myTypes);
+            });
+        }
+
+        function documentTerms (index, type, id, callback) {
+            es.termvectors(
+                {
+                    "index": index,
+                    "type": type,
+                    "id": id,
+                    "routing":id,
+                    "body": {
+                        "fields": ["*"],
+                        "field_statistics": false,
+                        "term_statistics": true
+                    }
+                })
+                .then(function (result) {
+                    var fieldTerms = {};
+                    if (result.term_vectors) {
+                        angular.forEach(result.term_vectors, function (value, key) {
+                            var terms = [];
+                            angular.forEach(value.terms, function (term, termKey) {
+                                terms.push(termKey);
+                            });
+                            fieldTerms[key] = terms;
+                        });
+                        callback(fieldTerms);
+                    }
+                });
+        }
+
+        function fields (selectedIndex, selectedType, callback) {
+            var mappingFilter = {};
+            if (selectedIndex.length > 0) {
+                mappingFilter.index = selectedIndex.toString();
+            }
+            if (selectedType.length > 0) {
+                mappingFilter.type = selectedType.toString();
+            }
+            es.indices.getMapping(mappingFilter).then(function (data) {
+                var myTypes = [];
+                var myFields = {};
+                for (var index in data) {
+                    if (indexIsNotIgnored(index)) {
+                        for (var type in data[index].mappings) {
+                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
+                                myTypes.push(type);
+                                var properties = data[index].mappings[type].properties;
+                                for (var field in properties) {
+                                    handleSubfields(properties[field], field, myFields, undefined);
+                                }
+                            }
+                        }
+                    }
+                }
+                callback(myFields);
+            });
+        }
+
+        function changeReplicas(index, numReplicas, callback) {
+            var changeSettings = {
+                "index": index,
+                "body": {
+                    "index": {
+                        "number_of_replicas": numReplicas
+                    }
+                }
+            };
+            es.indices.putSettings(changeSettings).then(function (data) {
+                callback(data);
+            }, logErrors);
+        }
+
+        function snapshotRepositories(callback) {
+            es.snapshot.getRepository().then(function (data) {
+                callback(data);
+            }, logErrors);
+        }
+
+        function createRepository (newRepository, callback) {
+            var createrepo = {
+                "repository": newRepository.repository,
+                "body": {
+                    "type": "fs",
+                    "settings": {
+                        "location": newRepository.location
+                    }
+                }
+            };
+            es.snapshot.createRepository(createrepo).then(function (data) {
+                callback();
+            }, broadcastError);
+        }
+
+        function deleteRepository(repository, callback) {
+            es.snapshot.deleteRepository({"repository": repository}).then(function (data) {
+                callback();
+            }, broadcastError)
+        }
+
+        function obtainSnapshots(repository, callback) {
+            es.snapshot.get({"repository": repository, "snapshot": "_all"}).then(function (data) {
+                callback(data.snapshots);
+            }, logErrors);
+        }
+
+        function obtainSnapshotStatus(callback) {
+            es.snapshot.status().then(function (data) {
+                callback(data.snapshots);
+            }, logErrors);
+        }
+
+        function removeSnapshot(repository, snapshot, callback) {
+            es.snapshot.delete({"repository": repository, "snapshot": snapshot}).then(function (data) {
+                callback();
+            }, logErrors);
+        }
+
+        function restoreSnapshot(repository, snapshot, callback) {
+            es.snapshot.restore({"repository": repository, "snapshot": snapshot}).then(function (data) {
+                callback();
+            }, broadcastError);
+        }
+
+        function createSnapshot(newSnapshot, callback) {
+            var aSnapshot = {
+                "repository": newSnapshot.repository,
+                "snapshot": newSnapshot.snapshot,
+                "body": {
+                    "indices": newSnapshot.indices,
+                    "ignore_unavailable": newSnapshot.ignoreUnavailable,
+                    "include_global_state": newSnapshot.includeGlobalState
+                }
+            };
+            es.snapshot.create(aSnapshot).then(function (data) {
+                callback();
+            }, logErrors);
+        }
+
+        function handleSubfields(field, fieldName, myFields, nestedPath) {
+            if (field.hasOwnProperty("properties")) {
+                var nested = (field.type == "nested" | field.type == "object");
+                if (nested) {
+                    nestedPath = fieldName;
+                }
+                for (var subField in field.properties) {
+                    var newField = fieldName + "." + subField;
+                    handleSubfields(field.properties[subField], newField, myFields, nestedPath);
+                }
+            } else {
+                if (field.hasOwnProperty("fields")) {
+                    for (var multiField in field.fields) {
+                        var multiFieldName = fieldName + "." + multiField;
+                        // TODO jettro : fix the nested documents with multi_fields
+                        if (!myFields[multiFieldName] && fieldName !== multiField) {
+                            myFields[multiFieldName] = field.fields[multiField];
+                            myFields[multiFieldName].nestedPath = nestedPath;
+                            myFields[multiFieldName].forPrint = multiFieldName + " (" + field.type + ")";
+                        }
+                    }
+                }
+                if (!myFields[fieldName]) {
+                    myFields[fieldName] = field;
+                    myFields[fieldName].nestedPath = nestedPath;
+                    myFields[fieldName].type = field.type;
+                    myFields[fieldName].forPrint = fieldName + " (" + field.type + ")";
+                }
+            }
+        }
+
+        function doSearch (query, resultCallback, errorCallback) {
+            if (query.index === "") {
+                query.index = activeIndexes;
+            }
+            es.search(query).then(function (results) {
+                resultCallback(results)
+            }, function (errors) {
+                errorCallback(errors)
+            });
+        }
+
+        function suggest (suggestRequest, resultCallback) {
+            var suggest = {};
+            suggest.index = suggestRequest.index;
+            suggest.body = {};
+            suggest.body.mysuggester = {};
+            suggest.body.mysuggester.text = suggestRequest.query;
+            suggest.body.mysuggester.term = {};
+            suggest.body.mysuggester.term.field = suggestRequest.field;
+            suggest.body.mysuggester.term.min_word_length = suggestRequest.min_word_length;
+            suggest.body.mysuggester.term.prefix_length = suggestRequest.prefix_length;
+
+            es.suggest(suggest).then(function (results) {
+                var suggested = {};
+                if (results.mysuggester) {
+                    for (var i = 0; i < results.mysuggester.length; i++) {
+                        var item = results.mysuggester[i];
+                        suggested[item.text] = [];
+                        for (var j = 0; j < item.options.length; j++) {
+                            suggested[item.text].push(item.options[j].text);
+                        }
+
+                    }
+                }
+
+                resultCallback(suggested);
+            }, logErrors);
+        }
+
+        function createEsFactory() {
+            return esFactory({"host": serverUrl, "apiVersion": "2.0"});
+        }
+
+        function indexIsNotIgnored(index) {
+            var ignore = false;
+            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
+                ignore = true;
+                var includedIndexes = (configuration.includedIndexes) ? configuration.includedIndexes.split(",") : [];
+                angular.forEach(includedIndexes, function (includedIndex) {
+                    var indexToCheck = includedIndex.trim();
+                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
+                        ignore = false;
+                    }
+                });
+            } else {
+                var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
+                angular.forEach(excludedIndexes, function (excludedIndex) {
+                    var indexToCheck = excludedIndex.trim();
+                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
+                        ignore = true;
+                    }
+                });
+            }
+
+            return !ignore;
+        }
+
+        function logErrors(errors) {
+            console.log(errors);
+        }
+
+        function broadcastError(error) {
+            $rootScope.$broadcast('msg:notification', 'error', error.message);
+        }
+    }
+})();
+
+(function () {
+    'use strict';
+    angular
+        .module('guiapp.services')
+        .factory('errorHandling', ErrorHandlingService);
+
+    ErrorHandlingService.$inject = ['$rootScope'];
+
+    function ErrorHandlingService($rootScope) {
+        var service = {
+            add: add
+        };
+
+        return service;
+
+        // Implementations
+        function add(message) {
+            var errorMessage;
+            if (message && typeof message === "object") {
+                if (message.hasOwnProperty('message')) {
+                    errorMessage = message.message;
+                }
+            } else {
+                errorMessage = message;
+            }
+            $rootScope.$broadcast('msg:notification', 'error', errorMessage);
+        }
+    }
+})();
+
+
+(function () {
+    'use strict';
+
+    angular
+        .module('guiapp.services')
+        .factory('indexService', IndexService);
+
+    function IndexService() {
+        return {
+            name: "unknown",
+            numreplicas: 0
+        };
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp')
+        .controller('AggregateDialogCtrl', AggregateDialogCtrl);
+
+    AggregateDialogCtrl.$inject = ['$scope', '$modalInstance', 'fields'];
+
+    function AggregateDialogCtrl($scope, $modalInstance, fields) {
+        $scope.fields = fields;
+        $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
+        $scope.ranges = [];
+        $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
+
+        $scope.close = function (result) {
+            var dialogResult = {};
+            dialogResult.field = result.field;
+            dialogResult.name = result.name;
+            if (result.aggstype === 'Term') {
+                dialogResult.aggsType = 'term';
+            } else if (result.aggstype === 'Range') {
+                dialogResult.aggsType = 'range';
+                dialogResult.ranges = $scope.ranges;
+            } else if (result.aggstype === 'DateHistogram') {
+                dialogResult.aggsType = 'datehistogram';
+                dialogResult.interval = result.interval;
+            } else if (result.aggstype === 'Histogram') {
+                dialogResult.aggsType = 'histogram';
+                dialogResult.interval = result.interval;
+            }
+            $modalInstance.close(dialogResult);
+        };
+
+        $scope.addRangeField = function (data) {
+            $scope.ranges.push([data.range.from, data.range.to]);
+        }
+    }
+})();
+angular.module('guiapp').controller('ChangeNumReplicasCtrl',['$scope', '$modalInstance', 'indexService',
 function ($scope, $modalInstance, indexService) {
     $scope.dialog = {
         "numReplicas": indexService.numReplicas,
@@ -79,7 +630,7 @@ function ($scope, $modalInstance, indexService) {
     };
 
 }]);
-controllerModule.controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
+angular.module('guiapp').controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
 function ($scope, $modalInstance, configuration){
     $scope.configuration = configuration;
 
@@ -88,7 +639,7 @@ function ($scope, $modalInstance, configuration){
     };
 
 }]);
-controllerModule.controller('CreateSnapshotCtrl',['$scope', '$modalInstance',
+angular.module('guiapp').controller('CreateSnapshotCtrl',['$scope', '$modalInstance',
 function ($scope, $modalInstance) {
     $scope.dialog = {"includeGlobalState":true,"ignoreUnavailable":false};
 
@@ -98,7 +649,7 @@ function ($scope, $modalInstance) {
 
 }]);
 
-controllerModule.controller('CreateSnapshotRepositoryCtrl',['$scope', '$modalInstance',
+angular.module('guiapp').controller('CreateSnapshotRepositoryCtrl',['$scope', '$modalInstance',
 function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
     $scope.dialog = {};
 
@@ -108,84 +659,7 @@ function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
 
 }])
 
-controllerModule.controller('DashboardCtrl',['$scope', 'elastic', '$modal', 'indexService',
-function ($scope, elastic,$modal,indexService) {
-    $scope.health = {};
-    $scope.nodes = [];
-    $scope.plugins = [];
-    $scope.serverUrl = "";
-
-    $scope.removeIndex = function (index) {
-        elastic.removeIndex(index, function () {
-            indexDetails();
-        });
-    };
-
-    $scope.openIndex = function (index) {
-        elastic.openIndex(index, function () {
-            indexDetails();
-        });
-    };
-
-    $scope.closeIndex = function (index) {
-        elastic.closeIndex(index, function () {
-            indexDetails();
-        });
-    };
-
-    $scope.openChangeReplicas = function (index) {
-        indexService.name = index.name;
-        if (!isNaN(parseInt(index.numReplicas)) && isFinite(index.numReplicas)) {
-            indexService.numReplicas = parseInt(index.numReplicas);
-        }
-
-        var opts = {
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: 'template/dialog/numreplicas.html',
-            controller: 'ChangeNumReplicasCtrl',
-            resolve: {fields: function () {
-                return angular.copy(indexService);
-            }}
-        };
-        var modalInstance = $modal.open(opts);
-        modalInstance.result.then(function (result) {
-            if (result) {
-                elastic.changeReplicas(result.name,result.numReplicas, function() {
-                    indexDetails();
-                });
-            }
-        }, function () {
-            // Nothing to do here
-        });
-    };
-
-    function indexDetails() {
-        elastic.indexesDetails(function (data) {
-            $scope.indices = data;
-        });
-    }
-
-    function refreshData() {
-        $scope.serverUrl = elastic.obtainServerAddress();
-
-        elastic.clusterHealth(function (data) {
-            $scope.health = data;
-        });
-
-        elastic.clusterNodes(function (data) {
-            $scope.nodes = data;
-        });
-    }
-
-    $scope.$on('$viewContentLoaded', function () {
-        indexDetails();
-        refreshData();
-    });
-}]);
-
-controllerModule.controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
+angular.module('guiapp').controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
 function ($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
     $scope.types = [];
@@ -281,7 +755,7 @@ function ($scope, $modal, elastic, aggregateBuilder) {
     $scope.loadFields();
 }]);
 
-controllerModule.controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
+angular.module('guiapp').controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
 function ($scope, $routeParams, $location, elastic) {
     $scope.inspect = {};
     $scope.inspect.index = '';
@@ -336,7 +810,7 @@ function ($scope, $routeParams, $location, elastic) {
     $scope.loadIndices();
 }]);
 
-controllerModule.controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
+angular.module('guiapp').controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
     function ($scope, elastic, $interval) {
     $scope.dataNodes=[];
     $scope.columnsNodes=[{"id":"num-nodes","type":"line","name":"Number of nodes"}];
@@ -382,80 +856,7 @@ controllerModule.controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
     // TODO add stop function
 }]);
 
-controllerModule.controller('NavbarCtrl',['$scope', '$timeout', '$modal', 'elastic', 'configuration',
-
-function ($scope, $timeout, $modal, elastic, configuration) {
-    $scope.statusCluster = {};
-    $scope.serverUrl = elastic.obtainServerAddress();
-    $scope.configureServerUrl = false;
-    $scope.configure = configuration;
-
-    var items = [];
-
-    this.addItem = function (item) {
-        items.push(item);
-    };
-
-    this.select = $scope.select = function (item) {
-        angular.forEach(items, function (item) {
-            item.selected = false;
-        });
-        item.selected = true;
-    };
-
-    this.selectByUrl = function (url) {
-        angular.forEach(items, function (item) {
-            if (item.link == url.split("/")[1]) {
-                $scope.select(item);
-            }
-        });
-    };
-
-    $scope.changeServerUrl = function () {
-        elastic.changeServerAddress($scope.serverUrl);
-        configuration.excludedIndexes = $scope.configure.excludedIndexes;
-    };
-
-    $scope.openDialog = function () {
-        var opts = {
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: 'template/dialog/config.html',
-            controller: 'ConfigDialogCtrl',
-            resolve: {fields: function () {
-                return angular.copy(configuration);
-            } }};
-        var modalInstance = $modal.open(opts);
-        modalInstance.result.then(function (result) {
-            if (result) {
-                elastic.changeServerAddress(result.serverUrl);
-                configuration = angular.copy(result);
-            }
-        }, function () {
-            // Nothing to do here
-        });
-    };
-
-    $scope.initNavBar = function () {
-        doCheckStatus();
-    };
-
-    function doCheckStatus() {
-        elastic.clusterStatus(function (message, status) {
-            $scope.statusCluster.message = message;
-            $scope.statusCluster.state = status;
-        });
-        $timeout(function () {
-            doCheckStatus();
-        }, 5000); // wait 5 seconds before calling it again
-    }
-
-    doCheckStatus();
-}
-]);
-
-controllerModule.controller('NodeInfoCtrl',['$scope', 'elastic', '$routeParams',
+angular.module('guiapp').controller('NodeInfoCtrl',['$scope', 'elastic', '$routeParams',
 function NodeInfoCtrl($scope, elastic, $routeParams) {
     var nodeId = $routeParams.nodeId;
     elastic.nodeInfo(nodeId, function (data) {
@@ -463,7 +864,7 @@ function NodeInfoCtrl($scope, elastic, $routeParams) {
     });
 }]);
 
-controllerModule.controller('NotificationCtrl',['$scope', '$timeout',
+angular.module('guiapp').controller('NotificationCtrl',['$scope', '$timeout',
 function ($scope, $timeout){
     $scope.alerts = {};
 
@@ -477,7 +878,7 @@ function ($scope, $timeout){
     });
 }]);
 
-controllerModule.controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
+angular.module('guiapp').controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
 function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";
@@ -845,7 +1246,7 @@ function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.resetQuery();
 }]);
 
-controllerModule.controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
+angular.module('guiapp').controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
 function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;
@@ -1220,7 +1621,7 @@ function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage
     }
 }]);
 
-controllerModule.controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
+angular.module('guiapp').controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
 function ($scope, elastic, $modal) {
     $scope.repositories = [];
     $scope.selectedRepository = "";
@@ -1342,7 +1743,7 @@ function ($scope, elastic, $modal) {
     });
 }]);
 
-controllerModule.controller('SuggestionsCtrl',['$scope', 'elastic',
+angular.module('guiapp').controller('SuggestionsCtrl',['$scope', 'elastic',
 function ($scope, elastic) {
     $scope.suggest = {};
     $scope.suggest.index = '';
@@ -1405,7 +1806,7 @@ function ($scope, elastic) {
     $scope.loadIndices();
 }]);
 
-controllerModule.controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
+angular.module('guiapp').controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
 function WhereShardsCtrl($scope, $timeout, elastic) {
     $scope.shardsInfo = {};
     $scope.nodeInfo = {};
@@ -1444,72 +1845,129 @@ function WhereShardsCtrl($scope, $timeout, elastic) {
     }
 }]);
 
+(function () {
+    'use strict';
+    angular
+        .module('guiapp.dashboard')
+        .controller('DashboardCtrl', DashboardController);
+
+    DashboardController.$inject = ['$scope','elastic','$modal','indexService'];
+
+    function DashboardController($scope,elastic, $modal, indexService) {
+        var vm = this;
+        vm.health = {};
+        vm.nodes = [];
+        vm.plugins = [];
+        vm.serverUrl = "";
+
+        vm.closeIndex = closeIndex;
+        vm.openIndex = openIndex;
+        vm.openChangeReplicas = openChangereplicas;
+        vm.removeIndex = removeIndex;
+
+        $scope.$on('$viewContentLoaded', function () {
+            indexDetails();
+            refreshData();
+        });
+
+        // Implementations
+        function closeIndex(index) {
+            elastic.closeIndex(index, function () {
+                indexDetails();
+            });
+        }
+
+        function openIndex (index) {
+            elastic.openIndex(index, function () {
+                indexDetails();
+            });
+        }
+
+        function openChangereplicas(index) {
+            // TODO jettro: I think this is wrong, need to use a setter function.
+            indexService.name = index.name;
+            if (!isNaN(parseInt(index.numReplicas)) && isFinite(index.numReplicas)) {
+                indexService.numReplicas = parseInt(index.numReplicas);
+            }
+
+            var opts = {
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: 'template/dialog/numreplicas.html',
+                controller: 'ChangeNumReplicasCtrl',
+                resolve: {
+                    fields: function () {
+                        return angular.copy(indexService);
+                    }
+                }
+            };
+            var modalInstance = $modal.open(opts);
+            modalInstance.result.then(function (result) {
+                if (result) {
+                    elastic.changeReplicas(result.name, result.numReplicas, function () {
+                        indexDetails();
+                    });
+                }
+            }, function () {
+                // Nothing to do here
+            });
+        }
+
+        function removeIndex(index) {
+            elastic.removeIndex(index, function () {
+                indexDetails();
+            });
+        }
+
+        function indexDetails() {
+            elastic.indexesDetails(function (data) {
+                vm.indices = data;
+            });
+        }
+
+        function refreshData() {
+            vm.serverUrl = elastic.obtainServerAddress();
+
+            elastic.clusterHealth(function (data) {
+                vm.health = data;
+            });
+
+            elastic.clusterNodes(function (data) {
+                vm.nodes = data;
+            });
+        }
+
+    }
+})();
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.dashboard')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/dashboard', {
+                templateUrl: '/partials/dashboard.html',
+                controller: 'DashboardCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
+
 'use strict';
 
 /* Directives */
 
 
-angular.module('myApp.directives', ['myApp.controllers']).
+angular.module('guiapp.directives', []).
         directive('appVersion', ['version', function (version) {
             return function (scope, elm, attrs) {
                 elm.text(version);
             };
-        }]).
-        directive('navbar', ['$location', function ($location) {
-            return {
-                restrict: 'E',
-                transclude: true,
-                scope: {heading: '@'},
-                controller: 'NavbarCtrl',
-                templateUrl: 'template/navbar/navbar.html',
-                replace: true,
-                link: function ($scope, $element, $attrs, navbarCtrl) {
-                    $scope.$location = $location;
-                    $scope.$watch('$location.path()', function (locationPath) {
-                        navbarCtrl.selectByUrl(locationPath)
-                    });
-                }
-            }
-        }]).
-        directive('navbaritem', [function () {
-            return {
-                require:'^navbar',
-                restrict: 'E',
-                templateUrl: 'template/navbar/navbaritem.html',
-                replace: true,
-                scope:{"theLink":"@link","theTitle":"@title"},
-                link: function ($scope, $element, $attrs, navbarCtrl) {
-                    $scope.item={"title": $attrs['title'], "link": $attrs['link'], "selected": false};
-                    navbarCtrl.addItem($scope.item);
-                }
-            }
-        }]).
-        directive('navbardropdownitem', [function () {
-            return {
-                require:'^navbar',
-                restrict: 'E',
-                scope:{"theLink":"@link","theTitle":"@title"},
-                templateUrl: 'template/navbar/navbardropdownitem.html',
-                replace: true,
-                link: function ($scope, $element, $attrs, navbarCtrl) {
-//                    $scope.item={"title": $attrs['title'], "link": $attrs['link'], "selected": false};
-//                    navbarCtrl.addItem($scope.item);
-                }
-            }
-        }]).
-        directive('navbardropdown', [function () {
-            return {
-                require:'^navbar',
-                restrict: 'E',
-                transclude: true,
-                scope:{"theTitle":"@title","theLink":"@link"},
-                templateUrl: 'template/navbar/navbardropdown.html',
-                replace: true,
-                link: function ($scope, $element, $attrs, navbarCtrl) {
-                    $scope.item={"title": $scope.theTitle, "link": $scope.theLink, "selected": false};
-                    navbarCtrl.addItem($scope.item);
-                }
-            }
         }]).
         directive('ngConfirmClick', [
             function () {
@@ -1532,14 +1990,168 @@ angular.module('myApp.directives', ['myApp.controllers']).
 
 /* Filters */
 
-angular.module('myApp.filters', []).
+angular.module('guiapp.filters', []).
   filter('interpolate', ['version', function(version) {
     return function(text) {
       return String(text).replace(/\%VERSION\%/mg, version);
     }
   }]);
 
-serviceModule.factory('aggregateBuilder', function () {
+(function () {
+    'use strict';
+    angular
+        .module('guiapp.navbar')
+        .controller('NavbarCtrl', NavbarCtrl);
+
+    NavbarCtrl.$inject = ['$timeout', '$modal', 'elastic', 'configuration'];
+
+
+    function NavbarCtrl($timeout, $modal, elastic, configuration) {
+        var vm = this;
+        vm.statusCluster = {};
+        vm.serverUrl = elastic.obtainServerAddress();
+        vm.configureServerUrl = false;
+        vm.configure = configuration;
+
+        var items = [];
+
+        vm.addItem = addItem;
+        vm.changeServerUrl = changeServerUrl;
+        vm.initNavbar = initNavbar;
+        vm.openDialog = openDialog;
+        vm.select = select;
+        vm.selectByUrl = selectByUrl;
+
+        doCheckStatus();
+
+        function addItem(item) {
+            items.push(item);
+        }
+
+        function select(item) {
+            angular.forEach(items, function (item) {
+                item.selected = false;
+            });
+            item.selected = true;
+        }
+
+        function selectByUrl(url) {
+            angular.forEach(items, function (item) {
+                if (item.link == url.split("/")[1]) {
+                    select(item);
+                }
+            });
+        }
+
+        function changeServerUrl() {
+            elastic.changeServerAddress(vm.serverUrl);
+            configuration.excludedIndexes = vm.configure.excludedIndexes;
+        }
+
+        function initNavbar() {
+            doCheckStatus();
+        }
+
+        function openDialog() {
+            var opts = {
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: 'template/dialog/config.html',
+                controller: 'ConfigDialogCtrl',
+                resolve: {fields: function () {
+                    return angular.copy(configuration);
+                } }};
+            var modalInstance = $modal.open(opts);
+            modalInstance.result.then(function (result) {
+                if (result) {
+                    elastic.changeServerAddress(result.serverUrl);
+                    configuration = angular.copy(result);
+                }
+            }, function () {
+                // Nothing to do here
+            });
+        }
+
+        function doCheckStatus() {
+            elastic.clusterStatus(function (message, status) {
+                vm.statusCluster.message = message;
+                vm.statusCluster.state = status;
+            });
+            $timeout(function () {
+                doCheckStatus();
+            }, 5000); // wait 5 seconds before calling it again
+        }
+    }
+})();
+(function() {
+    'use strict';
+
+    angular
+        .module('guiapp.navbar')
+        .directive('navbar', ['$location', function ($location) {
+            return {
+                restrict: 'E',
+                transclude: true,
+                scope: {heading: '@'},
+                controller: 'NavbarCtrl',
+                controllerAs: 'vm',
+                templateUrl: 'template/navbar/navbar.html',
+                replace: true,
+                link: function ($scope, $element, $attrs, navbarCtrl) {
+                    $scope.$location = $location;
+                    $scope.$watch('$location.path()', function (locationPath) {
+                        navbarCtrl.selectByUrl(locationPath)
+                    });
+                }
+            }
+        }])
+        .directive('navbaritem', [function () {
+            return {
+                require:'^navbar',
+                restrict: 'E',
+                templateUrl: 'template/navbar/navbaritem.html',
+                replace: true,
+                scope:{"theLink":"@link","theTitle":"@title"},
+                link: function ($scope, $element, $attrs, navbarCtrl) {
+                    $scope.item={"title": $attrs['title'], "link": $attrs['link'], "selected": false};
+                    navbarCtrl.addItem($scope.item);
+                }
+            }
+        }])
+        .directive('navbardropdownitem', [function () {
+            return {
+                require:'^navbar',
+                restrict: 'E',
+                scope:{"theLink":"@link","theTitle":"@title"},
+                templateUrl: 'template/navbar/navbardropdownitem.html',
+                replace: true,
+                link: function ($scope, $element, $attrs, navbarCtrl) {
+//                    $scope.item={"title": $attrs['title'], "link": $attrs['link'], "selected": false};
+//                    navbarCtrl.addItem($scope.item);
+                }
+            }
+        }])
+        .directive('navbardropdown', [function () {
+            return {
+                require:'^navbar',
+                restrict: 'E',
+                transclude: true,
+                scope:{"theTitle":"@title","theLink":"@link"},
+                templateUrl: 'template/navbar/navbardropdown.html',
+                replace: true,
+                link: function ($scope, $element, $attrs, navbarCtrl) {
+                    $scope.item={"title": $scope.theTitle, "link": $scope.theLink, "selected": false};
+                    navbarCtrl.addItem($scope.item);
+                }
+            }
+        }]);
+
+})();
+
+angular
+    .module('guiapp.services')
+    .factory('aggregateBuilder', function () {
     function AggregateBuilder() {
         this.build = function (aggs) {
             var queryaggs = {};
@@ -1573,454 +2185,8 @@ serviceModule.factory('aggregateBuilder', function () {
     return new AggregateBuilder();
 });
 
-serviceModule.factory('configuration', ['$rootScope', 'localStorage', '$location', function ($rootScope, localStorage, $location) {
-    function LocalStorageService(localStorage) {
-        var LOCAL_STORAGE_ID = 'es-config',
-            configurationString = localStorage[LOCAL_STORAGE_ID];
-
-        var configuration;
-        if (configurationString) {
-            configuration = JSON.parse(configurationString);
-        } else {
-            var host;
-            if ($location.host() == 'www.gridshore.nl') {
-                host = "http://localhost:9200";
-            } else {
-                host = $location.protocol() + "://" + $location.host() + ":" + $location.port();
-            }
-
-            configuration = {
-                title: undefined,
-                description: undefined,
-                exludedIndexes: undefined,
-                serverUrl: host
-            };
-        }
-
-        $rootScope.$watch(function () {
-            return configuration;
-        }, function () {
-            localStorage[LOCAL_STORAGE_ID] = JSON.stringify(configuration);
-        }, true);
-
-        return configuration;
-    }
-
-    return new LocalStorageService(localStorage);
-}]);
-
-serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScope', function (esFactory, configuration, $q, $rootScope) {
-    function ElasticService(esFactory, configuration, $q, $rootScope) {
-        var serverUrl = configuration.serverUrl;
-        var statussus = {"green": "success", "yellow": "warning", "red": "error"};
-        var es = createEsFactory();
-        var activeIndexes = [];
-
-        this.changeServerAddress = function (serverAddress) {
-            serverUrl = serverAddress;
-            es = createEsFactory();
-            this.indexes();
-        };
-
-        this.obtainServerAddress = function () {
-            return serverUrl;
-        };
-
-        this.clusterStatus = function (callback) {
-            es.cluster.health({}).then(function (data) {
-                var numClients = data.number_of_nodes - data.number_of_data_nodes;
-                var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
-                callback(msg, statussus[data.status]);
-            }, function (reason) {
-                callback("No connection", "error");
-            });
-        };
-
-        this.clusterHealth = function (callback) {
-            es.cluster.health().then(function (data) {
-                callback(data);
-            });
-        };
-
-        this.clusterNodes = function (callback) {
-            es.nodes.info().then(function (data) {
-                callback(data.nodes);
-            });
-        };
-
-        this.obtainShards = function (callback) {
-            es.cluster.state({"metric": ["routing_table", "nodes"]}).then(function (data) {
-                callback(data.nodes, data.routing_table.indices);
-            });
-        };
-
-        this.nodeInfo = function (nodeId, callback) {
-            es.nodes.info({"nodeId": nodeId, "human": true}).then(function (data) {
-                callback(data.nodes[nodeId]);
-            });
-        };
-
-        this.indexes = function (callback) {
-            es.cluster.state({"ignoreUnavailable": true}).then(function (data) {
-                var indices = [];
-                for (var index in data.metadata.indices) {
-                    var ignored = indexIsNotIgnored(index);
-                    if (indexIsNotIgnored(index)) {
-                        indices.push(index);
-                    }
-                }
-                activeIndexes = indices;
-                if (callback) {
-                    callback(indices);
-                }
-            });
-        };
-
-        this.removeIndex = function (index, callback) {
-            es.indices.delete({"index": index}).then(function (data) {
-                callback();
-            });
-        };
-
-        this.openIndex = function (index, callback) {
-            es.indices.open({"index": index}).then(function (data) {
-                callback();
-            });
-        };
-
-        this.closeIndex = function (index, callback) {
-            es.indices.close({"index": index}).then(function (data) {
-                callback();
-            });
-        };
-
-        this.indexesDetails = function (callback) {
-            es.indices.stats({"human": true, "recovery": false}).then(function (statusData) {
-                var indexesStatus = statusData.indices;
-                es.cluster.state({"metric": "metadata"}).then(function (stateData) {
-                    var indexesState = stateData.metadata.indices;
-                    var indices = [];
-                    angular.forEach(indexesState, function (value, key) {
-                        var newIndex = {};
-                        newIndex.name = key;
-                        if (value.state === 'open') {
-                            if (indexesStatus[key]) {
-                                newIndex.size = indexesStatus[key].total.store.size;
-                                newIndex.numDocs = indexesStatus[key].total.docs.count;
-                            } else {
-                                newIndex.size = "unknown";
-                                newIndex.numDocs = "unknown";
-                            }
-                            newIndex.state = true;
-                            newIndex.numShards = value.settings.index.number_of_shards;
-                            newIndex.numReplicas = value.settings.index.number_of_replicas
-                        } else {
-                            newIndex.state = false;
-                        }
-                        indices.push(newIndex);
-                    });
-                    callback(indices);
-                });
-            });
-        };
-
-        this.types = function (selectedIndex, callback) {
-            var mappingFilter = {};
-            if (selectedIndex.length > 0) {
-                mappingFilter.index = selectedIndex.toString();
-            }
-            es.indices.getMapping(mappingFilter).then(function (data) {
-                var myTypes = [];
-                for (var index in data) {
-                    if (indexIsNotIgnored(index)) {
-                        for (var type in data[index].mappings) {
-                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
-                                myTypes.push(type);
-                            }
-                        }
-                    }
-                }
-                callback(myTypes);
-            });
-        };
-
-        this.documentTerms = function (index, type, id, callback) {
-            es.termvectors(
-                {
-                    "index": index,
-                    "type": type,
-                    "id": id,
-                    "routing":id,
-                    "body": {
-                        "fields": ["*"],
-                        "field_statistics": false,
-                        "term_statistics": true
-                    }
-                })
-                .then(function (result) {
-                    var fieldTerms = {};
-                    if (result.term_vectors) {
-                        angular.forEach(result.term_vectors, function (value, key) {
-                            var terms = [];
-                            angular.forEach(value.terms, function (term, termKey) {
-                                terms.push(termKey);
-                            });
-                            fieldTerms[key] = terms;
-                        });
-                        callback(fieldTerms);
-                    }
-                });
-        };
-
-        this.fields = function (selectedIndex, selectedType, callback) {
-            var mappingFilter = {};
-            if (selectedIndex.length > 0) {
-                mappingFilter.index = selectedIndex.toString();
-            }
-            if (selectedType.length > 0) {
-                mappingFilter.type = selectedType.toString();
-            }
-            es.indices.getMapping(mappingFilter).then(function (data) {
-                var myTypes = [];
-                var myFields = {};
-                for (var index in data) {
-                    if (indexIsNotIgnored(index)) {
-                        for (var type in data[index].mappings) {
-                            if (myTypes.indexOf(type) == -1 && type != "_default_") {
-                                myTypes.push(type);
-                                var properties = data[index].mappings[type].properties;
-                                for (var field in properties) {
-                                    handleSubfields(properties[field], field, myFields, undefined);
-                                }
-                            }
-                        }
-                    }
-                }
-                callback(myFields);
-            });
-        };
-
-        this.changeReplicas = function (index, numReplicas, callback) {
-            var changeSettings = {
-                "index": index,
-                "body": {
-                    "index": {
-                        "number_of_replicas": numReplicas
-                    }
-                }
-            };
-            es.indices.putSettings(changeSettings).then(function (data) {
-                callback(data);
-            }, logErrors);
-        };
-
-        this.snapshotRepositories = function (callback) {
-            es.snapshot.getRepository().then(function (data) {
-                callback(data);
-            }, logErrors);
-        };
-
-        this.createRepository = function (newRepository, callback) {
-            var createrepo = {
-                "repository": newRepository.repository,
-                "body": {
-                    "type": "fs",
-                    "settings": {
-                        "location": newRepository.location
-                    }
-                }
-            };
-            es.snapshot.createRepository(createrepo).then(function (data) {
-                callback();
-            }, broadcastError);
-        };
-
-        this.deleteRepository = function (repository, callback) {
-            es.snapshot.deleteRepository({"repository": repository}).then(function (data) {
-                callback();
-            }, broadcastError)
-        };
-
-        this.obtainSnapshots = function (repository, callback) {
-            es.snapshot.get({"repository": repository, "snapshot": "_all"}).then(function (data) {
-                callback(data.snapshots);
-            }, logErrors);
-        };
-
-        this.obtainSnapshotStatus = function (callback) {
-            es.snapshot.status().then(function (data) {
-                callback(data.snapshots);
-            }, logErrors);
-        };
-
-        this.removeSnapshot = function (repository, snapshot, callback) {
-            es.snapshot.delete({"repository": repository, "snapshot": snapshot}).then(function (data) {
-                callback();
-            }, logErrors);
-        };
-
-        this.restoreSnapshot = function (repository, snapshot, callback) {
-            es.snapshot.restore({"repository": repository, "snapshot": snapshot}).then(function (data) {
-                callback();
-            }, broadcastError);
-        };
-
-        this.createSnapshot = function (newSnapshot, callback) {
-            var aSnapshot = {
-                "repository": newSnapshot.repository,
-                "snapshot": newSnapshot.snapshot,
-                "body": {
-                    "indices": newSnapshot.indices,
-                    "ignore_unavailable": newSnapshot.ignoreUnavailable,
-                    "include_global_state": newSnapshot.includeGlobalState
-                }
-            };
-            es.snapshot.create(aSnapshot).then(function (data) {
-                callback();
-            }, logErrors);
-        };
-
-        function handleSubfields(field, fieldName, myFields, nestedPath) {
-            if (field.hasOwnProperty("properties")) {
-                var nested = (field.type == "nested" | field.type == "object");
-                if (nested) {
-                    nestedPath = fieldName;
-                }
-                for (var subField in field.properties) {
-                    var newField = fieldName + "." + subField;
-                    handleSubfields(field.properties[subField], newField, myFields, nestedPath);
-                }
-            } else {
-                if (field.hasOwnProperty("fields")) {
-                    for (var multiField in field.fields) {
-                        var multiFieldName = fieldName + "." + multiField;
-                        // TODO jettro : fix the nested documents with multi_fields
-                        if (!myFields[multiFieldName] && fieldName !== multiField) {
-                            myFields[multiFieldName] = field.fields[multiField];
-                            myFields[multiFieldName].nestedPath = nestedPath;
-                            myFields[multiFieldName].forPrint = multiFieldName + " (" + field.type + ")";
-                        }
-                    }
-                }
-                if (!myFields[fieldName]) {
-                    myFields[fieldName] = field;
-                    myFields[fieldName].nestedPath = nestedPath;
-                    myFields[fieldName].type = field.type;
-                    myFields[fieldName].forPrint = fieldName + " (" + field.type + ")";
-                }
-            }
-        }
-
-        this.doSearch = function (query, resultCallback, errorCallback) {
-            if (query.index === "") {
-                query.index = activeIndexes;
-            }
-            es.search(query).then(function (results) {
-                resultCallback(results)
-            }, function (errors) {
-                errorCallback(errors)
-            });
-        };
-
-        this.suggest = function (suggestRequest, resultCallback) {
-            var suggest = {};
-            suggest.index = suggestRequest.index;
-            suggest.body = {};
-            suggest.body.mysuggester = {};
-            suggest.body.mysuggester.text = suggestRequest.query;
-            suggest.body.mysuggester.term = {};
-            suggest.body.mysuggester.term.field = suggestRequest.field;
-            suggest.body.mysuggester.term.min_word_length = suggestRequest.min_word_length;
-            suggest.body.mysuggester.term.prefix_length = suggestRequest.prefix_length;
-
-            es.suggest(suggest).then(function (results) {
-                var suggested = {};
-                if (results.mysuggester) {
-                    for (var i = 0; i < results.mysuggester.length; i++) {
-                        var item = results.mysuggester[i];
-                        suggested[item.text] = [];
-                        for (var j = 0; j < item.options.length; j++) {
-                            suggested[item.text].push(item.options[j].text);
-                        }
-
-                    }
-                }
-
-                resultCallback(suggested);
-            }, logErrors);
-        };
-
-        function createEsFactory() {
-            return esFactory({"host": serverUrl, "apiVersion": "2.0"});
-        }
-
-        function indexIsNotIgnored(index) {
-            var ignore = false;
-            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
-                ignore = true;
-                var includedIndexes = (configuration.includedIndexes) ? configuration.includedIndexes.split(",") : [];
-                angular.forEach(includedIndexes, function (includedIndex) {
-                    var indexToCheck = includedIndex.trim();
-                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
-                        ignore = false;
-                    }
-                });
-            } else {
-                var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
-                angular.forEach(excludedIndexes, function (excludedIndex) {
-                    var indexToCheck = excludedIndex.trim();
-                    if (index.substring(0, indexToCheck.length) === indexToCheck) {
-                        ignore = true;
-                    }
-                });
-            }
-
-            return !ignore;
-        }
-
-        var logErrors = function (errors) {
-            console.log(errors);
-        };
-
-        var broadcastError = function (error) {
-            $rootScope.$broadcast('msg:notification', 'error', error.message);
-        };
-
-        // just to initialize the indices
-        this.indexes();
-    }
-
-    return new ElasticService(esFactory, configuration, $q, $rootScope);
-}]);
-
-serviceModule.factory('errorHandling', ['$rootScope', function ($rootScope) {
-    function ErrorHandling(rootScope) {
-        this.add = function (message) {
-            var errorMessage;
-            if (message && typeof message === "object") {
-                if (message.hasOwnProperty('message')) {
-                    errorMessage = message.message;
-                }
-            } else {
-                errorMessage = message;
-            }
-            rootScope.$broadcast('msg:notification', 'error', errorMessage);
-        };
-    }
-
-    return new ErrorHandling($rootScope);
-}]);
-
-serviceModule.factory('indexService', [function () {
-    function IndexService() {
-        this.name = "unknown";
-        this.numReplicas = 0;
-    }
-
-    return new IndexService();
-}]);
-
-serviceModule.factory('queryStorage', ['localStorage', function (localStorage) {
+angular
+    .module('guiapp.services').factory('queryStorage', ['localStorage', function (localStorage) {
     function QueryStorage(localStorage) {
         var LOCAL_STORAGE_ID_QUERY = 'es-query';
         var LOCAL_STORAGE_ID_SEARCH = 'es-search';
@@ -2047,7 +2213,8 @@ serviceModule.factory('queryStorage', ['localStorage', function (localStorage) {
     return new QueryStorage(localStorage);
 }]);
 
-serviceModule.factory('serverConfig', ['$location', function ($location) {
+angular
+    .module('guiapp.services').factory('serverConfig', ['$location', function ($location) {
     function ServerConfig(location) {
         if (location.host() == 'www.gridshore.nl') {
             this.host = "http://localhost:9200";

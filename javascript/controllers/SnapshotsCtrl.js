@@ -1,4 +1,4 @@
-controllerModule.controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
+angular.module('guiapp').controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
 function ($scope, elastic, $modal) {
     $scope.repositories = [];
     $scope.selectedRepository = "";

@@ -1,4 +1,4 @@
-controllerModule.controller('ChangeNumReplicasCtrl',['$scope', '$modalInstance', 'indexService',
+angular.module('guiapp').controller('ChangeNumReplicasCtrl',['$scope', '$modalInstance', 'indexService',
 function ($scope, $modalInstance, indexService) {
     $scope.dialog = {
         "numReplicas": indexService.numReplicas,

@@ -25,11 +25,9 @@ module.exports = function (grunt) {
             },
             dist: {
                 src: [
-                    'javascript/app.js',
-                    'javascript/controllers/*',
-                    'javascript/directives.js',
-                    'javascript/filters.js',
-                    'javascript/services/*'
+                    'javascript/**/*.module.js',
+                    'javascript/**/*.service.js',
+                    'javascript/**/*.js'
                     ],
                 dest: '_site/assets/js/<%= pkg.name %>.js'
             }
@@ -43,6 +41,7 @@ module.exports = function (grunt) {
                 'Gruntfile.js',
                 'javascript/controllers/*',
                 'javascript/services/*',
+                'javascript/dashboard/*',
                 'javascript/*.js'
             ]
         },

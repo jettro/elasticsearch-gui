@@ -1,21 +1,58 @@
-serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScope', function (esFactory, configuration, $q, $rootScope) {
-    function ElasticService(esFactory, configuration, $q, $rootScope) {
+(function () {
+    'use strict';
+    angular
+        .module('guiapp.services')
+        .factory('elastic', ElasticService);
+
+    ElasticService.$inject = ['esFactory', 'configuration', '$rootScope'];
+
+    function ElasticService(esFactory, configuration, $rootScope) {
         var serverUrl = configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
         var activeIndexes = [];
 
-        this.changeServerAddress = function (serverAddress) {
+        var service = {
+            changeServerAddress: changeServerAddress,
+            obtainServerAddress: function(){return serverUrl},
+            clusterStatus: clusterStatus,
+            clusterHealth: clusterHealth,
+            clusterNodes: clusterNodes,
+            obtainShards: obtainShards,
+            nodeInfo: nodeInfo,
+            indexes: indexes,
+            removeIndex: removeIndex,
+            openIndex: openIndex,
+            closeIndex: closeIndex,
+            indexesDetails: indexesDetails,
+            types: types,
+            documentTerms: documentTerms,
+            fields: fields,
+            changeReplicas: changeReplicas,
+            snapshotRepositories: snapshotRepositories,
+            createRepository: createRepository,
+            deleteRepository: deleteRepository,
+            obtainSnapshots: obtainSnapshots,
+            obtainSnapshotStatus: obtainSnapshotStatus,
+            removeSnapshot: removeSnapshot,
+            restoreSnapshot: restoreSnapshot,
+            createSnapshot: createSnapshot,
+            doSearch: doSearch,
+            suggest: suggest
+        };
+
+        // just to initialize the indices
+        //indexes();
+
+        return service;
+
+        function changeServerAddress (serverAddress) {
             serverUrl = serverAddress;
             es = createEsFactory();
-            this.indexes();
-        };
+            indexes();
+        }
 
-        this.obtainServerAddress = function () {
-            return serverUrl;
-        };
-
-        this.clusterStatus = function (callback) {
+        function clusterStatus (callback) {
             es.cluster.health({}).then(function (data) {
                 var numClients = data.number_of_nodes - data.number_of_data_nodes;
                 var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
@@ -23,33 +60,33 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             }, function (reason) {
                 callback("No connection", "error");
             });
-        };
+        }
 
-        this.clusterHealth = function (callback) {
+        function clusterHealth(callback) {
             es.cluster.health().then(function (data) {
                 callback(data);
             });
-        };
+        }
 
-        this.clusterNodes = function (callback) {
+        function clusterNodes (callback) {
             es.nodes.info().then(function (data) {
                 callback(data.nodes);
             });
-        };
+        }
 
-        this.obtainShards = function (callback) {
+        function obtainShards (callback) {
             es.cluster.state({"metric": ["routing_table", "nodes"]}).then(function (data) {
                 callback(data.nodes, data.routing_table.indices);
             });
-        };
+        }
 
-        this.nodeInfo = function (nodeId, callback) {
+        function nodeInfo(nodeId, callback) {
             es.nodes.info({"nodeId": nodeId, "human": true}).then(function (data) {
                 callback(data.nodes[nodeId]);
             });
-        };
+        }
 
-        this.indexes = function (callback) {
+        function indexes (callback) {
             es.cluster.state({"ignoreUnavailable": true}).then(function (data) {
                 var indices = [];
                 for (var index in data.metadata.indices) {
@@ -63,27 +100,27 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                     callback(indices);
                 }
             });
-        };
+        }
 
-        this.removeIndex = function (index, callback) {
+        function removeIndex(index, callback) {
             es.indices.delete({"index": index}).then(function (data) {
                 callback();
             });
-        };
+        }
 
-        this.openIndex = function (index, callback) {
+        function openIndex(index, callback) {
             es.indices.open({"index": index}).then(function (data) {
                 callback();
             });
-        };
+        }
 
-        this.closeIndex = function (index, callback) {
+        function closeIndex (index, callback) {
             es.indices.close({"index": index}).then(function (data) {
                 callback();
             });
-        };
+        }
 
-        this.indexesDetails = function (callback) {
+        function indexesDetails(callback) {
             es.indices.stats({"human": true, "recovery": false}).then(function (statusData) {
                 var indexesStatus = statusData.indices;
                 es.cluster.state({"metric": "metadata"}).then(function (stateData) {
@@ -111,9 +148,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                     callback(indices);
                 });
             });
-        };
+        }
 
-        this.types = function (selectedIndex, callback) {
+        function types (selectedIndex, callback) {
             var mappingFilter = {};
             if (selectedIndex.length > 0) {
                 mappingFilter.index = selectedIndex.toString();
@@ -131,9 +168,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 }
                 callback(myTypes);
             });
-        };
+        }
 
-        this.documentTerms = function (index, type, id, callback) {
+        function documentTerms (index, type, id, callback) {
             es.termvectors(
                 {
                     "index": index,
@@ -159,9 +196,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                         callback(fieldTerms);
                     }
                 });
-        };
+        }
 
-        this.fields = function (selectedIndex, selectedType, callback) {
+        function fields (selectedIndex, selectedType, callback) {
             var mappingFilter = {};
             if (selectedIndex.length > 0) {
                 mappingFilter.index = selectedIndex.toString();
@@ -187,9 +224,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
                 }
                 callback(myFields);
             });
-        };
+        }
 
-        this.changeReplicas = function (index, numReplicas, callback) {
+        function changeReplicas(index, numReplicas, callback) {
             var changeSettings = {
                 "index": index,
                 "body": {
@@ -201,15 +238,15 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             es.indices.putSettings(changeSettings).then(function (data) {
                 callback(data);
             }, logErrors);
-        };
+        }
 
-        this.snapshotRepositories = function (callback) {
+        function snapshotRepositories(callback) {
             es.snapshot.getRepository().then(function (data) {
                 callback(data);
             }, logErrors);
-        };
+        }
 
-        this.createRepository = function (newRepository, callback) {
+        function createRepository (newRepository, callback) {
             var createrepo = {
                 "repository": newRepository.repository,
                 "body": {
@@ -222,39 +259,39 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             es.snapshot.createRepository(createrepo).then(function (data) {
                 callback();
             }, broadcastError);
-        };
+        }
 
-        this.deleteRepository = function (repository, callback) {
+        function deleteRepository(repository, callback) {
             es.snapshot.deleteRepository({"repository": repository}).then(function (data) {
                 callback();
             }, broadcastError)
-        };
+        }
 
-        this.obtainSnapshots = function (repository, callback) {
+        function obtainSnapshots(repository, callback) {
             es.snapshot.get({"repository": repository, "snapshot": "_all"}).then(function (data) {
                 callback(data.snapshots);
             }, logErrors);
-        };
+        }
 
-        this.obtainSnapshotStatus = function (callback) {
+        function obtainSnapshotStatus(callback) {
             es.snapshot.status().then(function (data) {
                 callback(data.snapshots);
             }, logErrors);
-        };
+        }
 
-        this.removeSnapshot = function (repository, snapshot, callback) {
+        function removeSnapshot(repository, snapshot, callback) {
             es.snapshot.delete({"repository": repository, "snapshot": snapshot}).then(function (data) {
                 callback();
             }, logErrors);
-        };
+        }
 
-        this.restoreSnapshot = function (repository, snapshot, callback) {
+        function restoreSnapshot(repository, snapshot, callback) {
             es.snapshot.restore({"repository": repository, "snapshot": snapshot}).then(function (data) {
                 callback();
             }, broadcastError);
-        };
+        }
 
-        this.createSnapshot = function (newSnapshot, callback) {
+        function createSnapshot(newSnapshot, callback) {
             var aSnapshot = {
                 "repository": newSnapshot.repository,
                 "snapshot": newSnapshot.snapshot,
@@ -267,7 +304,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             es.snapshot.create(aSnapshot).then(function (data) {
                 callback();
             }, logErrors);
-        };
+        }
 
         function handleSubfields(field, fieldName, myFields, nestedPath) {
             if (field.hasOwnProperty("properties")) {
@@ -300,7 +337,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             }
         }
 
-        this.doSearch = function (query, resultCallback, errorCallback) {
+        function doSearch (query, resultCallback, errorCallback) {
             if (query.index === "") {
                 query.index = activeIndexes;
             }
@@ -309,9 +346,9 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             }, function (errors) {
                 errorCallback(errors)
             });
-        };
+        }
 
-        this.suggest = function (suggestRequest, resultCallback) {
+        function suggest (suggestRequest, resultCallback) {
             var suggest = {};
             suggest.index = suggestRequest.index;
             suggest.body = {};
@@ -337,7 +374,7 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
 
                 resultCallback(suggested);
             }, logErrors);
-        };
+        }
 
         function createEsFactory() {
             return esFactory({"host": serverUrl, "apiVersion": "2.0"});
@@ -367,17 +404,12 @@ serviceModule.factory('elastic', ['esFactory', 'configuration', '$q', '$rootScop
             return !ignore;
         }
 
-        var logErrors = function (errors) {
+        function logErrors(errors) {
             console.log(errors);
-        };
+        }
 
-        var broadcastError = function (error) {
+        function broadcastError(error) {
             $rootScope.$broadcast('msg:notification', 'error', error.message);
-        };
-
-        // just to initialize the indices
-        this.indexes();
+        }
     }
-
-    return new ElasticService(esFactory, configuration, $q, $rootScope);
-}]);
+})();

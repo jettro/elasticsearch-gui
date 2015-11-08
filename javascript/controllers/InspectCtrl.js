@@ -1,4 +1,4 @@
-controllerModule.controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
+angular.module('guiapp').controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
 function ($scope, $routeParams, $location, elastic) {
     $scope.inspect = {};
     $scope.inspect.index = '';

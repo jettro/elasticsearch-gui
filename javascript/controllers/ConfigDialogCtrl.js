@@ -1,4 +1,4 @@
-controllerModule.controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
+angular.module('guiapp').controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
 function ($scope, $modalInstance, configuration){
     $scope.configuration = configuration;
 

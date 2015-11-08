@@ -1,4 +1,4 @@
-controllerModule.controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
+angular.module('guiapp').controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
 function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
     $scope.isCollapsed = true; // Configuration div
     $scope.configure = configuration;

@@ -1,4 +1,4 @@
-controllerModule.controller('CreateSnapshotRepositoryCtrl',['$scope', '$modalInstance',
+angular.module('guiapp').controller('CreateSnapshotRepositoryCtrl',['$scope', '$modalInstance',
 function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
     $scope.dialog = {};
 

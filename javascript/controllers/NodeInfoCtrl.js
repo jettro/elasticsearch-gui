@@ -1,4 +1,4 @@
-controllerModule.controller('NodeInfoCtrl',['$scope', 'elastic', '$routeParams',
+angular.module('guiapp').controller('NodeInfoCtrl',['$scope', 'elastic', '$routeParams',
 function NodeInfoCtrl($scope, elastic, $routeParams) {
     var nodeId = $routeParams.nodeId;
     elastic.nodeInfo(nodeId, function (data) {

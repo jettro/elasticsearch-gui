@@ -1,4 +1,4 @@
-controllerModule.controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
+angular.module('guiapp').controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
 function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
     $scope.createdQuery = "";

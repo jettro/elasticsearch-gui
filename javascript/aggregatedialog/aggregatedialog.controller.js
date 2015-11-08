@@ -1,18 +1,22 @@
 (function() {
     'use strict';
     angular
-        .module('guiapp')
+        .module('guiapp.aggregatedialog')
         .controller('AggregateDialogCtrl', AggregateDialogCtrl);
 
-    AggregateDialogCtrl.$inject = ['$scope', '$modalInstance', 'fields'];
+    AggregateDialogCtrl.$inject = ['$modalInstance', 'fields'];
 
-    function AggregateDialogCtrl($scope, $modalInstance, fields) {
-        $scope.fields = fields;
-        $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
-        $scope.ranges = [];
-        $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
+    function AggregateDialogCtrl($modalInstance, fields) {
+        var adVm = this;
+        adVm.fields = fields;
+        adVm.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
+        adVm.ranges = [];
+        adVm.intervals = ["year", "month", "week", "day", "hour", "minute"];
 
-        $scope.close = function (result) {
+        adVm.close = close;
+        adVm.addRangeField = addRangeField;
+
+        function close (result) {
             var dialogResult = {};
             dialogResult.field = result.field;
             dialogResult.name = result.name;
@@ -20,7 +24,7 @@
                 dialogResult.aggsType = 'term';
             } else if (result.aggstype === 'Range') {
                 dialogResult.aggsType = 'range';
-                dialogResult.ranges = $scope.ranges;
+                dialogResult.ranges = adVm.ranges;
             } else if (result.aggstype === 'DateHistogram') {
                 dialogResult.aggsType = 'datehistogram';
                 dialogResult.interval = result.interval;
@@ -29,10 +33,10 @@
                 dialogResult.interval = result.interval;
             }
             $modalInstance.close(dialogResult);
-        };
+        }
 
-        $scope.addRangeField = function (data) {
-            $scope.ranges.push([data.range.from, data.range.to]);
+        function addRangeField(data) {
+            adVm.ranges.push([data.range.from, data.range.to]);
         }
     }
 })();

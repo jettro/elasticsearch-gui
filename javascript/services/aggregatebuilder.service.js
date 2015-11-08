@@ -6,7 +6,11 @@
         .factory('aggregateBuilder', AggregateBuilder);
 
     function AggregateBuilder() {
-        this.build = function (aggs) {
+        return {
+            build: build
+        };
+
+        function build (aggs) {
             var queryaggs = {};
 
             angular.forEach(aggs, function (aggregation, key) {

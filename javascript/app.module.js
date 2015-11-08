@@ -10,13 +10,15 @@
                 'gridshore.c3js.chart',
                 'guiapp.services',
                 'guiapp.dashboard',
-                'guiapp.navbar'
+                'guiapp.navbar',
+                'guiapp.search',
+                'guiapp.aggregatedialog'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         //$routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: 'DashboardCtrl'});
         $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
-        $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
+        //$routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
         $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
         $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
@@ -31,13 +33,13 @@
 
     guiapp.value('localStorage', window.localStorage);
 
-    guiapp.factory('$exceptionHandler',['$injector', function($injector) {
-        return function(exception, cause) {
-            console.log(exception);
-            var errorHandling = $injector.get('errorHandling');
-            errorHandling.add(exception.message);
-            throw exception;
-        };
-    }]);
+    //guiapp.factory('$exceptionHandler',['$injector', function($injector) {
+    //    return function(exception, cause) {
+    //        console.log(exception);
+    //        var errorHandling = $injector.get('errorHandling');
+    //        errorHandling.add(exception.message);
+    //        throw exception;
+    //    };
+    //}]);
 
 })();

@@ -28,3 +28,10 @@ Currently we develop agains elasticsearch v2.0. Due to some api changes you cann
 [Remote installed plugin @gridshore (v1.2)](http://www.gridshore.nl/esgui_1_2)
 [Remote installed plugin @gridshore (v1.1)](http://www.gridshore.nl/esgui_1_1)
 [Remote installed plugin @gridshore (v0.90)](http://www.gridshore.nl/esgui_0_90)
+
+# TODO's
+- Replace all callbacks with promises.
+- Use the resolve function of a routing instead of a initializer function.
+- Check startup logic to do the configurations
+- While starting, config object is not automaticalle started.
+

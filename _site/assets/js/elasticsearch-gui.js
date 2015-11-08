@@ -3,6 +3,12 @@
 * Copyright (c) 2015 ; Licensed  */
 (function() {
     'use strict';
+    angular
+        .module('guiapp.aggregatedialog', []);
+})();
+
+(function() {
+    'use strict';
         var guiapp = angular.module('guiapp',
             [
                 'ngRoute',
@@ -13,13 +19,15 @@
                 'gridshore.c3js.chart',
                 'guiapp.services',
                 'guiapp.dashboard',
-                'guiapp.navbar'
+                'guiapp.navbar',
+                'guiapp.search',
+                'guiapp.aggregatedialog'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         //$routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: 'DashboardCtrl'});
         $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
-        $routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
+        //$routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
         $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
         $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
@@ -34,14 +42,14 @@
 
     guiapp.value('localStorage', window.localStorage);
 
-    guiapp.factory('$exceptionHandler',['$injector', function($injector) {
-        return function(exception, cause) {
-            console.log(exception);
-            var errorHandling = $injector.get('errorHandling');
-            errorHandling.add(exception.message);
-            throw exception;
-        };
-    }]);
+    //guiapp.factory('$exceptionHandler',['$injector', function($injector) {
+    //    return function(exception, cause) {
+    //        console.log(exception);
+    //        var errorHandling = $injector.get('errorHandling');
+    //        errorHandling.add(exception.message);
+    //        throw exception;
+    //    };
+    //}]);
 
 })();
 (function() {
@@ -59,9 +67,67 @@
 
 (function() {
     'use strict';
+    angular
+        .module('guiapp.search', ['guiapp.services','ngRoute']);
+})();
+
+(function() {
+    'use strict';
     var services = angular.module('guiapp.services', ['elasticsearch']);
 
     services.value('version', '2.0.0');
+})();
+
+(function () {
+    'use strict';
+
+    angular
+        .module('guiapp.services')
+        .factory('aggregateBuilder', AggregateBuilder);
+
+    function AggregateBuilder() {
+        return {
+            build: build
+        };
+
+        function build (aggs) {
+            var queryaggs = {};
+
+            angular.forEach(aggs, function (aggregation, key) {
+                if (aggregation.aggsType === 'term') {
+                    queryaggs[aggregation.name] = {"terms": {"field": aggregation.field}};
+                } else if (aggregation.aggsType === 'range') {
+                    var ranges = [];
+                    for (var j = 0; j < aggregation.ranges.length; j++) {
+                        var range = aggregation.ranges[j];
+                        if (range[0] == undefined) {
+                            ranges.push({"to": range[1]})
+                        } else if (range[1] == undefined) {
+                            ranges.push({"from": range[0]})
+                        } else {
+                            ranges.push({"from": range[0], "to": range[1]});
+                        }
+                    }
+                    queryaggs[aggregation.name] = {"range": {"field": aggregation.field, "ranges": ranges}};
+                } else if (aggregation.aggsType === 'datehistogram') {
+                    queryaggs[aggregation.name] = {
+                        "date_histogram": {
+                            "field": aggregation.field,
+                            "interval": aggregation.interval
+                        }
+                    };
+                } else if (aggregation.aggsType === 'histogram') {
+                    queryaggs[aggregation.name] = {
+                        "histogram": {
+                            "field": aggregation.field,
+                            "interval": aggregation.interval
+                        }
+                    };
+                }
+            });
+            return queryaggs;
+        }
+    }
 })();
 
 (function () {
@@ -568,6 +634,8 @@
 (function () {
     'use strict';
 
+    // TODO jettro: This feels so wrong to pass data between app and directive.
+
     angular
         .module('guiapp.services')
         .factory('indexService', IndexService);
@@ -582,19 +650,93 @@
 
 (function() {
     'use strict';
+
     angular
-        .module('guiapp')
+    .module('guiapp.services')
+    .factory('queryStorage', QueryStorage);
+
+    QueryStorage.$inject=['localStorage'];
+
+    function QueryStorage(localStorage) {
+        var LOCAL_STORAGE_ID_QUERY = 'es-query';
+        var LOCAL_STORAGE_ID_SEARCH = 'es-search';
+
+        var service = {
+            loadQuery: loadQuery,
+            saveQuery: saveQuery,
+            loadSearch: loadSearch,
+            saveSearch: saveSearch
+        };
+
+        return service;
+
+        function loadQuery (callback) {
+            var query = localStorage[LOCAL_STORAGE_ID_QUERY];
+            callback(JSON.parse(query));
+        }
+
+        function saveQuery(query) {
+            localStorage[LOCAL_STORAGE_ID_QUERY] = JSON.stringify(query);
+        }
+
+        function loadSearch (callback) {
+            var search = localStorage[LOCAL_STORAGE_ID_SEARCH];
+            callback(JSON.parse(search));
+        }
+
+        function saveSearch(search) {
+            localStorage[LOCAL_STORAGE_ID_SEARCH] = JSON.stringify(search);
+        }
+    }
+
+})();
+
+(function() {
+    'use strict';
+
+    angular
+        .module('guiapp.services')
+        .factory('serverConfig', ServerConfig);
+
+    ServerConfig.$inject = ['$location'];
+
+    function ServerConfig(location) {
+        var service = {
+            host:"",
+            initHost: initHost
+        };
+        return service;
+
+        function initHost() {
+            if (location.host() == 'www.gridshore.nl') {
+                service.host = "http://localhost:9200";
+            } else {
+                service.host = location.protocol() + "://" + location.host() + ":" + location.port();
+            }
+        }
+    }
+
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.aggregatedialog')
         .controller('AggregateDialogCtrl', AggregateDialogCtrl);
 
-    AggregateDialogCtrl.$inject = ['$scope', '$modalInstance', 'fields'];
+    AggregateDialogCtrl.$inject = ['$modalInstance', 'fields'];
 
-    function AggregateDialogCtrl($scope, $modalInstance, fields) {
-        $scope.fields = fields;
-        $scope.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
-        $scope.ranges = [];
-        $scope.intervals = ["year", "month", "week", "day", "hour", "minute"];
+    function AggregateDialogCtrl($modalInstance, fields) {
+        var adVm = this;
+        adVm.fields = fields;
+        adVm.aggsTypes = ["Term", "Range", "Histogram", "DateHistogram"];
+        adVm.ranges = [];
+        adVm.intervals = ["year", "month", "week", "day", "hour", "minute"];
 
-        $scope.close = function (result) {
+        adVm.close = close;
+        adVm.addRangeField = addRangeField;
+
+        function close (result) {
             var dialogResult = {};
             dialogResult.field = result.field;
             dialogResult.name = result.name;
@@ -602,7 +744,7 @@
                 dialogResult.aggsType = 'term';
             } else if (result.aggstype === 'Range') {
                 dialogResult.aggsType = 'range';
-                dialogResult.ranges = $scope.ranges;
+                dialogResult.ranges = adVm.ranges;
             } else if (result.aggstype === 'DateHistogram') {
                 dialogResult.aggsType = 'datehistogram';
                 dialogResult.interval = result.interval;
@@ -611,25 +753,13 @@
                 dialogResult.interval = result.interval;
             }
             $modalInstance.close(dialogResult);
-        };
+        }
 
-        $scope.addRangeField = function (data) {
-            $scope.ranges.push([data.range.from, data.range.to]);
+        function addRangeField(data) {
+            adVm.ranges.push([data.range.from, data.range.to]);
         }
     }
 })();
-angular.module('guiapp').controller('ChangeNumReplicasCtrl',['$scope', '$modalInstance', 'indexService',
-function ($scope, $modalInstance, indexService) {
-    $scope.dialog = {
-        "numReplicas": indexService.numReplicas,
-        "name": indexService.name
-    };
-
-    $scope.close = function (result) {
-        $modalInstance.close(result);
-    };
-
-}]);
 angular.module('guiapp').controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
 function ($scope, $modalInstance, configuration){
     $scope.configuration = configuration;
@@ -1246,381 +1376,6 @@ function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.resetQuery();
 }]);
 
-angular.module('guiapp').controller('SearchCtrl',['$scope', 'elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage',
-function ($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
-    $scope.isCollapsed = true; // Configuration div
-    $scope.configure = configuration;
-    $scope.fields = [];
-    $scope.search = {};
-    $scope.search.advanced = {};
-    $scope.search.advanced.searchFields = [];
-    $scope.search.aggs = {};
-    $scope.search.selectedAggs = [];
-
-    $scope.configError = "";
-
-    $scope.results = [];
-    $scope.aggs = [];
-    $scope.tokensPerField = [];
-
-    // initialize pagination
-    $scope.currentPage = 1;
-    $scope.maxSize = 5;
-    $scope.numPages = 0;
-    $scope.pageSize = 10;
-    $scope.totalItems = 0;
-
-    $scope.changePage = function () {
-        $scope.doSearch();
-    };
-
-    $scope.init = function () {
-        // elastic.indexes(function (data) {
-        //     // just to initialize the indices in the service
-        //     // TODO would be better to move this to the service itself
-        // });
-
-        elastic.fields([], [], function (data) {
-            $scope.fields = data;
-            if (!$scope.configure.title) {
-                if ($scope.fields.title) {
-                    $scope.configure.title = "title";
-                }
-            }
-
-            if (!$scope.configure.description && $scope.fields.description) {
-                $scope.configure.description = "description";
-            }
-        });
-    };
-
-    $scope.restartSearch = function () {
-        $scope.currentPage = 1;
-        $scope.numPages = 0;
-        $scope.pageSize = 10;
-        $scope.totalItems = 0;
-        $scope.tokensPerField = [];
-        $scope.doSearch();
-    };
-
-    $scope.doSearch = function () {
-        if ((!($scope.configure.title)) || (!($scope.configure.description))) {
-            $scope.configError = "Please configure the title and description in the configuration at the top of the page.";
-        } else {
-            $scope.configError = "";
-        }
-
-        var query = {};
-        query.index = "";
-        query.body = {};
-        // query.fields = $scope.configure.title + "," + $scope.configure.description;
-
-        query.size = $scope.pageSize;
-        query.from = ($scope.currentPage - 1) * $scope.pageSize;
-
-        query.body.aggs = aggregateBuilder.build($scope.search.aggs);
-        var filter = filterChosenAggregatePart();
-        if (filter) {
-            query.body.query = {"filtered": {"query": searchPart(), "filter": filter}};
-        } else {
-            query.body.query = searchPart();
-        }
-
-        $scope.metaResults = {};
-        elastic.doSearch(query, function (results) {
-            $scope.results = results.hits;
-            $scope.aggs = results.aggregations;
-            $scope.numPages = Math.ceil(results.hits.total / $scope.pageSize);
-            $scope.totalItems = results.hits.total;
-
-            $scope.metaResults.totalShards = results._shards.total;
-            if (results._shards.failed > 0) {
-                $scope.metaResults.failedShards = results._shards.failed;
-                $scope.metaResults.errors = [];
-                angular.forEach(results._shards.failures, function (failure) {
-                    $scope.metaResults.errors.push(failure.index + " - " + failure.reason);
-                });
-
-            }
-        }, handleErrors);
-    };
-
-    $scope.addSearchField = function () {
-        var searchField = {};
-        searchField.field = $scope.search.advanced.newField;
-        searchField.text = $scope.search.advanced.newText;
-        $scope.search.advanced.searchFields.push(searchField);
-    };
-
-    $scope.removeSearchField = function (index) {
-        $scope.search.advanced.searchFields.splice(index, 1);
-    };
-
-    $scope.openDialog = function () {
-        var opts = {
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: 'template/dialog/aggregate.html',
-            controller: 'AggregateDialogCtrl',
-            resolve: {fields: function () {
-                return angular.copy($scope.fields)
-            } }};
-        var modalInstance = $modal.open(opts);
-        modalInstance.result.then(function (result) {
-            if (result) {
-                $scope.search.aggs[result.name] = result;
-            }
-        }, function () {
-            // Nothing to do here
-        });
-    };
-
-    $scope.removeAggregateField = function (name) {
-        delete $scope.search.aggs[name];
-    };
-
-    $scope.saveQuery = function () {
-        queryStorage.saveSearch(angular.copy($scope.search));
-    };
-
-    $scope.loadQuery = function () {
-        queryStorage.loadSearch(function (data) {
-            $scope.search = angular.copy(data);
-        });
-    };
-
-    $scope.addFilter = function (key, value) {
-        if (!$scope.search.selectedAggs) {
-            $scope.search.selectedAggs = [];
-        }
-        $scope.search.selectedAggs.push({"key": key, "value": value});
-        $scope.doSearch();
-    };
-
-    $scope.addRangeFilter = function (key, from, to) {
-        if (!$scope.search.selectedAggs) {
-            $scope.search.selectedAggs = [];
-        }
-        $scope.search.selectedAggs.push({"key": key, "from": from, "to": to});
-        $scope.doSearch();
-    };
-
-    $scope.checkSelectedAggregate = function (key, value) {
-        if (!$scope.search.selectedAggs) {
-            return false;
-        }
-        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
-            var selectedAggregate = $scope.search.selectedAggs;
-            if (selectedAggregate[i].key === key && selectedAggregate[i].value === value) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    $scope.checkSelectedRangeAggregate = function (key, from, to) {
-        if (!$scope.search.selectedAggs) {
-            return false;
-        }
-        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
-            var selectedAggregate = $scope.search.selectedAggs;
-            if (selectedAggregate[i].key === key && selectedAggregate[i].from === from && selectedAggregate[i].to === to) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-    $scope.removeFilter = function (key, value) {
-        if (!$scope.search.selectedAggs) {
-            return;
-        }
-        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
-            var selectedAggregate = $scope.search.selectedAggs;
-            if (selectedAggregate[i].key === key && selectedAggregate[i].value === value) {
-                $scope.search.selectedAggs.splice(i, 1);
-            }
-        }
-        $scope.doSearch();
-    };
-
-    $scope.removeRangeFilter = function (key, from, to) {
-        if (!$scope.search.selectedAggs) {
-            return;
-        }
-        for (var i = 0; i < $scope.search.selectedAggs.length; i++) {
-            var selectedAggregate = $scope.search.selectedAggs;
-            if (selectedAggregate[i].key === key && selectedAggregate[i].from === from && selectedAggregate[i].to === to) {
-                $scope.search.selectedAggs.splice(i, 1);
-            }
-        }
-        $scope.doSearch();
-    };
-
-    $scope.obtainAggregateByKey = function (key) {
-        for (var i = 0; i < $scope.search.aggs.length; i++) {
-            var currentAggregate = $scope.search.aggs[i];
-            if (currentAggregate.field === key) {
-                return currentAggregate;
-            }
-        }
-        return null;
-    };
-
-    $scope.showAnalysis = function (index, type, id) {
-        $scope.tokensPerField = {"id": index+type+id};
-        elastic.documentTerms(index, type, id, function (result) {
-            $scope.tokensPerField.tokens = result;
-        });
-    };
-
-    function searchPart() {
-        var executedQuery;
-        if ($scope.search.doAdvanced && $scope.search.advanced.searchFields.length > 0) {
-            var tree = {};
-            for (var i = 0; i < $scope.search.advanced.searchFields.length; i++) {
-                var searchField = $scope.search.advanced.searchFields[i];
-                var fieldForSearch = $scope.fields[searchField.field];
-                recurseTree(tree, searchField.field, searchField.text);
-                if (fieldForSearch.nestedPath) {
-                    defineNestedPathInTree(tree, fieldForSearch.nestedPath, fieldForSearch.nestedPath);
-                }
-            }
-            executedQuery = constructQuery(tree);
-
-        } else if ($scope.search.simple && $scope.search.simple.length > 0) {
-            executedQuery = {"simple_query_string": {"query": $scope.search.simple, "fields": ["_all"], "analyzer": "snowball"}};
-        } else {
-            executedQuery = {"matchAll": {}};
-        }
-
-        return executedQuery;
-    }
-
-    function constructQuery(tree) {
-        var props = Object.getOwnPropertyNames(tree);
-        var boolQuery = {};
-        boolQuery.bool = {};
-        boolQuery.bool.must = [];
-        for (var i = 0; i < props.length; i++) {
-            var prop = props[i];
-            if (tree[prop] instanceof Object) {
-                boolQuery.bool.must.push(constructQuery(tree[prop]));
-            } else if (!(prop.substring(0, 1) === "_")) {
-                var fieldName = prop;
-                if (tree._nested) {
-                    fieldName = tree._nested + "." + fieldName;
-                }
-                var matchQuery = {};
-                matchQuery[fieldName] = tree[prop];
-                boolQuery.bool.must.push({"match": matchQuery});
-            }
-        }
-
-        var returnQuery;
-        if (tree._nested) {
-            var nestedQuery = {};
-            nestedQuery.nested = {};
-            nestedQuery.nested.path = tree._nested;
-            nestedQuery.nested.query = boolQuery;
-            returnQuery = nestedQuery;
-        } else {
-            returnQuery = boolQuery;
-        }
-
-        return returnQuery;
-    }
-
-    function defineNestedPathInTree(tree, path, nestedPath) {
-        var pathItems = path.split(".");
-        if (pathItems.length > 1) {
-            defineNestedPathInTree(tree[pathItems[0]], pathItems.splice(1).join("."), nestedPath);
-        } else {
-            tree[path]._nested = nestedPath;
-        }
-
-    }
-
-    function recurseTree(tree, newKey, value) {
-        var newKeys = newKey.split(".");
-
-        if (newKeys.length > 1) {
-            if (!tree.hasOwnProperty(newKeys[0])) {
-                tree[newKeys[0]] = {};
-            }
-            recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value);
-        } else {
-            if (!tree.hasOwnProperty(newKey)) {
-                tree[newKey] = value;
-            }
-        }
-    }
-
-
-    function filterChosenAggregatePart() {
-
-        if ($scope.search.selectedAggs && $scope.search.selectedAggs.length > 0) {
-            var filterQuery = {};
-            var selectedAggs = $scope.search.selectedAggs;
-            var filters = [];
-            for (var i = 0; i < selectedAggs.length; i++) {
-                var aggregate = $scope.search.aggs[selectedAggs[i].key];
-                var aggregateType = aggregate.aggsType;
-                if (aggregateType === "term") {
-                    var termFilter = {"term": {}};
-                    termFilter.term[$scope.search.aggs[selectedAggs[i].key].field] = selectedAggs[i].value;
-                    filters.push(termFilter);
-                } else if (aggregateType === "datehistogram") {
-                    var fromDate = new Date(selectedAggs[i].value);
-                    if (aggregate.interval === 'year') {
-                        fromDate.setFullYear(fromDate.getFullYear() + 1);
-                    } else if (aggregate.interval === 'month') {
-                        fromDate.setMonth(fromDate.getMonth() + 1);
-                    } else if (aggregate.interval === 'week') {
-                        fromDate.setDate(fromDate.getDate() + 7);
-                    } else if (aggregate.interval === 'day') {
-                        fromDate.setDate(fromDate.getDate() + 1);
-                    } else if (aggregate.interval === 'hour') {
-                        fromDate.setHours(fromDate.getHours() + 1);
-                    } else if (aggregate.interval === 'minute') {
-                        fromDate.setMinutes(fromDate.getMinutes() + 1);
-                    }
-                    var rangeFilter = {"range": {}};
-                    rangeFilter.range[$scope.search.aggs[selectedAggs[i].key].field] = {"from": selectedAggs[i].value, "to": fromDate.getTime()};
-                    filters.push(rangeFilter);
-                } else if (aggregateType === "histogram") {
-                    var rangeFilter = {"range": {}};
-                    var currentAgg = $scope.search.aggs[selectedAggs[i].key];
-                    rangeFilter.range[currentAgg.field] = {"from": selectedAggs[i].value, "to": selectedAggs[i].value + currentAgg.interval - 1};
-                    filters.push(rangeFilter);
-                } else if (aggregateType === "range") {
-                    var rangeFilter = {"range": {}};
-                    var currentAgg = $scope.search.aggs[selectedAggs[i].key];
-                    rangeFilter.range[currentAgg.field] = {"from": selectedAggs[i].from, "to": selectedAggs[i].to};
-                    filters.push(rangeFilter);
-                }
-            }
-            filterQuery.and = filters;
-
-            return filterQuery;
-        }
-        return null;
-    }
-
-    function handleErrors(errors) {
-        $scope.metaResults.failedShards = 1;
-        $scope.metaResults.errors = [];
-        if (errors.message && typeof errors.message === "object") {
-            if (errors.message.hasOwnProperty('message')) {
-                $scope.metaResults.errors.push(errors.message.message);
-            }
-        } else {
-            $scope.metaResults.errors.push(errors.message);
-        }
-    }
-}]);
-
 angular.module('guiapp').controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
 function ($scope, elastic, $modal) {
     $scope.repositories = [];
@@ -1847,6 +1602,29 @@ function WhereShardsCtrl($scope, $timeout, elastic) {
 
 (function () {
     'use strict';
+
+    angular.module('guiapp.dashboard')
+        .controller('ChangeNumReplicasCtrl', ChangeNumReplicasCtrl);
+
+    ChangeNumReplicasCtrl.$inject = ['$modalInstance', 'indexService'];
+
+    function ChangeNumReplicasCtrl($modalInstance, indexService) {
+        var cnrVm = this;
+        cnrVm.dialog = {
+            "numReplicas": indexService.numReplicas,
+            "name": indexService.name
+        };
+
+        cnrVm.close = close;
+
+        function close (result) {
+            $modalInstance.close(result);
+        }
+
+    }
+})();
+(function () {
+    'use strict';
     angular
         .module('guiapp.dashboard')
         .controller('DashboardCtrl', DashboardController);
@@ -1865,6 +1643,7 @@ function WhereShardsCtrl($scope, $timeout, elastic) {
         vm.openChangeReplicas = openChangereplicas;
         vm.removeIndex = removeIndex;
 
+        // TODO jettro: replace with initialisation code according to guideline
         $scope.$on('$viewContentLoaded', function () {
             indexDetails();
             refreshData();
@@ -1896,6 +1675,7 @@ function WhereShardsCtrl($scope, $timeout, elastic) {
                 backdropClick: true,
                 templateUrl: 'template/dialog/numreplicas.html',
                 controller: 'ChangeNumReplicasCtrl',
+                controllerAs: 'cnrVm',
                 resolve: {
                     fields: function () {
                         return angular.copy(indexService);
@@ -1986,6 +1766,33 @@ angular.module('guiapp.directives', []).
         ]);
 
 
+(function() {
+    'use strict';
+
+    angular
+        .module('guiapp')
+        .config(ExceptionConfig);
+
+    ExceptionConfig.$inject = ['$provide'];
+
+    function ExceptionConfig($provide) {
+        $provide.decorator('$exceptionHandler', ExtendExceptionHandler);
+    }
+
+    ExtendExceptionHandler.$inject = ['$delegate','$log'];
+
+    function ExtendExceptionHandler($delegate,$log) {
+        return function(exception, cause) {
+            $delegate(exception, cause);
+            var errorData = {
+                exception: exception,
+                cause: cause
+            };
+
+            $log.error(exception.msg);
+        };
+    }
+})();
 'use strict';
 
 /* Filters */
@@ -2149,79 +1956,434 @@ angular.module('guiapp.filters', []).
 
 })();
 
-angular
-    .module('guiapp.services')
-    .factory('aggregateBuilder', function () {
-    function AggregateBuilder() {
-        this.build = function (aggs) {
-            var queryaggs = {};
+(function () {
+    'use strict';
 
-            angular.forEach(aggs, function (aggregation, key) {
-                if (aggregation.aggsType === 'term') {
-                    queryaggs[aggregation.name] = {"terms": {"field": aggregation.field}};
-                } else if (aggregation.aggsType === 'range') {
-                    var ranges = [];
-                    for (var j = 0; j < aggregation.ranges.length; j++) {
-                        var range = aggregation.ranges[j];
-                        if (range[0] == undefined) {
-                            ranges.push({"to": range[1]})
-                        } else if (range[1] == undefined) {
-                            ranges.push({"from": range[0]})
-                        } else {
-                            ranges.push({"from": range[0], "to": range[1]});
-                        }
+    angular
+        .module('guiapp.search')
+        .controller('SearchCtrl', SearchCtrl);
+
+    SearchCtrl.$inject = ['elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+
+    function SearchCtrl(elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+        var vm = this;
+        vm.isCollapsed = true; // Configuration div
+        vm.configure = configuration;
+        vm.fields = [];
+        vm.search = {};
+        vm.search.advanced = {};
+        vm.search.advanced.searchFields = [];
+        vm.search.aggs = {};
+        vm.search.selectedAggs = [];
+        vm.configError = "";
+        vm.results = [];
+        vm.aggs = [];
+        vm.tokensPerField = [];
+        vm.metaResults = {};
+
+        // initialize pagination
+        vm.currentPage = 1;
+        vm.maxSize = 5;
+        vm.numPages = 0;
+        vm.pageSize = 10;
+        vm.totalItems = 0;
+
+        vm.changePage = changePage;
+        vm.init = init;
+        vm.restartSearch = restartSearch;
+        vm.doSearch = doSearch;
+        vm.addSearchField = addSearchField;
+        vm.removeSearchField = removeSearchField;
+        vm.openDialog = openDialog;
+        vm.removeAggregateField = removeAggregateField;
+        vm.saveQuery = saveQuery;
+        vm.loadQuery = loadQuery;
+        vm.addFilter = addFilter;
+        vm.addRangeFilter = addRangeFilter;
+        vm.checkSelectedAggregate = checkSelectedAggregate;
+        vm.checkSelectedRangeAggregate = checkSelectedRangeAggregate;
+        vm.removeFilter = removeFilter;
+        vm.removeRangeFilter = removeRangeFilter;
+        vm.obtainAggregateByKey = obtainAggregateByKey;
+        vm.showAnalysis = showAnalysis;
+
+        function changePage () {
+            vm.doSearch();
+        }
+
+        function init () {
+            elastic.fields([], [], function (data) {
+                vm.fields = data;
+                if (!vm.configure.title) {
+                    if (vm.fields.title) {
+                        vm.configure.title = "title";
                     }
-                    queryaggs[aggregation.name] = {"range": {"field": aggregation.field, "ranges": ranges}};
-                } else if (aggregation.aggsType === 'datehistogram') {
-                    queryaggs[aggregation.name] = {"date_histogram": {"field": aggregation.field, "interval": aggregation.interval}};
-                } else if (aggregation.aggsType === 'histogram') {
-                    queryaggs[aggregation.name] = {"histogram": {"field": aggregation.field, "interval": aggregation.interval}};
+                }
+
+                if (!vm.configure.description && vm.fields.description) {
+                    vm.configure.description = "description";
                 }
             });
-            return queryaggs;
+        }
+
+        function restartSearch() {
+            vm.currentPage = 1;
+            vm.numPages = 0;
+            vm.pageSize = 10;
+            vm.totalItems = 0;
+            vm.tokensPerField = [];
+            vm.doSearch();
+        }
+
+        function doSearch () {
+            if ((!(vm.configure.title)) || (!(vm.configure.description))) {
+                vm.configError = "Please configure the title and description in the configuration at the top of the page.";
+            } else {
+                vm.configError = "";
+            }
+
+            var query = {};
+            query.index = "";
+            query.body = {};
+
+            query.size = vm.pageSize;
+            query.from = (vm.currentPage - 1) * vm.pageSize;
+
+            query.body.aggs = aggregateBuilder.build(vm.search.aggs);
+            var filter = filterChosenAggregatePart();
+            if (filter) {
+                query.body.query = {"filtered": {"query": searchPart(), "filter": filter}};
+            } else {
+                query.body.query = searchPart();
+            }
+
+            elastic.doSearch(query, function (results) {
+                vm.results = results.hits;
+                vm.aggs = results.aggregations;
+                vm.numPages = Math.ceil(results.hits.total / vm.pageSize);
+                vm.totalItems = results.hits.total;
+
+                vm.metaResults.totalShards = results._shards.total;
+                if (results._shards.failed > 0) {
+                    vm.metaResults.failedShards = results._shards.failed;
+                    vm.metaResults.errors = [];
+                    angular.forEach(results._shards.failures, function (failure) {
+                        vm.metaResults.errors.push(failure.index + " - " + failure.reason);
+                    });
+
+                }
+            }, handleErrors);
+        }
+
+        function addSearchField () {
+            var searchField = {};
+            searchField.field = vm.search.advanced.newField;
+            searchField.text = vm.search.advanced.newText;
+            vm.search.advanced.searchFields.push(searchField);
+        }
+
+        function removeSearchField(index) {
+            vm.search.advanced.searchFields.splice(index, 1);
+        }
+
+        function openDialog() {
+            var opts = {
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: 'template/dialog/aggregate.html',
+                controller: 'AggregateDialogCtrl',
+                controllerAs: 'adVm',
+                resolve: {
+                    fields: function () {
+                        return angular.copy(vm.fields)
+                    }
+                }
+            };
+            var modalInstance = $modal.open(opts);
+            modalInstance.result.then(function (result) {
+                if (result) {
+                    vm.search.aggs[result.name] = result;
+                }
+            }, function () {
+                // Nothing to do here
+            });
+        }
+
+        function removeAggregateField(name) {
+            delete vm.search.aggs[name];
+        }
+
+        function saveQuery() {
+            queryStorage.saveSearch(angular.copy(vm.search));
+        }
+
+        function loadQuery() {
+            queryStorage.loadSearch(function (data) {
+                vm.search = angular.copy(data);
+            });
+        }
+
+        function addFilter(key, value) {
+            if (!vm.search.selectedAggs) {
+                vm.search.selectedAggs = [];
+            }
+            vm.search.selectedAggs.push({"key": key, "value": value});
+            vm.doSearch();
+        }
+
+        function addRangeFilter(key, from, to) {
+            if (!vm.search.selectedAggs) {
+                vm.search.selectedAggs = [];
+            }
+            vm.search.selectedAggs.push({"key": key, "from": from, "to": to});
+            vm.doSearch();
+        }
+
+        function checkSelectedAggregate(key, value) {
+            if (!vm.search.selectedAggs) {
+                return false;
+            }
+            for (var i = 0; i < vm.search.selectedAggs.length; i++) {
+                var selectedAggregate = vm.search.selectedAggs;
+                if (selectedAggregate[i].key === key && selectedAggregate[i].value === value) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkSelectedRangeAggregate(key, from, to) {
+            if (!vm.search.selectedAggs) {
+                return false;
+            }
+            for (var i = 0; i < vm.search.selectedAggs.length; i++) {
+                var selectedAggregate = vm.search.selectedAggs;
+                if (selectedAggregate[i].key === key && selectedAggregate[i].from === from && selectedAggregate[i].to === to) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function removeFilter(key, value) {
+            if (!vm.search.selectedAggs) {
+                return;
+            }
+            for (var i = 0; i < vm.search.selectedAggs.length; i++) {
+                var selectedAggregate = vm.search.selectedAggs;
+                if (selectedAggregate[i].key === key && selectedAggregate[i].value === value) {
+                    vm.search.selectedAggs.splice(i, 1);
+                }
+            }
+            vm.doSearch();
+        }
+
+        function removeRangeFilter(key, from, to) {
+            if (!vm.search.selectedAggs) {
+                return;
+            }
+            for (var i = 0; i < vm.search.selectedAggs.length; i++) {
+                var selectedAggregate = vm.search.selectedAggs;
+                if (selectedAggregate[i].key === key && selectedAggregate[i].from === from && selectedAggregate[i].to === to) {
+                    vm.search.selectedAggs.splice(i, 1);
+                }
+            }
+            vm.doSearch();
+        }
+
+        function obtainAggregateByKey(key) {
+            for (var i = 0; i < vm.search.aggs.length; i++) {
+                var currentAggregate = vm.search.aggs[i];
+                if (currentAggregate.field === key) {
+                    return currentAggregate;
+                }
+            }
+            return null;
+        }
+
+        function showAnalysis(index, type, id) {
+            vm.tokensPerField = {"id": index + type + id};
+            elastic.documentTerms(index, type, id, function (result) {
+                vm.tokensPerField.tokens = result;
+            });
+        }
+
+        function searchPart() {
+            var executedQuery;
+            if (vm.search.doAdvanced && vm.search.advanced.searchFields.length > 0) {
+                var tree = {};
+                for (var i = 0; i < vm.search.advanced.searchFields.length; i++) {
+                    var searchField = vm.search.advanced.searchFields[i];
+                    var fieldForSearch = vm.fields[searchField.field];
+                    recurseTree(tree, searchField.field, searchField.text);
+                    if (fieldForSearch.nestedPath) {
+                        defineNestedPathInTree(tree, fieldForSearch.nestedPath, fieldForSearch.nestedPath);
+                    }
+                }
+                executedQuery = constructQuery(tree);
+
+            } else if (vm.search.simple && vm.search.simple.length > 0) {
+                executedQuery = {
+                    "simple_query_string": {
+                        "query": vm.search.simple,
+                        "fields": ["_all"],
+                        "analyzer": "snowball"
+                    }
+                };
+            } else {
+                executedQuery = {"matchAll": {}};
+            }
+
+            return executedQuery;
+        }
+
+        function constructQuery(tree) {
+            var props = Object.getOwnPropertyNames(tree);
+            var boolQuery = {};
+            boolQuery.bool = {};
+            boolQuery.bool.must = [];
+            for (var i = 0; i < props.length; i++) {
+                var prop = props[i];
+                if (tree[prop] instanceof Object) {
+                    boolQuery.bool.must.push(constructQuery(tree[prop]));
+                } else if (!(prop.substring(0, 1) === "_")) {
+                    var fieldName = prop;
+                    if (tree._nested) {
+                        fieldName = tree._nested + "." + fieldName;
+                    }
+                    var matchQuery = {};
+                    matchQuery[fieldName] = tree[prop];
+                    boolQuery.bool.must.push({"match": matchQuery});
+                }
+            }
+
+            var returnQuery;
+            if (tree._nested) {
+                var nestedQuery = {};
+                nestedQuery.nested = {};
+                nestedQuery.nested.path = tree._nested;
+                nestedQuery.nested.query = boolQuery;
+                returnQuery = nestedQuery;
+            } else {
+                returnQuery = boolQuery;
+            }
+
+            return returnQuery;
+        }
+
+        function defineNestedPathInTree(tree, path, nestedPath) {
+            var pathItems = path.split(".");
+            if (pathItems.length > 1) {
+                defineNestedPathInTree(tree[pathItems[0]], pathItems.splice(1).join("."), nestedPath);
+            } else {
+                tree[path]._nested = nestedPath;
+            }
+
+        }
+
+        function recurseTree(tree, newKey, value) {
+            var newKeys = newKey.split(".");
+
+            if (newKeys.length > 1) {
+                if (!tree.hasOwnProperty(newKeys[0])) {
+                    tree[newKeys[0]] = {};
+                }
+                recurseTree(tree[newKeys[0]], newKeys.splice(1).join("."), value);
+            } else {
+                if (!tree.hasOwnProperty(newKey)) {
+                    tree[newKey] = value;
+                }
+            }
+        }
+
+
+        function filterChosenAggregatePart() {
+            if (vm.search.selectedAggs && vm.search.selectedAggs.length > 0) {
+                var filterQuery = {};
+                var selectedAggs = vm.search.selectedAggs;
+                var filters = [];
+                for (var i = 0; i < selectedAggs.length; i++) {
+                    var aggregate = vm.search.aggs[selectedAggs[i].key];
+                    var aggregateType = aggregate.aggsType;
+                    if (aggregateType === "term") {
+                        var termFilter = {"term": {}};
+                        termFilter.term[vm.search.aggs[selectedAggs[i].key].field] = selectedAggs[i].value;
+                        filters.push(termFilter);
+                    } else if (aggregateType === "datehistogram") {
+                        var fromDate = new Date(selectedAggs[i].value);
+                        if (aggregate.interval === 'year') {
+                            fromDate.setFullYear(fromDate.getFullYear() + 1);
+                        } else if (aggregate.interval === 'month') {
+                            fromDate.setMonth(fromDate.getMonth() + 1);
+                        } else if (aggregate.interval === 'week') {
+                            fromDate.setDate(fromDate.getDate() + 7);
+                        } else if (aggregate.interval === 'day') {
+                            fromDate.setDate(fromDate.getDate() + 1);
+                        } else if (aggregate.interval === 'hour') {
+                            fromDate.setHours(fromDate.getHours() + 1);
+                        } else if (aggregate.interval === 'minute') {
+                            fromDate.setMinutes(fromDate.getMinutes() + 1);
+                        }
+                        var rangeFilter = {"range": {}};
+                        rangeFilter.range[vm.search.aggs[selectedAggs[i].key].field] = {
+                            "from": selectedAggs[i].value,
+                            "to": fromDate.getTime()
+                        };
+                        filters.push(rangeFilter);
+                    } else if (aggregateType === "histogram") {
+                        var rangeFilter = {"range": {}};
+                        var currentAgg = vm.search.aggs[selectedAggs[i].key];
+                        rangeFilter.range[currentAgg.field] = {
+                            "from": selectedAggs[i].value,
+                            "to": selectedAggs[i].value + currentAgg.interval - 1
+                        };
+                        filters.push(rangeFilter);
+                    } else if (aggregateType === "range") {
+                        var rangeFilter = {"range": {}};
+                        var currentAgg = vm.search.aggs[selectedAggs[i].key];
+                        rangeFilter.range[currentAgg.field] = {
+                            "from": selectedAggs[i].from,
+                            "to": selectedAggs[i].to
+                        };
+                        filters.push(rangeFilter);
+                    }
+                }
+                filterQuery.and = filters;
+
+                return filterQuery;
+            }
+            return null;
+        }
+
+        function handleErrors(errors) {
+            vm.metaResults.failedShards = 1;
+            vm.metaResults.errors = [];
+            if (errors.message && typeof errors.message === "object") {
+                if (errors.message.hasOwnProperty('message')) {
+                    vm.metaResults.errors.push(errors.message.message);
+                }
+            } else {
+                vm.metaResults.errors.push(errors.message);
+            }
         }
     }
+})();
 
-    return new AggregateBuilder();
-});
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.search')
+        .config(config);
 
-angular
-    .module('guiapp.services').factory('queryStorage', ['localStorage', function (localStorage) {
-    function QueryStorage(localStorage) {
-        var LOCAL_STORAGE_ID_QUERY = 'es-query';
-        var LOCAL_STORAGE_ID_SEARCH = 'es-search';
+    config.$inject = ['$routeProvider'];
 
-        this.loadQuery = function (callback) {
-            var query = localStorage[LOCAL_STORAGE_ID_QUERY];
-            callback(JSON.parse(query));
-        };
-
-        this.saveQuery = function (query) {
-            localStorage[LOCAL_STORAGE_ID_QUERY] = JSON.stringify(query);
-        };
-
-        this.loadSearch = function (callback) {
-            var search = localStorage[LOCAL_STORAGE_ID_SEARCH];
-            callback(JSON.parse(search));
-        };
-
-        this.saveSearch = function (search) {
-            localStorage[LOCAL_STORAGE_ID_SEARCH] = JSON.stringify(search);
-        };
+    function config($routeProvider) {
+        $routeProvider
+            .when('/search', {
+                templateUrl: '/partials/search.html',
+                controller: 'SearchCtrl',
+                controllerAs: 'vm'
+            });
     }
-
-    return new QueryStorage(localStorage);
-}]);
-
-angular
-    .module('guiapp.services').factory('serverConfig', ['$location', function ($location) {
-    function ServerConfig(location) {
-        if (location.host() == 'www.gridshore.nl') {
-            this.host = "http://localhost:9200";
-        } else {
-            this.host = location.protocol() + "://" + location.host() + ":" + location.port();
-        }
-    }
-
-    return new ServerConfig($location);
-}]);
+})();

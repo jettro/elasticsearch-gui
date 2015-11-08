@@ -18,6 +18,7 @@
         vm.openChangeReplicas = openChangereplicas;
         vm.removeIndex = removeIndex;
 
+        // TODO jettro: replace with initialisation code according to guideline
         $scope.$on('$viewContentLoaded', function () {
             indexDetails();
             refreshData();
@@ -49,6 +50,7 @@
                 backdropClick: true,
                 templateUrl: 'template/dialog/numreplicas.html',
                 controller: 'ChangeNumReplicasCtrl',
+                controllerAs: 'cnrVm',
                 resolve: {
                     fields: function () {
                         return angular.copy(indexService);

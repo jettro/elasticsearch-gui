@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-08
+/*! elasticsearch-gui - v2.0.0 - 2015-11-11
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function() {
@@ -21,7 +21,8 @@
                 'guiapp.dashboard',
                 'guiapp.navbar',
                 'guiapp.search',
-                'guiapp.aggregatedialog'
+                'guiapp.aggregatedialog',
+                'guiapp.snapshot'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
@@ -34,7 +35,7 @@
         $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: 'GraphCtrl'});
         $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
         $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
-        $routeProvider.when('/tools/snapshots', {templateUrl: 'partials/snapshots.html', controller: 'SnapshotsCtrl'});
+        //$routeProvider.when('/tools/snapshots', {templateUrl: 'partials/snapshots.html', controller: 'SnapshotsCtrl'});
         $routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
@@ -76,6 +77,12 @@
     var services = angular.module('guiapp.services', ['elasticsearch']);
 
     services.value('version', '2.0.0');
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.snapshot', ['guiapp.services','ngRoute']);
 })();
 
 (function () {
@@ -760,35 +767,6 @@
         }
     }
 })();
-angular.module('guiapp').controller('ConfigDialogCtrl',['$scope', '$modalInstance', 'configuration',
-function ($scope, $modalInstance, configuration){
-    $scope.configuration = configuration;
-
-    $scope.close = function (result) {
-        $modalInstance.close($scope.configuration);
-    };
-
-}]);
-angular.module('guiapp').controller('CreateSnapshotCtrl',['$scope', '$modalInstance',
-function ($scope, $modalInstance) {
-    $scope.dialog = {"includeGlobalState":true,"ignoreUnavailable":false};
-
-    $scope.close = function (result) {
-        $modalInstance.close(result);
-    };
-
-}]);
-
-angular.module('guiapp').controller('CreateSnapshotRepositoryCtrl',['$scope', '$modalInstance',
-function CreateSnapshotRepositoryCtrl ($scope, $modalInstance) {
-    $scope.dialog = {};
-
-    $scope.close = function (result) {
-        $modalInstance.close(result);
-    };
-
-}])
-
 angular.module('guiapp').controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
 function ($scope, $modal, elastic, aggregateBuilder) {
     $scope.indices = [];
@@ -1376,128 +1354,6 @@ function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.resetQuery();
 }]);
 
-angular.module('guiapp').controller('SnapshotsCtrl',['$scope', 'elastic', '$modal',
-function ($scope, elastic, $modal) {
-    $scope.repositories = [];
-    $scope.selectedRepository = "";
-    $scope.snapshots = [];
-    $scope.snapshotsStatus = false;
-
-    $scope.$watch('selectedRepository', function () {
-        $scope.listSnapshots();
-    });
-
-    $scope.listRepositories = function() {
-        elastic.snapshotRepositories(function(data) {
-            $scope.repositories = data;
-        });
-    };
-
-    $scope.selectRepository = function(name) {
-        $scope.selectedRepository = name;
-    };
-
-    $scope.deleteRepository = function(name) {
-        elastic.deleteRepository(name, function(data) {
-            if ($scope.selectedRepository === name) {
-                $scope.selectedRepository = "";
-            }
-            $scope.listRepositories();
-        });
-    };
-
-    $scope.listSnapshots = function() {
-        if ($scope.selectedRepository !== "") {
-            elastic.obtainSnapshotStatus(function (snapshots) {
-                if (snapshots.length > 0) {
-                    $scope.snapshotsStatus = true;
-                    $scope.snapshots = snapshots;
-
-                } else {
-                    elastic.obtainSnapshots($scope.selectedRepository, function (snapshots) {
-                        $scope.snapshotsStatus = false;
-                        $scope.snapshots = snapshots;
-                    });
-                }
-            });
-        }
-    };
-
-    $scope.removeSnapshot = function(snapshot) {
-        elastic.removeSnapshot($scope.selectedRepository, snapshot, function() {
-            $scope.listSnapshots();
-        });
-    };
-
-    $scope.removeSnapshotFromRepository = function(repository,snapshot) {
-        elastic.removeSnapshot(repository, snapshot, function() {
-            $scope.listSnapshots();
-        });
-    };
-
-    $scope.restoreSnapshot = function(snapshot) {
-        elastic.restoreSnapshot($scope.selectedRepository, snapshot, function() {
-            $scope.listSnapshots();
-        });
-    };
-
-    $scope.openCreateSnapshot = function () {
-        var opts = {
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: 'template/dialog/createsnapshot.html',
-            controller: 'CreateSnapshotCtrl'
-        };
-        var modalInstance = $modal.open(opts);
-        modalInstance.result.then(function (result) {
-            if (result) {
-                var newSnapshot = {};
-                newSnapshot.repository = $scope.selectedRepository;
-                if (result.name) {
-                    newSnapshot.snapshot = result.name;
-                } else {
-                    var now = moment().format("YYYYMMDDHHmmss");
-                    newSnapshot.snapshot = result.prefix + "-" + now;
-                }
-                newSnapshot.indices = result.indices;
-                newSnapshot.ignoreUnavailable = result.ignoreUnavailable;
-                newSnapshot.includeGlobalState = result.includeGlobalState;
-                elastic.createSnapshot(newSnapshot, function() {
-                    $scope.listSnapshots();
-                });
-            }
-        }, function () {
-            // Nothing to do here
-        });
-    };
-
-    $scope.openCreateSnapshotRepository = function () {
-        var opts = {
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: 'template/dialog/createsnapshotrepository.html',
-            controller: 'CreateSnapshotRepositoryCtrl'
-        };
-        var modalInstance = $modal.open(opts);
-        modalInstance.result.then(function (result) {
-            if (result) {
-                elastic.createRepository(result, function() {
-                    $scope.listRepositories();
-                    $scope.selectedRepository = "";
-                });
-            }
-        }, function () {
-            // Nothing to do here
-        });
-    };
-
-    $scope.$on('$viewContentLoaded', function () {
-        $scope.listRepositories();
-    });
-}]);
-
 angular.module('guiapp').controller('SuggestionsCtrl',['$scope', 'elastic',
 function ($scope, elastic) {
     $scope.suggest = {};
@@ -1806,6 +1662,25 @@ angular.module('guiapp.filters', []).
 
 (function () {
     'use strict';
+
+    angular
+        .module('guiapp.navbar')
+        .controller('ConfigDialogCtrl', ConfigDialogCtrl);
+
+    ConfigDialogCtrl.$inject = ['$modalInstance', 'configuration'];
+
+    function ConfigDialogCtrl($modalInstance, configuration) {
+        var confVm = this;
+        confVm.configuration = configuration;
+        confVm.close = close;
+
+        function close (result) {
+            $modalInstance.close(confVm.configuration);
+        }
+    }
+})();
+(function () {
+    'use strict';
     angular
         .module('guiapp.navbar')
         .controller('NavbarCtrl', NavbarCtrl);
@@ -1866,6 +1741,7 @@ angular.module('guiapp.filters', []).
                 backdropClick: true,
                 templateUrl: 'template/dialog/config.html',
                 controller: 'ConfigDialogCtrl',
+                controllerAs: 'confVm',
                 resolve: {fields: function () {
                     return angular.copy(configuration);
                 } }};
@@ -1988,23 +1864,23 @@ angular.module('guiapp.filters', []).
         vm.pageSize = 10;
         vm.totalItems = 0;
 
-        vm.changePage = changePage;
-        vm.init = init;
-        vm.restartSearch = restartSearch;
-        vm.doSearch = doSearch;
-        vm.addSearchField = addSearchField;
-        vm.removeSearchField = removeSearchField;
-        vm.openDialog = openDialog;
-        vm.removeAggregateField = removeAggregateField;
-        vm.saveQuery = saveQuery;
-        vm.loadQuery = loadQuery;
         vm.addFilter = addFilter;
         vm.addRangeFilter = addRangeFilter;
+        vm.addSearchField = addSearchField;
+        vm.changePage = changePage;
         vm.checkSelectedAggregate = checkSelectedAggregate;
         vm.checkSelectedRangeAggregate = checkSelectedRangeAggregate;
+        vm.doSearch = doSearch;
+        vm.init = init;
+        vm.loadQuery = loadQuery;
+        vm.obtainAggregateByKey = obtainAggregateByKey;
+        vm.openDialog = openDialog;
         vm.removeFilter = removeFilter;
         vm.removeRangeFilter = removeRangeFilter;
-        vm.obtainAggregateByKey = obtainAggregateByKey;
+        vm.removeSearchField = removeSearchField;
+        vm.restartSearch = restartSearch;
+        vm.removeAggregateField = removeAggregateField;
+        vm.saveQuery = saveQuery;
         vm.showAnalysis = showAnalysis;
 
         function changePage () {
@@ -2383,6 +2259,215 @@ angular.module('guiapp.filters', []).
             .when('/search', {
                 templateUrl: '/partials/search.html',
                 controller: 'SearchCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
+(function () {
+    'use strict';
+
+    angular
+        .module('guiapp.snapshot')
+        .controller('CreateSnapshotCtrl', CreateSnapshotCtrl);
+
+    CreateSnapshotCtrl.$inject = ['$modalInstance'];
+
+    function CreateSnapshotCtrl($modalInstance) {
+        var csVm = this;
+        csVm.dialog = {"includeGlobalState": true, "ignoreUnavailable": false};
+
+        csVm.close = close;
+
+        function close(result) {
+            $modalInstance.close(result);
+        }
+    }
+})();
+
+(function () {
+    'use strict';
+
+    angular
+        .module('guiapp.snapshot')
+        .controller('CreateSnapshotRepositoryCtrl', CreateSnapshotRepositoryCtrl);
+
+    CreateSnapshotRepositoryCtrl.$inject = ['$modalInstance'];
+
+    function CreateSnapshotRepositoryCtrl($modalInstance) {
+        var csrVm = this;
+        csrVm.dialog = {};
+
+        csrVm.close = close;
+
+        function close(result) {
+            $modalInstance.close(result);
+        }
+
+    }
+})();
+
+(function () {
+    'use strict';
+
+    angular.module('guiapp.snapshot')
+        .controller('SnapshotCtrl', SnapshotCtrl);
+
+    SnapshotCtrl.$inject = ['$scope', 'elastic', '$modal'];
+
+    function SnapshotCtrl($scope,elastic, $modal) {
+        var vm = this;
+        vm.repositories = [];
+        vm.selectedRepository = "";
+        vm.snapshots = [];
+        vm.snapshotsStatus = false;
+
+        vm.listSnapshots = listSnapshots;
+        vm.selectRepository = selectRepository;
+        vm.deleteRepository = deleteRepository;
+        vm.listrepositories = listRepositories;
+        vm.removeSnapshot = removeSnapshot;
+        vm.removeSnapshotFromRepository = removeSnapshotFromRepository;
+        vm.restoreSnapshot = restoreSnapshot;
+        vm.openCreateSnapshot = openCreateSnapshot;
+        vm.openCreateSnapshotRepository = openCreateSnapshotRepository;
+
+        activate();
+        // TODO jettro: make sure to change this to activate or something
+        //$scope.$on('$viewContentLoaded', function () {
+        //    listRepositories();
+        //});
+
+        $scope.$watch('vm.selectedRepository', function () {
+            listSnapshots();
+        });
+
+        function activate() {
+            listRepositories();
+        }
+
+        function listRepositories() {
+            elastic.snapshotRepositories(function (data) {
+                vm.repositories = data;
+            });
+        }
+
+        function selectRepository(name) {
+            vm.selectedRepository = name;
+        }
+
+        function deleteRepository(name) {
+            elastic.deleteRepository(name, function (data) {
+                if (vm.selectedRepository === name) {
+                    vm.selectedRepository = "";
+                }
+                listRepositories();
+            });
+        }
+
+        function listSnapshots() {
+            if (vm.selectedRepository !== "") {
+                elastic.obtainSnapshotStatus(function (snapshots) {
+                    if (snapshots.length > 0) {
+                        vm.snapshotsStatus = true;
+                        vm.snapshots = snapshots;
+
+                    } else {
+                        elastic.obtainSnapshots(vm.selectedRepository, function (snapshots) {
+                            vm.snapshotsStatus = false;
+                            vm.snapshots = snapshots;
+                        });
+                    }
+                });
+            }
+        }
+
+        function removeSnapshot(snapshot) {
+            elastic.removeSnapshot(vm.selectedRepository, snapshot, function () {
+                listSnapshots();
+            });
+        }
+
+        function removeSnapshotFromRepository(repository, snapshot) {
+            elastic.removeSnapshot(repository, snapshot, function () {
+                listSnapshots();
+            });
+        }
+
+        function restoreSnapshot(snapshot) {
+            elastic.restoreSnapshot(vm.selectedRepository, snapshot, function () {
+                listSnapshots();
+            });
+        }
+
+        function openCreateSnapshot() {
+            var opts = {
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: 'template/dialog/createsnapshot.html',
+                controller: 'CreateSnapshotCtrl',
+                controllerAs: 'csVm'
+            };
+            var modalInstance = $modal.open(opts);
+            modalInstance.result.then(function (result) {
+                if (result) {
+                    var newSnapshot = {};
+                    newSnapshot.repository = vm.selectedRepository;
+                    if (result.name) {
+                        newSnapshot.snapshot = result.name;
+                    } else {
+                        var now = moment().format("YYYYMMDDHHmmss");
+                        newSnapshot.snapshot = result.prefix + "-" + now;
+                    }
+                    newSnapshot.indices = result.indices;
+                    newSnapshot.ignoreUnavailable = result.ignoreUnavailable;
+                    newSnapshot.includeGlobalState = result.includeGlobalState;
+                    elastic.createSnapshot(newSnapshot, function () {
+                        listSnapshots();
+                    });
+                }
+            }, function () {
+                // Nothing to do here
+            });
+        }
+
+        function openCreateSnapshotRepository() {
+            var opts = {
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: 'template/dialog/createsnapshotrepository.html',
+                controller: 'CreateSnapshotRepositoryCtrl',
+                controllerAs: 'csrVm'
+            };
+            var modalInstance = $modal.open(opts);
+            modalInstance.result.then(function (result) {
+                if (result) {
+                    elastic.createRepository(result, function () {
+                        listRepositories();
+                        vm.selectedRepository = "";
+                    });
+                }
+            }, function () {
+                // Nothing to do here
+            });
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.snapshot')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/tools/snapshots', {
+                templateUrl: '/partials/snapshots.html',
+                controller: 'SnapshotCtrl',
                 controllerAs: 'vm'
             });
     }

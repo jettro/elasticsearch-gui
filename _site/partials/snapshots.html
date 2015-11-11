@@ -11,9 +11,9 @@
 <div class="row">
     <div class="col-md-12">
         <h2>Repositories</h2>
-        <button type="button" class="btn btn-default" ng-click="listRepositories()">
+        <button type="button" class="btn btn-default" ng-click="vm.listRepositories()">
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Refresh</button>
-        <button type="button" class="btn btn-default" ng-click="openCreateSnapshotRepository()">
+        <button type="button" class="btn btn-default" ng-click="vm.openCreateSnapshotRepository()">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Create</button>
 
         <table class="table table-bordered table-hover">
@@ -27,12 +27,12 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="(key,value) in repositories" ng-class="{success: selectedRepository === key}"
-                    ng-click="selectRepository(key)">
+                <tr ng-repeat="(key,value) in vm.repositories" ng-class="{success: vm.selectedRepository === key}"
+                    ng-click="vm.selectRepository(key)">
                     <td>{{key}}</td>
                     <td>{{value.type}}</td>
                     <td><span ng-show="value.type=='fs'">{{value.settings.location}}</span></td>
-                    <td><button confirmed-click="deleteRepository(key)"
+                    <td><button confirmed-click="vm.deleteRepository(key)"
                                 ng-confirm-click="Do you want to remove the repository {{key}}?"
                                 class="btn btn-link" title="Remove repository"><span class=" glyphicon glyphicon-trash"></span></button>
                     </td>
@@ -42,19 +42,19 @@
     </div>
 </div>
 
-<div class="row" ng-show="selectedRepository">
+<div class="row" ng-show="vm.selectedRepository">
     <div class="col-md-12">
         <h2>Snapshots</h2>
-        <button type="button" class="btn btn-default" ng-click="listSnapshots()">
+        <button type="button" class="btn btn-default" ng-click="vm.listSnapshots()">
             <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Refresh</button>
-        <button type="button" class="btn btn-default" ng-click="openCreateSnapshot()">
+        <button type="button" class="btn btn-default" ng-click="vm.openCreateSnapshot()">
             <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Create</button>
     </div>
 </div>
 
-<div class="row" ng-show="snapshots">
+<div class="row" ng-show="vm.snapshots">
     <div class="col-md-12">
-        <table class="table table-bordered table-hover" ng-hide="snapshotsStatus">
+        <table class="table table-bordered table-hover" ng-hide="vm.snapshotsStatus">
             <caption>This table contains the snapshots in the selected repository.</caption>
             <thead>
             <tr>
@@ -66,16 +66,16 @@
             </tr>
             </thead>
             <tbody>
-            <tr ng-repeat="snapshot in snapshots">
+            <tr ng-repeat="snapshot in vm.snapshots">
                 <td>{{snapshot.snapshot}}</td>
                 <td>{{snapshot.indices}}</td>
                 <td>{{snapshot.start_time}}</td>
                 <td>{{snapshot.end_time}}</td>
                 <td nowrap>
-                    <button confirmed-click="removeSnapshot(snapshot.snapshot)"
+                    <button confirmed-click="vm.removeSnapshot(snapshot.snapshot)"
                             ng-confirm-click="Do you want to remove the snapshot {{snapshot.snapshot}}"
                             class="btn btn-link" title="Remove snapshot"><span class=" glyphicon glyphicon-trash"></span></button>
-                    <button confirmed-click="restoreSnapshot(snapshot.snapshot)"
+                    <button confirmed-click="vm.restoreSnapshot(snapshot.snapshot)"
                             ng-confirm-click="Do you want to restore the snapshot {{snapshot.snapshot}}"
                             class="btn btn-link" title="Restore snapshot"><span class=" glyphicon glyphicon-repeat"></span></button>
                 </td>
@@ -83,10 +83,10 @@
             </tbody>
         </table>
 
-        <div ng-show="snapshotsStatus">
-            <div ng-repeat="snapshot in snapshots">
+        <div ng-show="vm.snapshotsStatus">
+            <div ng-repeat="snapshot in vm.snapshots">
                 <h3>{{snapshot.snapshot}} ({{snapshot.state}})</h3>
-                <button confirmed-click="removeSnapshotFromRepository(snapshot.repository,snapshot.snapshot)"
+                <button confirmed-click="vm.removeSnapshotFromRepository(snapshot.repository,snapshot.snapshot)"
                         ng-confirm-click="Do you want to remove the snapshot {{snapshot.snapshot}}"
                         class="btn btn-default" title="Remove snapshot"><span class=" glyphicon glyphicon-trash"></span>Stop snapshot</button>
 

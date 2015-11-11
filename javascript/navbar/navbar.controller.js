@@ -60,6 +60,7 @@
                 backdropClick: true,
                 templateUrl: 'template/dialog/config.html',
                 controller: 'ConfigDialogCtrl',
+                controllerAs: 'confVm',
                 resolve: {fields: function () {
                     return angular.copy(configuration);
                 } }};

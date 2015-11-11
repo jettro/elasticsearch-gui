@@ -22,12 +22,13 @@
                 'guiapp.navbar',
                 'guiapp.search',
                 'guiapp.aggregatedialog',
-                'guiapp.snapshot'
+                'guiapp.snapshot',
+                'guiapp.nodeinfo'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         //$routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: 'DashboardCtrl'});
-        $routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
+        //$routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
         //$routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
         $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
@@ -64,6 +65,12 @@
 
     angular
         .module('guiapp.navbar', ['guiapp.services']);
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.nodeinfo', ['guiapp.services','ngRoute']);
 })();
 
 (function() {
@@ -964,14 +971,6 @@ angular.module('guiapp').controller('MonitoringCtrl',['$scope', 'elastic', '$int
     // TODO add stop function
 }]);
 
-angular.module('guiapp').controller('NodeInfoCtrl',['$scope', 'elastic', '$routeParams',
-function NodeInfoCtrl($scope, elastic, $routeParams) {
-    var nodeId = $routeParams.nodeId;
-    elastic.nodeInfo(nodeId, function (data) {
-        $scope.nodes = data;
-    });
-}]);
-
 angular.module('guiapp').controller('NotificationCtrl',['$scope', '$timeout',
 function ($scope, $timeout){
     $scope.alerts = {};
@@ -1836,6 +1835,48 @@ angular.module('guiapp.filters', []).
     'use strict';
 
     angular
+        .module('guiapp.nodeinfo')
+        .controller('NodeInfoCtrl', NodeInfoCtrl);
+
+    NodeInfoCtrl.$inject = ['elastic', '$routeParams'];
+
+    function NodeInfoCtrl(elastic, $routeParams) {
+        var vm = this;
+
+        var nodeId = $routeParams.nodeId;
+
+        activate();
+
+        function activate() {
+            elastic.nodeInfo(nodeId, function (data) {
+                console.log(data);
+                vm.nodes = data;
+            });
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.nodeinfo')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/node/:nodeId', {
+                templateUrl: '/partials/node.html',
+                controller: 'NodeInfoCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
+(function () {
+    'use strict';
+
+    angular
         .module('guiapp.search')
         .controller('SearchCtrl', SearchCtrl);
 
@@ -2332,10 +2373,6 @@ angular.module('guiapp.filters', []).
         vm.openCreateSnapshotRepository = openCreateSnapshotRepository;
 
         activate();
-        // TODO jettro: make sure to change this to activate or something
-        //$scope.$on('$viewContentLoaded', function () {
-        //    listRepositories();
-        //});
 
         $scope.$watch('vm.selectedRepository', function () {
             listSnapshots();

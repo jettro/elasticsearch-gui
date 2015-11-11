@@ -9,30 +9,18 @@
                 <thead></thead>
                 <tbody>
                     <tr>
-                        <th># Processors</th>
-                        <td>{{nodes.os.available_processors}}
-                    </tr>
-                    <tr>
-                        <th>CPU</th>
+                        <th>OS</th>
                         <td>
                             <table class="table table-condensed">
                                 <thead></thead>
                                 <tbody>
-                                    <tr ng-repeat="(key,value) in nodes.os.cpu track by $index">
-                                        <th>{{key}}</th>
-                                        <td>{{value}}</td>
-                                    </tr>
+                                <tr ng-repeat="(key,value) in vm.nodes.os track by $index">
+                                    <th>{{key}}</th>
+                                    <td>{{value}}</td>
+                                </tr>
                                 </tbody>
                             </table>
                         </td>
-                    </tr>
-                    <tr>
-                        <th>Total Memory</th>
-                        <td>{{nodes.os.mem.total}}
-                    </tr>
-                    <tr>
-                        <th>Swap Memory</th>
-                        <td>{{nodes.os.swap.total}}
                     </tr>
                     <tr>
                         <th>Process</th>
@@ -40,7 +28,7 @@
                             <table class="table table-condensed">
                                 <thead></thead>
                                 <tbody>
-                                    <tr ng-repeat="(key,value) in nodes.process">
+                                    <tr ng-repeat="(key,value) in vm.nodes.process">
                                         <th>{{key}}</th>
                                         <td>{{value}}</td>
                                     </tr>
@@ -56,25 +44,25 @@
                                 <tbody>
                                     <tr>
                                         <th>Java version</th>
-                                        <td>{{nodes.jvm.version}}</td>
+                                        <td>{{vm.nodes.jvm.version}}</td>
                                     </tr>
                                     <tr>
                                         <th>VM version</th>
-                                        <td>{{nodes.jvm.vm_version}}</td>
+                                        <td>{{vm.nodes.jvm.vm_version}}</td>
                                     </tr>
                                     <tr>
                                         <th>VM name</th>
-                                        <td>{{nodes.jvm.vm_name}}</td>
+                                        <td>{{vm.nodes.jvm.vm_name}}</td>
                                     </tr>
                                     <tr>
                                         <th>VM vendor</th>
-                                        <td>{{nodes.jvm.vm_vendor}}</td>
+                                        <td>{{vm.nodes.jvm.vm_vendor}}</td>
                                     </tr>
                                     <tr>
                                         <th>Memory</th>
                                         <td>
                                             <table class="table table-condensed">
-                                                <tr ng-repeat="(key,value) in nodes.jvm.mem track by $index">
+                                                <tr ng-repeat="(key,value) in vm.nodes.jvm.mem track by $index">
                                                     <th>{{key}}</th>
                                                     <td>{{value}}</td>
                                                 </tr>

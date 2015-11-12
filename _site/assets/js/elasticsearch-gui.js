@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-11
+/*! elasticsearch-gui - v2.0.0 - 2015-11-12
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function() {
@@ -23,20 +23,16 @@
                 'guiapp.search',
                 'guiapp.aggregatedialog',
                 'guiapp.snapshot',
-                'guiapp.nodeinfo'
+                'guiapp.nodeinfo',
+                'guiapp.graph'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
-        //$routeProvider.when('/dashboard', {templateUrl: 'partials/dashboard.html', controller: 'DashboardCtrl'});
-        //$routeProvider.when('/node/:nodeId', {templateUrl: 'partials/node.html', controller: 'NodeInfoCtrl'});
-        //$routeProvider.when('/search', {templateUrl: 'partials/search.html', controller: 'SearchCtrl'});
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
         $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
         $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
-        $routeProvider.when('/graph', {templateUrl: 'partials/graph.html', controller: 'GraphCtrl'});
         $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
         $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
-        //$routeProvider.when('/tools/snapshots', {templateUrl: 'partials/snapshots.html', controller: 'SnapshotsCtrl'});
         $routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
@@ -58,6 +54,12 @@
     'use strict';
     angular
         .module('guiapp.dashboard', ['guiapp.services','ngRoute']);
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.graph', ['guiapp.services','ngRoute','guiapp.aggregatedialog']);
 })();
 
 (function() {
@@ -774,102 +776,6 @@
         }
     }
 })();
-angular.module('guiapp').controller('GraphCtrl',['$scope', '$modal', 'elastic', 'aggregateBuilder',
-function ($scope, $modal, elastic, aggregateBuilder) {
-    $scope.indices = [];
-    $scope.types = [];
-    $scope.fields = [];
-    $scope.results = [];
-    $scope.columns = [];
-
-    /* Functions to retrieve values used to created the query */
-    $scope.loadIndices = function () {
-        elastic.indexes(function (data) {
-            $scope.indices = data;
-        });
-    };
-
-    $scope.loadTypes = function () {
-        elastic.types([], function (data) {
-            $scope.types = data;
-        });
-    };
-
-    $scope.loadFields = function () {
-        elastic.fields([], [], function (data) {
-            $scope.fields = data;
-        });
-    };
-
-    $scope.openDialog = function () {
-        var opts = {
-            backdrop: true,
-            keyboard: true,
-            backdropClick: true,
-            templateUrl: 'template/dialog/aggregate.html',
-            controller: 'AggregateDialogCtrl',
-            resolve: {fields: function () {
-                return angular.copy($scope.fields)
-            } }};
-        var d = $modal.open(opts);
-        d.result.then(function (result) {
-            if (result) {
-                $scope.aggregate = result;
-                $scope.executeQuery();
-            }
-        });
-    };
-
-    $scope.executeQuery = function () {
-        var query = createQuery();
-
-        elastic.doSearch(query, function (results) {
-            if ($scope.aggregate.aggsType === "term") {
-                $scope.columns = [];
-                var result = {};
-                angular.forEach(results.aggregations[$scope.aggregate.name].buckets, function (bucket) {
-                    $scope.columns.push({"id": bucket.key, "type": "pie", "name": bucket.key + "[" + bucket.doc_count + "]"});
-                    result[bucket.key] = bucket.doc_count;
-                });
-                $scope.results = [result];
-            } else if ($scope.aggregate.aggsType === "datehistogram") {
-                $scope.columns = [
-                    {"id": "doc_count", "type": "line", "name": "documents"}
-                ];
-                $scope.xaxis = {"id": "key"};
-                $scope.results = results.aggregations[$scope.aggregate.name].buckets;
-            } else {
-                $scope.columns = [
-                    {"id": "doc_count", "type": "bar", "name": "documents"}
-                ];
-                $scope.xaxis = {"id": "key"};
-                $scope.results = results.aggregations[$scope.aggregate.name].buckets;
-            }
-        }, function (errors) {
-            console.log(errors);
-        });
-
-
-    };
-
-    function createQuery() {
-        var query = {};
-        query.index = "";
-        query.body = {};
-        query.size = 0;
-        query.body.query = {"matchAll": {}};
-        var aggregations = [];
-        aggregations.push($scope.aggregate);
-        query.body.aggs = aggregateBuilder.build(aggregations);
-
-        return query;
-    }
-
-    $scope.loadIndices();
-    $scope.loadTypes();
-    $scope.loadFields();
-}]);
-
 angular.module('guiapp').controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
 function ($scope, $routeParams, $location, elastic) {
     $scope.inspect = {};
@@ -1480,6 +1386,7 @@ function WhereShardsCtrl($scope, $timeout, elastic) {
 })();
 (function () {
     'use strict';
+
     angular
         .module('guiapp.dashboard')
         .controller('DashboardCtrl', DashboardController);
@@ -1658,6 +1565,146 @@ angular.module('guiapp.filters', []).
       return String(text).replace(/\%VERSION\%/mg, version);
     }
   }]);
+
+(function () {
+    'use strict';
+
+    angular
+        .module('guiapp')
+        .controller('GraphCtrl', GraphCtrl);
+
+    GraphCtrl.$inject = ['$modal', 'elastic', 'aggregateBuilder'];
+
+    function GraphCtrl($modal, elastic, aggregateBuilder) {
+        var vm = this;
+        vm.indices = [];
+        vm.types = [];
+        vm.fields = [];
+        vm.results = [];
+        vm.columns = [];
+        //vm.aggregate;
+
+        vm.loadIndices = loadIndices;
+        vm.loadTypes = loadTypes();
+        vm.loadFields = loadFields;
+        vm.openDialog = openDialog;
+        vm.executeQuery = executeQuery;
+
+
+        activate();
+        function activate() {
+            loadIndices();
+            loadTypes();
+            loadFields();
+        }
+
+        function loadIndices() {
+            elastic.indexes(function (data) {
+                vm.indices = data;
+            });
+        }
+
+        function loadTypes() {
+            elastic.types([], function (data) {
+                vm.types = data;
+            });
+        }
+
+        function loadFields() {
+            elastic.fields([], [], function (data) {
+                vm.fields = data;
+            });
+        }
+
+        function openDialog() {
+            var opts = {
+                backdrop: true,
+                keyboard: true,
+                backdropClick: true,
+                templateUrl: 'template/dialog/aggregate.html',
+                controller: 'AggregateDialogCtrl',
+                controllerAs: 'adVm',
+                resolve: {
+                    fields: function () {
+                        return angular.copy(vm.fields)
+                    }
+                }
+            };
+            var d = $modal.open(opts);
+            d.result.then(function (result) {
+                if (result) {
+                    vm.aggregate = result;
+                    executeQuery();
+                }
+            });
+        }
+
+        function executeQuery() {
+            var query = createQuery();
+
+            elastic.doSearch(query, function (results) {
+                if (vm.aggregate.aggsType === "term") {
+                    vm.columns = [];
+                    var result = {};
+                    angular.forEach(results.aggregations[vm.aggregate.name].buckets, function (bucket) {
+                        vm.columns.push({
+                            "id": bucket.key,
+                            "type": "pie",
+                            "name": bucket.key + "[" + bucket.doc_count + "]"
+                        });
+                        result[bucket.key] = bucket.doc_count;
+                    });
+                    vm.results = [result];
+                } else if (vm.aggregate.aggsType === "datehistogram") {
+                    vm.columns = [
+                        {"id": "doc_count", "type": "line", "name": "documents"}
+                    ];
+                    vm.xaxis = {"id": "key"};
+                    vm.results = results.aggregations[vm.aggregate.name].buckets;
+                } else {
+                    vm.columns = [
+                        {"id": "doc_count", "type": "bar", "name": "documents"}
+                    ];
+                    vm.xaxis = {"id": "key"};
+                    vm.results = results.aggregations[vm.aggregate.name].buckets;
+                }
+            }, function (errors) {
+                console.log(errors);
+            });
+        }
+
+        function createQuery() {
+            var query = {};
+            query.index = "";
+            query.body = {};
+            query.size = 0;
+            query.body.query = {"matchAll": {}};
+            var aggregations = [];
+            aggregations.push(vm.aggregate);
+            query.body.aggs = aggregateBuilder.build(aggregations);
+
+            return query;
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.graph')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/graph', {
+                templateUrl: '/partials/graph.html',
+                controller: 'GraphCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
 
 (function () {
     'use strict';
@@ -1849,7 +1896,6 @@ angular.module('guiapp.filters', []).
 
         function activate() {
             elastic.nodeInfo(nodeId, function (data) {
-                console.log(data);
                 vm.nodes = data;
             });
         }

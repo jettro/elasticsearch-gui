@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-12
+/*! elasticsearch-gui - v2.0.0 - 2015-11-14
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function() {
@@ -24,13 +24,14 @@
                 'guiapp.aggregatedialog',
                 'guiapp.snapshot',
                 'guiapp.nodeinfo',
-                'guiapp.graph'
+                'guiapp.graph',
+                'guiapp.inspect'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
         $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
-        $routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
+        //$routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
         $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
         $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
         $routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
@@ -60,6 +61,12 @@
     'use strict';
     angular
         .module('guiapp.graph', ['guiapp.services','ngRoute','guiapp.aggregatedialog']);
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.inspect', ['guiapp.services','ngRoute']);
 })();
 
 (function() {
@@ -240,7 +247,8 @@
             restoreSnapshot: restoreSnapshot,
             createSnapshot: createSnapshot,
             doSearch: doSearch,
-            suggest: suggest
+            suggest: suggest,
+            getDocument: getDocument
         };
 
         // just to initialize the indices
@@ -550,6 +558,18 @@
             });
         }
 
+        function getDocument (index,type,id, resultCallback, errorCallback) {
+            es.get({
+                index: index,
+                type: type,
+                id: id
+            }).then(function(document) {
+                resultCallback(document);
+            }, function(errors) {
+                errorCallback(errors);
+            });
+        }
+
         function suggest (suggestRequest, resultCallback) {
             var suggest = {};
             suggest.index = suggestRequest.index;
@@ -776,61 +796,6 @@
         }
     }
 })();
-angular.module('guiapp').controller('InspectCtrl',['$scope', '$routeParams', '$location', 'elastic',
-function ($scope, $routeParams, $location, elastic) {
-    $scope.inspect = {};
-    $scope.inspect.index = '';
-    $scope.inspect.id = '';
-
-    $scope.sourcedata = {};
-    $scope.sourcedata.indices = [];
-
-    if ($routeParams.id && $routeParams.index) {
-        $scope.inspect.id = $routeParams.id;
-        
-        var query = {
-            "index": $routeParams.index,
-            "body": {
-                "query": {
-                    "match": {
-                        "_id": $routeParams.id
-                    }
-                }
-            },
-            "size": 1
-        };
-
-        elastic.doSearch(query, function(result) {
-            $scope.result = result.hits.hits[0];
-        }, function(errors) {
-            $scope.metaResults.failedShards = 1;
-            $scope.metaResults.errors = [];
-            $scope.metaResults.errors.push(errors.error);
-        });
-    }
-
-    $scope.doInspect = function () {
-        $location.path("/inspect/" + $scope.inspect.index.name + "/" + $scope.inspect.id);
-    };
-
-    $scope.loadIndices = function () {
-        elastic.indexes(function (data) {
-            if (data) {
-                for (var i = 0; i < data.length; i++) {
-                    $scope.sourcedata.indices[i] = {"name": data[i]};
-                    if ($routeParams.index && $routeParams.index == data[i]) {
-                        $scope.inspect.index = $scope.sourcedata.indices[i];
-                    }
-                }
-            } else {
-                $scope.sourcedata.indices = [];
-            }
-        });
-    };
-
-    $scope.loadIndices();
-}]);
-
 angular.module('guiapp').controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
     function ($scope, elastic, $interval) {
     $scope.dataNodes=[];
@@ -1706,6 +1671,111 @@ angular.module('guiapp.filters', []).
     }
 })();
 
+(function () {
+    'use strict';
+
+
+    angular
+        .module('guiapp.inspect')
+        .controller('InspectCtrl', InspectCtrl);
+
+    InspectCtrl.$inject = ['$scope','$routeParams', '$location', 'elastic'];
+
+    function InspectCtrl($scope, $routeParams, $location, elastic) {
+        var vm = this;
+        vm.inspect = {};
+        vm.inspect.index = '';
+        vm.inspect.type = '';
+        vm.inspect.id = '';
+
+        vm.sourcedata = {};
+        vm.sourcedata.indices = [];
+        vm.sourcedata.types = [];
+
+        vm.doInspect = doInspect;
+        vm.loadIndices = loadIndices;
+
+        activate();
+
+        function activate() {
+            if ($routeParams.id && $routeParams.type && $routeParams.index) {
+                vm.inspect.id = $routeParams.id;
+
+                elastic.getDocument($routeParams.index,$routeParams.type,$routeParams.id, function (result) {
+                    console.log(result);
+                    vm.result = result;
+                }, function (errors) {
+                    vm.metaResults = {};
+                    vm.metaResults.failedShards = 1;
+                    vm.metaResults.errors = [];
+                    vm.metaResults.errors.push(errors.error);
+                });
+            }
+
+            loadIndices();
+
+            $scope.$watch('vm.inspect.index', function () {
+                loadTypes();
+            });
+
+        }
+
+        function doInspect() {
+            $location.path("/inspect/" +
+                vm.inspect.index.name +
+                "/" + vm.inspect.type.name +
+                "/" + vm.inspect.id);
+        }
+
+        function loadIndices() {
+            elastic.indexes(function (data) {
+                if (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        vm.sourcedata.indices[i] = {"name": data[i]};
+                        if ($routeParams.index && $routeParams.index == data[i]) {
+                            vm.inspect.index = vm.sourcedata.indices[i];
+                        }
+                    }
+                } else {
+                    vm.sourcedata.indices = [];
+                }
+            });
+        }
+
+        function loadTypes() {
+            elastic.types(vm.inspect.index, function (data) {
+                if (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        vm.sourcedata.types[i] = {"name": data[i]};
+                        if ($routeParams.type && $routeParams.type == data[i]) {
+                            vm.inspect.type = vm.sourcedata.types[i];
+                        }
+                    }
+                } else {
+                    vm.sourcedata.types = [];
+                }
+            });
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.inspect')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/inspect/:index/:type/:id', {
+                templateUrl: '/partials/inspect.html',
+                controller: 'InspectCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
 (function () {
     'use strict';
 

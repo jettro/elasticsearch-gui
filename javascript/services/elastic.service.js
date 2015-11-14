@@ -38,7 +38,8 @@
             restoreSnapshot: restoreSnapshot,
             createSnapshot: createSnapshot,
             doSearch: doSearch,
-            suggest: suggest
+            suggest: suggest,
+            getDocument: getDocument
         };
 
         // just to initialize the indices
@@ -345,6 +346,18 @@
                 resultCallback(results)
             }, function (errors) {
                 errorCallback(errors)
+            });
+        }
+
+        function getDocument (index,type,id, resultCallback, errorCallback) {
+            es.get({
+                index: index,
+                type: type,
+                id: id
+            }).then(function(document) {
+                resultCallback(document);
+            }, function(errors) {
+                errorCallback(errors);
             });
         }
 

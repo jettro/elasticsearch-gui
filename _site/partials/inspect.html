@@ -15,25 +15,33 @@
 			    <div class="col-md-3">
 			        <div class="form-group">
 			            <label>Index</label>
-		                <select class="form-control" ng-model="inspect.index" ng-options="index.name for index in sourcedata.indices">
+		                <select class="form-control" ng-model="vm.inspect.index" ng-options="index.name for index in vm.sourcedata.indices">
 			                <option value="">-- chose field --</option>
 		    	        </select>
 			        </div>
 			    </div>
-                <div class="col-md-9">
+			    <div class="col-md-3">
+			        <div class="form-group">
+			            <label>Type</label>
+		                <select class="form-control" ng-model="vm.inspect.type" ng-options="type.name for type in vm.sourcedata.types">
+			                <option value="">-- chose field --</option>
+		    	        </select>
+			        </div>
+			    </div>
+                <div class="col-md-6">
 			        <div class="form-group">
 			            <label>Object id</label>
-			            <input type="text" class="form-control" ng-model="inspect.id"/>
+			            <input type="text" class="form-control" ng-model="vm.inspect.id"/>
 			        </div>
 			    </div>
 			</div>
 			<div class="row">			    
 			    <div class="col-md-12 text-right">
-			        <button ng-click="doInspect()" ng-disabled="!(inspect.index&&inspect.id)" class="btn btn-primary">Inspect</button>
+			        <button ng-click="vm.doInspect()" ng-disabled="!(vm.inspect.index&&vm.inspect.id)" class="btn btn-primary">Inspect</button>
 			    </div>
 		    </div>
 		</form>
-		<div ng-show="result">
+		<div ng-show="vm.result">
 			<div class="row">
 				<div class="col-md-12">
 					<hr>
@@ -47,23 +55,23 @@
 			</div>
 			<div class="row">
 				<div class="col-md-3">_id</div>
-				<div class="col-md-9">{{result._id}}</div>
+				<div class="col-md-9">{{vm.result._id}}</div>
 			</div>
 			<div class="row">
 				<div class="col-md-3">_type</div>
-				<div class="col-md-9">{{result._type}}</div>
+				<div class="col-md-9">{{vm.result._type}}</div>
 			</div>
-			<div class="row" ng-repeat="(key, value) in result._source">
+			<div class="row" ng-repeat="(key, value) in vm.result._source">
 				<div class="col-md-3">{{key}}</div>
 				<div class="col-md-9">{{value}}</div>
 			</div>
 		</div>
 		
-		<div class="row" ng-show="metaResults.failedShards">
+		<div class="row" ng-show="vm.metaResults.failedShards">
 		    <div class="col-md-12">
 		        <h3>Errors</h3>
 		
-		        <div class="alert alert-danger" ng-repeat="error in metaResults.errors">
+		        <div class="alert alert-danger" ng-repeat="error in vm.metaResults.errors">
 		            {{error}}
 		        </div>
 		    </div>

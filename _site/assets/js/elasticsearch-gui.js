@@ -25,7 +25,8 @@
                 'guiapp.snapshot',
                 'guiapp.nodeinfo',
                 'guiapp.graph',
-                'guiapp.inspect'
+                'guiapp.inspect',
+                'guiapp.monitoring'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
@@ -34,7 +35,7 @@
         //$routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
         $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
         $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
-        $routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
+        //$routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
     }]);
@@ -67,6 +68,12 @@
     'use strict';
     angular
         .module('guiapp.inspect', ['guiapp.services','ngRoute']);
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.monitoring', ['guiapp.services','ngRoute']);
 })();
 
 (function() {
@@ -796,52 +803,6 @@
         }
     }
 })();
-angular.module('guiapp').controller('MonitoringCtrl',['$scope', 'elastic', '$interval',
-    function ($scope, elastic, $interval) {
-    $scope.dataNodes=[];
-    $scope.columnsNodes=[{"id":"num-nodes","type":"line","name":"Number of nodes"}];
-    $scope.datax={"id":"x"};
-
-    $scope.dataShards=[];
-    $scope.columnsShards=[{"id":"num-shards-primary","type":"line","name":"Primary"},
-        {"id":"num-shards-active","type":"line","name":"Active"},
-        {"id":"num-shards-relocating","type":"line","name":"Relocating"},
-        {"id":"num-shards-initializing","type":"line","name":"Initializing"},
-        {"id":"num-shards-unassigned","type":"line","name":"Unassigned"}];
-    $scope.dataxShards={"id":"xShards"};
-
-    $scope.numPoints=10;
-    $scope.lengthDelay=5000;
-
-    var timerLoadNodes;
-    $scope.loadNodes = function () {
-        timerLoadNodes = $interval(function(){
-            elastic.clusterNodes(function(data){
-                if ($scope.dataNodes.length >= $scope.numPoints) {
-                    $scope.dataNodes = $scope.dataNodes.splice(1,$scope.numPoints);
-                }
-                $scope.dataNodes.push({"x":new Date(),"num-nodes":Object.keys(data).length});
-            });
-
-            elastic.clusterHealth(function (data) {
-                if ($scope.dataShards.length >= $scope.numPoints) {
-                    $scope.dataShards = $scope.dataShards.splice(1,$scope.numPoints);
-                }
-                $scope.dataShards.push({"xShards":new Date(),
-                    "num-shards-primary":data.active_primary_shards,
-                    "num-shards-active":data.active_shards,
-                    "num-shards-relocating":data.relocating_shards,
-                    "num-shards-initializing":data.initializing_shards,
-                    "num-shards-unassigned":data.unassigned_shards});
-            });
-
-        },$scope.lengthDelay);
-    };
-
-    $scope.loadNodes();
-    // TODO add stop function
-}]);
-
 angular.module('guiapp').controller('NotificationCtrl',['$scope', '$timeout',
 function ($scope, $timeout){
     $scope.alerts = {};
@@ -1702,7 +1663,6 @@ angular.module('guiapp.filters', []).
                 vm.inspect.id = $routeParams.id;
 
                 elastic.getDocument($routeParams.index,$routeParams.type,$routeParams.id, function (result) {
-                    console.log(result);
                     vm.result = result;
                 }, function (errors) {
                     vm.metaResults = {};
@@ -1772,6 +1732,80 @@ angular.module('guiapp.filters', []).
             .when('/inspect/:index/:type/:id', {
                 templateUrl: '/partials/inspect.html',
                 controller: 'InspectCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
+(function() {
+    'use strict';
+
+    angular.module('guiapp.monitoring')
+        .controller('MonitoringCtrl', MonitoringCtrl);
+
+    MonitoringCtrl.$inject = ['elastic', '$interval'];
+
+    function MonitoringCtrl(elastic, $interval) {
+        var vm = this;
+        vm.dataNodes = [];
+        vm.columnsNodes = [{"id": "num-nodes", "type": "line", "name": "Number of nodes"}];
+        vm.datax = {"id": "x"};
+
+        vm.dataShards = [];
+        vm.columnsShards = [{"id": "num-shards-primary", "type": "line", "name": "Primary"},
+            {"id": "num-shards-active", "type": "line", "name": "Active"},
+            {"id": "num-shards-relocating", "type": "line", "name": "Relocating"},
+            {"id": "num-shards-initializing", "type": "line", "name": "Initializing"},
+            {"id": "num-shards-unassigned", "type": "line", "name": "Unassigned"}];
+        vm.dataxShards = {"id": "xShards"};
+
+        vm.numPoints = 10;
+        vm.lengthDelay = 5000;
+
+        var timerLoadNodes;
+        vm.loadNodes = function () {
+            timerLoadNodes = $interval(function () {
+                elastic.clusterNodes(function (data) {
+                    if (vm.dataNodes.length >= vm.numPoints) {
+                        vm.dataNodes = vm.dataNodes.splice(1, vm.numPoints);
+                    }
+                    vm.dataNodes.push({"x": new Date(), "num-nodes": Object.keys(data).length});
+                });
+
+                elastic.clusterHealth(function (data) {
+                    if (vm.dataShards.length >= vm.numPoints) {
+                        vm.dataShards = vm.dataShards.splice(1, vm.numPoints);
+                    }
+                    vm.dataShards.push({
+                        "xShards": new Date(),
+                        "num-shards-primary": data.active_primary_shards,
+                        "num-shards-active": data.active_shards,
+                        "num-shards-relocating": data.relocating_shards,
+                        "num-shards-initializing": data.initializing_shards,
+                        "num-shards-unassigned": data.unassigned_shards
+                    });
+                });
+
+            }, vm.lengthDelay);
+        };
+
+        vm.loadNodes();
+        // TODO add stop function
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.monitoring')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/tools/monitoring', {
+                templateUrl: '/partials/monitoring.html',
+                controller: 'MonitoringCtrl',
                 controllerAs: 'vm'
             });
     }

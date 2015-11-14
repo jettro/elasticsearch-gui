@@ -15,7 +15,7 @@
                 <div class="panel-body">
                     <!-- TODO show only positive values in y-axis, maybe remove x-axis -->
                     <!-- TODO make it so we have only whole numbers -->
-                    <c3chart bindto-id="chart-nodes" chart-data="dataNodes" chart-columns="columnsNodes" chart-x="datax">
+                    <c3chart bindto-id="chart-nodes" chart-data="vm.dataNodes" chart-columns="vm.columnsNodes" chart-x="vm.datax">
                         <chart-axis>
                             <chart-axis-x axis-id="x" axis-type="timeseries">
                                 <chart-axis-x-tick tick-format="%S"/>
@@ -35,7 +35,7 @@
                 <div class="panel-body">
                     <!-- TODO show only positive values in y-axis, maybe remove x-axis -->
                     <!-- TODO make it so we have only whole numbers -->
-                    <c3chart bindto-id="chart-shards" chart-data="dataShards" chart-columns="columnsShards" chart-x="dataxShards">
+                    <c3chart bindto-id="chart-shards" chart-data="vm.dataShards" chart-columns="vm.columnsShards" chart-x="vm.dataxShards">
                         <chart-axis>
                             <chart-axis-x axis-id="xShards" axis-type="timeseries">
                                 <chart-axis-x-tick tick-format="%S"/>

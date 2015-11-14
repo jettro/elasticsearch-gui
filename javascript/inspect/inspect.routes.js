@@ -12,6 +12,11 @@
                 templateUrl: '/partials/inspect.html',
                 controller: 'InspectCtrl',
                 controllerAs: 'vm'
+            })
+            .when('/inspect', {
+                templateUrl: '/partials/inspect.html',
+                controller: 'InspectCtrl',
+                controllerAs: 'vm'
             });
     }
 })();

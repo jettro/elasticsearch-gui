@@ -4,9 +4,9 @@
         .module('guiapp.services')
         .factory('elastic', ElasticService);
 
-    ElasticService.$inject = ['esFactory', 'configuration', '$rootScope'];
+    ElasticService.$inject = ['esFactory', 'configuration', '$rootScope', '$log'];
 
-    function ElasticService(esFactory, configuration, $rootScope) {
+    function ElasticService(esFactory, configuration, $rootScope, $log) {
         var serverUrl = configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
@@ -419,11 +419,10 @@
         }
 
         function logErrors(errors) {
-            console.log(errors);
+            $log.error(errors);
         }
 
         function broadcastError(error) {
-            console.log("Broadcasting");
             $rootScope.$broadcast('msg:notification', 'error', error.message);
         }
     }

@@ -5,9 +5,9 @@
         .module('guiapp')
         .controller('GraphCtrl', GraphCtrl);
 
-    GraphCtrl.$inject = ['$modal', 'elastic', 'aggregateBuilder'];
+    GraphCtrl.$inject = ['$modal', 'elastic', 'aggregateBuilder', '$log'];
 
-    function GraphCtrl($modal, elastic, aggregateBuilder) {
+    function GraphCtrl($modal, elastic, aggregateBuilder, $log) {
         var vm = this;
         vm.indices = [];
         vm.types = [];
@@ -101,7 +101,7 @@
                     vm.results = results.aggregations[vm.aggregate.name].buckets;
                 }
             }, function (errors) {
-                console.log(errors);
+                $log.error(errors);
             });
         }
 

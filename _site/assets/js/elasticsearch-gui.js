@@ -27,12 +27,12 @@
                 'guiapp.graph',
                 'guiapp.inspect',
                 'guiapp.monitoring',
-                'guiapp.notification'
+                'guiapp.notification',
+                'guiapp.suggestion'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
-        $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
         $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
@@ -111,6 +111,12 @@
     'use strict';
     angular
         .module('guiapp.snapshot', ['guiapp.services','ngRoute']);
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.suggestion', ['guiapp.services','ngRoute']);
 })();
 
 (function () {
@@ -225,9 +231,9 @@
         .module('guiapp.services')
         .factory('elastic', ElasticService);
 
-    ElasticService.$inject = ['esFactory', 'configuration', '$rootScope'];
+    ElasticService.$inject = ['esFactory', 'configuration', '$rootScope', '$log'];
 
-    function ElasticService(esFactory, configuration, $rootScope) {
+    function ElasticService(esFactory, configuration, $rootScope, $log) {
         var serverUrl = configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
@@ -640,11 +646,10 @@
         }
 
         function logErrors(errors) {
-            console.log(errors);
+            $log.error(errors);
         }
 
         function broadcastError(error) {
-            console.log("Broadcasting");
             $rootScope.$broadcast('msg:notification', 'error', error.message);
         }
     }
@@ -1178,69 +1183,6 @@ function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.resetQuery();
 }]);
 
-angular.module('guiapp').controller('SuggestionsCtrl',['$scope', 'elastic',
-function ($scope, elastic) {
-    $scope.suggest = {};
-    $scope.suggest.index = '';
-    $scope.suggest.field = '';
-    $scope.suggest.query = '';
-    $scope.suggest.min_word_length = 3;
-    $scope.suggest.prefix_length = 1;
-
-    $scope.sourcedata = {};
-    $scope.sourcedata.indices = [];
-    $scope.sourcedata.fields = [];
-
-    $scope.results = {};
-
-    $scope.unbind = {};
-    $scope.unbind.indicesScope = function () {
-    };
-
-    $scope.doSuggest = function () {
-        var request = {};
-        request.index = $scope.suggest.index.name;
-        request.field = $scope.suggest.field;
-        request.query = $scope.suggest.query;
-        request.min_word_length = $scope.suggest.min_word_length;
-        request.prefix_length = $scope.suggest.prefix_length;
-
-        elastic.suggest(request, function (result) {
-            $scope.results = result;
-        });
-    };
-
-    $scope.loadIndices = function () {
-        $scope.unbind.indicesScope();
-        elastic.indexes(function (data) {
-            if (data) {
-                for (var i = 0; i < data.length; i++) {
-                    $scope.sourcedata.indices[i] = {"name": data[i]};
-                }
-                $scope.unbind.indicesScope = $scope.$watch('suggest.index', $scope.loadFields, true);
-            } else {
-                $scope.sourcedata.indices = [];
-                $scope.sourcedata.fields = [];
-            }
-        });
-    };
-
-    $scope.loadFields = function () {
-        var selectedIndices = [];
-        if ($scope.suggest.index) {
-            selectedIndices.push($scope.suggest.index.name);
-        }
-
-        var selectedTypes = [];
-
-        elastic.fields(selectedIndices, selectedTypes, function (data) {
-            $scope.sourcedata.fields = data;
-        });
-    };
-
-    $scope.loadIndices();
-}]);
-
 angular.module('guiapp').controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
 function WhereShardsCtrl($scope, $timeout, elastic) {
     $scope.shardsInfo = {};
@@ -1470,8 +1412,6 @@ angular.module('guiapp.directives', []).
                 cause: cause
             };
 
-            console.log("ERROR");
-
             $log.error(exception.msg);
         };
     }
@@ -1494,9 +1434,9 @@ angular.module('guiapp.filters', []).
         .module('guiapp')
         .controller('GraphCtrl', GraphCtrl);
 
-    GraphCtrl.$inject = ['$modal', 'elastic', 'aggregateBuilder'];
+    GraphCtrl.$inject = ['$modal', 'elastic', 'aggregateBuilder', '$log'];
 
-    function GraphCtrl($modal, elastic, aggregateBuilder) {
+    function GraphCtrl($modal, elastic, aggregateBuilder, $log) {
         var vm = this;
         vm.indices = [];
         vm.types = [];
@@ -1590,7 +1530,7 @@ angular.module('guiapp.filters', []).
                     vm.results = results.aggregations[vm.aggregate.name].buckets;
                 }
             }, function (errors) {
-                console.log(errors);
+                $log.error(errors);
             });
         }
 
@@ -1725,6 +1665,11 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/inspect/:index/:type/:id', {
+                templateUrl: '/partials/inspect.html',
+                controller: 'InspectCtrl',
+                controllerAs: 'vm'
+            })
+            .when('/inspect', {
                 templateUrl: '/partials/inspect.html',
                 controller: 'InspectCtrl',
                 controllerAs: 'vm'
@@ -2032,10 +1977,8 @@ angular.module('guiapp.filters', []).
 
         $rootScope.$on('msg:notification', notify);
 
-        console.log("NOTIFY THINGY");
 
         function notify (event, type, message) {
-            console.log("NOTIFY method");
             var id = Math.random().toString(36).substring(2, 5);
             vm.alerts[id] = {type: type, message: message};
 
@@ -2699,6 +2642,104 @@ angular.module('guiapp.filters', []).
             .when('/tools/snapshots', {
                 templateUrl: '/partials/snapshots.html',
                 controller: 'SnapshotCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
+(function () {
+    'use strict';
+
+    angular.module('guiapp.suggestion')
+        .controller('SuggestionCtrl', SuggestionCtrl);
+
+    SuggestionCtrl.$inject = ['$scope', 'elastic'];
+
+    function SuggestionCtrl($scope, elastic) {
+        var vm = this;
+
+        vm.suggest = {};
+        vm.suggest.index = '';
+        vm.suggest.field = '';
+        vm.suggest.query = '';
+        vm.suggest.min_word_length = 3;
+        vm.suggest.prefix_length = 1;
+
+        vm.sourcedata = {};
+        vm.sourcedata.indices = [];
+        vm.sourcedata.fields = [];
+
+        vm.results = {};
+
+        vm.unbind = {};
+        vm.unbind.indicesScope = function () {};
+
+        vm.doSuggest = doSuggest;
+        vm.loadIndices = loadIndices;
+        vm.loadFields = loadFields;
+
+        activate();
+
+        function activate() {
+            loadIndices();
+        }
+
+        function doSuggest () {
+            var request = {
+                index: vm.suggest.index.name,
+                field: vm.suggest.field,
+                query: vm.suggest.query,
+                min_word_length: vm.suggest.min_word_length,
+                prefix_length: vm.suggest.prefix_length
+            };
+
+            elastic.suggest(request, function (result) {
+                vm.results = result;
+            });
+        }
+
+        function loadIndices () {
+            vm.unbind.indicesScope();
+            elastic.indexes(function (data) {
+                if (data) {
+                    for (var i = 0; i < data.length; i++) {
+                        vm.sourcedata.indices[i] = {"name": data[i]};
+                    }
+                    vm.unbind.indicesScope = $scope.$watch('vm.suggest.index', vm.loadFields, true);
+                } else {
+                    vm.sourcedata.indices = [];
+                    vm.sourcedata.fields = [];
+                }
+            });
+        }
+
+        function loadFields() {
+            var selectedIndices = [];
+            if (vm.suggest.index) {
+                selectedIndices.push(vm.suggest.index.name);
+            }
+
+            var selectedTypes = [];
+
+            elastic.fields(selectedIndices, selectedTypes, function (data) {
+                vm.sourcedata.fields = data;
+            });
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.suggestion')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/tools/suggestions', {
+                templateUrl: '/partials/suggestions.html',
+                controller: 'SuggestionCtrl',
                 controllerAs: 'vm'
             });
     }

@@ -21,6 +21,8 @@
                 cause: cause
             };
 
+            console.log("ERROR");
+
             $log.error(exception.msg);
         };
     }

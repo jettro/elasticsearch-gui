@@ -59,6 +59,7 @@
                 var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
                 callback(msg, statussus[data.status]);
             }, function (reason) {
+                broadcastError(reason);
                 callback("No connection", "error");
             });
         }
@@ -422,6 +423,7 @@
         }
 
         function broadcastError(error) {
+            console.log("Broadcasting");
             $rootScope.$broadcast('msg:notification', 'error', error.message);
         }
     }

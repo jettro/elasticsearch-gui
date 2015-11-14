@@ -26,16 +26,14 @@
                 'guiapp.nodeinfo',
                 'guiapp.graph',
                 'guiapp.inspect',
-                'guiapp.monitoring'
+                'guiapp.monitoring',
+                'guiapp.notification'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
-        $routeProvider.when('/inspect', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
-        //$routeProvider.when('/inspect/:index/:id', {templateUrl: 'partials/inspect.html', controller: 'InspectCtrl'});
         $routeProvider.when('/tools/suggestions', {templateUrl: 'partials/suggestions.html', controller: 'SuggestionsCtrl'});
         $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
-        //$routeProvider.when('/tools/monitoring', {templateUrl: 'partials/monitoring.html', controller: 'MonitoringCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
     }]);
@@ -87,6 +85,13 @@
     'use strict';
     angular
         .module('guiapp.nodeinfo', ['guiapp.services','ngRoute']);
+})();
+
+(function() {
+    'use strict';
+
+    angular
+        .module('guiapp.notification', []);
 })();
 
 (function() {
@@ -275,6 +280,7 @@
                 var msg = data.cluster_name + " [nodes: " + data.number_of_nodes + ", clients: " + numClients + "]";
                 callback(msg, statussus[data.status]);
             }, function (reason) {
+                broadcastError(reason);
                 callback("No connection", "error");
             });
         }
@@ -638,6 +644,7 @@
         }
 
         function broadcastError(error) {
+            console.log("Broadcasting");
             $rootScope.$broadcast('msg:notification', 'error', error.message);
         }
     }
@@ -803,20 +810,6 @@
         }
     }
 })();
-angular.module('guiapp').controller('NotificationCtrl',['$scope', '$timeout',
-function ($scope, $timeout){
-    $scope.alerts = {};
-
-    $scope.$on('msg:notification', function (event, type, message) {
-        var id = Math.random().toString(36).substring(2, 5);
-        $scope.alerts[id] = {"type": type, "message": message};
-
-        $timeout(function () {
-            delete $scope.alerts[id];
-        }, 10000);
-    });
-}]);
-
 angular.module('guiapp').controller('QueryCtrl',['$scope', '$modal', '$location', 'elastic', 'aggregateBuilder', 'queryStorage',
 function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     $scope.fields = [];
@@ -1477,6 +1470,8 @@ angular.module('guiapp.directives', []).
                 cause: cause
             };
 
+            console.log("ERROR");
+
             $log.error(exception.msg);
         };
     }
@@ -2022,6 +2017,55 @@ angular.module('guiapp.filters', []).
                 controllerAs: 'vm'
             });
     }
+})();
+(function () {
+    'use strict';
+
+    angular.module('guiapp.notification')
+        .controller('NotificationCtrl', NotificationCtrl);
+
+    NotificationCtrl.$inject = ['$rootScope', '$timeout'];
+
+    function NotificationCtrl($rootScope, $timeout) {
+        var vm = this;
+        vm.alerts = {};
+
+        $rootScope.$on('msg:notification', notify);
+
+        console.log("NOTIFY THINGY");
+
+        function notify (event, type, message) {
+            console.log("NOTIFY method");
+            var id = Math.random().toString(36).substring(2, 5);
+            vm.alerts[id] = {type: type, message: message};
+
+            $timeout(function () {
+                delete vm.alerts[id];
+            }, 10000);
+        }
+    }
+
+})();
+
+(function () {
+    'use strict';
+
+    angular.module('guiapp.notification')
+        .directive('guiappnotification', notificationDirective);
+
+    function notificationDirective() {
+        var directive = {
+            restrict: 'E',
+            transclude: true,
+            controller: 'NotificationCtrl',
+            controllerAs: 'vm',
+            templateUrl: 'template/notification/notification.html',
+            replace: true
+        };
+
+        return directive;
+    }
+
 })();
 (function () {
     'use strict';

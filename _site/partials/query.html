@@ -16,7 +16,7 @@
     </div>
     <div class="col-md-9">
         <div id="chooseIndexBtn" class="btn-group">
-            <button type="button" class="btn btn-xs btn-info" ng-model="index.state" ng-repeat="index in query.indices"
+            <button type="button" class="btn btn-xs btn-info" ng-model="index.state" ng-repeat="index in vm.query.indices"
                     btn-checkbox>{{index.name}}
             </button>
         </div>
@@ -31,7 +31,7 @@
     </div>
     <div class="col-md-9">
         <div id="chooseTypeBtn" class="btn-group">
-            <button type="button" class="btn btn-xs btn-info" ng-model="type.state" ng-repeat="type in query.types"
+            <button type="button" class="btn btn-xs btn-info" ng-model="type.state" ng-repeat="type in vm.query.types"
                     btn-checkbox>{{type.name}}
             </button>
         </div>
@@ -48,19 +48,19 @@
         </div>
         <div class="col-md-9">
             <div class="col-xs-4">
-                <select class="form-control input-sm" ng-model="queryFactory.addField"
-                        ng-options="key as value.forPrint for (key,value) in fields">
+                <select class="form-control input-sm" ng-model="vm.queryFactory.addField"
+                        ng-options="key as value.forPrint for (key,value) in vm.fields">
                     <option value="">-- chose field --</option>
                 </select>
             </div>
-            <button class="btn btn-info btn-sm" ng-click="addQueryField()" title="Add query Field">
+            <button class="btn btn-info btn-sm" ng-click="vm.addQueryField()" title="Add query Field">
                 <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
             </button>
-            <button class="btn btn-info btn-sm" ng-click="addAllQueryFields()">
+            <button class="btn btn-info btn-sm" ng-click="vm.addAllQueryFields()">
                 <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> all
             </button>
-            <span ng-repeat="field in query.chosenFields">{{field}}
-                <button class="btn btn-link btn-sm" ng-click="removeQueryField($index)" title="Remove query Field">
+            <span ng-repeat="field in vm.query.chosenFields">{{field}}
+                <button class="btn btn-link btn-sm" ng-click="vm.removeQueryField($index)" title="Remove query Field">
                     <span class="glyphicon glyphicon-remove"></span>
                 </button>
             </span>
@@ -77,11 +77,11 @@
 
     </div>
     <div class="col-md-9">
-        <button class="btn btn-info btn-sm" ng-click="openDialog()" title="Add new Aggregations">
+        <button class="btn btn-info btn-sm" ng-click="vm.openDialog()" title="Add new Aggregations">
             <span class="glyphicon glyphicon-plus-sign glyphicon-white"></span>
         </button>
-        <span ng-repeat="aggregation in query.aggs">{{aggregation.name}} ({{aggregation.aggsType}})
-            <button class="btn btn-sm btn-link" ng-click="removeAggregateField(aggregation.name)"
+        <span ng-repeat="aggregation in vm.query.aggs">{{aggregation.name}} ({{aggregation.aggsType}})
+            <button class="btn btn-sm btn-link" ng-click="vm.removeAggregateField(aggregation.name)"
                     title="Remove aggregation Field">
                 <span class="glyphicon glyphicon-remove"></span>
             </button>
@@ -89,7 +89,7 @@
     </div>
 </div>
 
-<form novalidate class="form-search" ng-submit="restartSearch()">
+<form novalidate class="form-search" ng-submit="vm.restartSearch()">
     <div class="row">
         <div class="col-md-2">
             <span class="text-info">Query config</span>
@@ -102,65 +102,65 @@
 
         </div>
         <div class="col-md-9">
-            <button class="btn btn-info btn-sm" ng-click="resetQuery()" title="Reset all choices"><span
+            <button class="btn btn-info btn-sm" ng-click="vm.resetQuery()" title="Reset all choices"><span
                     class="glyphicon glyphicon-refresh glyphicon-white"></span> Reset</button>
-            <button class="btn btn-info btn-sm" ng-click="saveQuery()"><span
+            <button class="btn btn-info btn-sm" ng-click="vm.saveQuery()"><span
                     class="glyphicon glyphicon-share glyphicon-white"></span> save
             </button>
-            <button class="btn btn-info btn-sm" ng-click="loadQuery()"><span
+            <button class="btn btn-info btn-sm" ng-click="vm.loadQuery()"><span
                     class="glyphicon glyphicon-download-alt glyphicon-white"></span> load
             </button>
             <span class="text-info">    Use explain:</span>
-            <label class="checkbox-inline"><input type="checkbox" ng-model="query.explain"/></label>
+            <label class="checkbox-inline"><input type="checkbox" ng-model="vm.query.explain"/></label>
             <span class="text-info">, Use highlighting:</span>
-            <label class="checkbox-inline"><input type="checkbox" ng-model="query.highlight"/></label>
+            <label class="checkbox-inline"><input type="checkbox" ng-model="vm.query.highlight"/></label>
             <span class="text-info">, Use multi search:</span>
-            <label class="checkbox-inline"><input class="checkbox" type="checkbox" ng-model="query.multiSearch"></label>
+            <label class="checkbox-inline"><input class="checkbox" type="checkbox" ng-model="vm.query.multiSearch"></label>
         </div>
     </div>
     <div class="row" style="padding-bottom: 5px">
-        <div class="col-md-12 alert alert-info" ng-hide="query.multiSearch">
+        <div class="col-md-12 alert alert-info" ng-hide="vm.query.multiSearch">
             <span class="col-md-2"><label>Search for:</label></span>
-            <span class="col-md-3"><input type="search" class="form-control" ng-model="query.term"
+            <span class="col-md-3"><input type="search" class="form-control" ng-model="vm.query.term"
                                           placeholder="Enter search term"/></span>
             <button type="submit" class="btn btn-primary" title="Execute query">Query <span
                     class="glyphicon glyphicon-search glyphicon-white"></span></button>
             <span class="text-info">Query Type</span>
             <label class="radio-inline">
-                <input type="radio" ng-model="query.type" value="or">OR
+                <input type="radio" ng-model="vm.query.type" value="or">OR
             </label>
             <label class="radio-inline">
-                <input type="radio" ng-model="query.type" value="and">AND
+                <input type="radio" ng-model="vm.query.type" value="and">AND
             </label>
             <label class="radio-inline">
-                <input type="radio" ng-model="query.type" value="phrase">PHRASE
+                <input type="radio" ng-model="vm.query.type" value="phrase">PHRASE
             </label>
         </div>
-        <div class="col-md-12 alert alert-info" ng-show="query.multiSearch">
+        <div class="col-md-12 alert alert-info" ng-show="vm.query.multiSearch">
             <div class="row">
                 <div class="col-xs-3">
-                    <select class="form-control" ng-model="query.advanced.newField"
-                            ng-options="key as value.forPrint for (key,value) in fields">
+                    <select class="form-control" ng-model="vm.query.advanced.newField"
+                            ng-options="key as value.forPrint for (key,value) in vm.fields">
                         <option value="">-- chose field --</option>
                     </select>
                 </div>
                 <div class="col-xs-3">
-                    <input class="form-control" type="search" ng-model="query.advanced.newText" autofocus="true"
+                    <input class="form-control" type="search" ng-model="vm.query.advanced.newText" autofocus="true"
                            placeholder="Type your search string"/>
                 </div>
                 <div class="col-xs-1">
-                    <select class="form-control" ng-model="query.advanced.newType">
+                    <select class="form-control" ng-model="vm.query.advanced.newType">
                         <option value="or" selected>OR</option>
                         <option value="and">AND</option>
                         <option value="phrase">PHRASE</option>
                     </select>
                 </div>
-                <button class="btn btn-info" ng-click="addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
+                <button class="btn btn-info" ng-click="vm.addSearchField()"><span class="glyphicon glyphicon-plus-sign glyphicon-white"></span> Add</button>
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <div ng-repeat="searchField in query.advanced.searchFields">
-                        {{searchField.field}} = {{searchField.text}} ({{searchField.type}}) <button class="btn btn-link" ng-click="removeSearchField($index)"><span
+                    <div ng-repeat="searchField in vm.query.advanced.searchFields">
+                        {{searchField.field}} = {{searchField.text}} ({{searchField.type}}) <button class="btn btn-link" ng-click="vm.removeSearchField($index)"><span
                             class="glyphicon glyphicon-remove"></span></button>
                     </div>
                 </div>
@@ -168,8 +168,8 @@
             <div class="row">
                 <div class="col-md-12">
                     <button class="btn btn-primary" type="submit"><span class="glyphicon glyphicon-search glyphicon-white"></span> Search</button>
-                    <button class="btn btn-sm btn-default" ng-click="saveQuery()"><span class="glyphicon glyphicon-share"></span> Save</button>
-                    <button class="btn btn-sm btn-default" ng-click="loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> Load</button>
+                    <button class="btn btn-sm btn-default" ng-click="vm.saveQuery()"><span class="glyphicon glyphicon-share"></span> Save</button>
+                    <button class="btn btn-sm btn-default" ng-click="vm.loadQuery()"><span class="glyphicon glyphicon-download-alt"></span> Load</button>
                 </div>
             </div>
         </div>
@@ -183,16 +183,16 @@
                 <h3 class="panel-title">Query</h3>
             </div>
             <div class="panel-body">
-                <pre>{{createdQuery}}</pre>
+                <pre>{{vm.createdQuery}}</pre>
             </div>
         </div>
     </div>
 </div>
-<div class="row" ng-show="metaResults.failedShards">
+<div class="row" ng-show="vm.metaResults.failedShards">
     <div class="col-md-12">
         <h3>Errors</h3>
 
-        <div class="alert alert-danger" ng-repeat="error in metaResults.errors">
+        <div class="alert alert-danger" ng-repeat="error in vm.metaResults.errors">
             {{error}}
         </div>
     </div>
@@ -205,24 +205,24 @@
                 <h3 class="panel-title">Aggregation results</h3>
             </div>
             <div class="panel-body">
-                <div ng-repeat="(key,value) in aggsResults">
-                    <div><strong>{{key}} - {{query.aggs[key].aggsType}}</strong></div>
-                    <div ng-show="query.aggs[key].aggsType === 'term'">
+                <div ng-repeat="(key,value) in vm.aggsResults">
+                    <div><strong>{{key}} - {{vm.query.aggs[key].aggsType}}</strong></div>
+                    <div ng-show="vm.query.aggs[key].aggsType === 'term'">
                         <div>
                             <span ng-repeat="bucket in value.buckets"> {{bucket.key}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
-                    <div ng-show="query.aggs[key].aggsType === 'datehistogram'">
+                    <div ng-show="vm.query.aggs[key].aggsType === 'datehistogram'">
                         <div>
                             <span ng-repeat="bucket in value.buckets"> {{bucket.key_as_string | date:'medium'}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
-                    <div ng-show="query.aggs[key].aggsType === 'histogram'">
+                    <div ng-show="vm.query.aggs[key].aggsType === 'histogram'">
                         <div>
                             <span ng-repeat="bucket in value.buckets"> {{bucket.key}} ({{bucket.doc_count}})</span>
                         </div>
                     </div>
-                    <div ng-show="query.aggs[key].aggsType === 'range'">
+                    <div ng-show="vm.query.aggs[key].aggsType === 'range'">
                         <div>
                             <span ng-repeat="bucket in value.buckets"> {{bucket.from}}-{{bucket.to}} ({{bucket.doc_count}})</span>
                         </div>
@@ -239,7 +239,7 @@
             <div class="panel-heading">
                 <h3 class="panel-title">Results</h3>
 
-                <p>Total hits "{{queryResults.total}}", Max score "{{queryResults.max_score}}"</p>
+                <p>Total hits "{{vm.queryResults.total}}", Max score "{{vm.queryResults.max_score}}"</p>
             </div>
             <div class="panel-body">
                 <div class="row">
@@ -263,7 +263,7 @@
                     </div>
                 </div>
 
-                <div ng-repeat="doc in queryResults.hits">
+                <div ng-repeat="doc in vm.queryResults.hits">
                     <div class="row" ng-click="doc.showDetails = !doc.showDetails" style="cursor:pointer;">
                         <div class="col-md-2">{{doc._index}}</div>
                         <div class="col-md-2">{{doc._type}}</div>
@@ -276,13 +276,13 @@
                         <div class="col-md-12">
                             <div class="row">
                                 <div class="col-md-8">
-                                    <table class="table table-condensed" ng-hide="query.highlight">
+                                    <table class="table table-condensed" ng-hide="vm.query.highlight">
                                         <tr ng-repeat="(key,value) in doc.fields">
                                             <th>{{key}}</th>
                                             <td>{{value}}</td>
                                         </tr>
                                     </table>
-                                    <table class="table table-condensed" ng-show="query.highlight">
+                                    <table class="table table-condensed" ng-show="vm.query.highlight">
                                         <tr ng-repeat="(key,value) in doc.highlight">
                                             <th>{{key}}</th>
                                             <td><p ng-repeat="item in value">{{item}}</p></td>
@@ -300,8 +300,8 @@
                 </div>
             </div>
             <div class="panel-footer">
-                <pagination boundary-links="true" total-items="totalItems" ng-model="currentPage" class="pagination-sm"
-                            max-size="maxSize" ng-change="changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
+                <pagination boundary-links="true" total-items="vm.totalItems" ng-model="vm.currentPage" class="pagination-sm"
+                            max-size="vm.maxSize" ng-change="vm.changePage()" previous-text="&lsaquo;" next-text="&rsaquo;"
                             first-text="&laquo;" last-text="&raquo;"></pagination>
 
             </div>

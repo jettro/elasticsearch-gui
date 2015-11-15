@@ -20,11 +20,11 @@
                 'guiapp.monitoring',
                 'guiapp.notification',
                 'guiapp.suggestion',
-                'guiapp.whereshards'
+                'guiapp.whereshards',
+                'guiapp.query'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
-        $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
     }]);

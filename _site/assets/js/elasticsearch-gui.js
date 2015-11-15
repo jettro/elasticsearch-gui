@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-14
+/*! elasticsearch-gui - v2.0.0 - 2015-11-15
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function() {
@@ -28,12 +28,12 @@
                 'guiapp.inspect',
                 'guiapp.monitoring',
                 'guiapp.notification',
-                'guiapp.suggestion'
+                'guiapp.suggestion',
+                'guiapp.whereshards'
             ]);
 
     guiapp.config(['$routeProvider', function ($routeProvider) {
         $routeProvider.when('/query', {templateUrl: 'partials/query.html', controller: 'QueryCtrl'});
-        $routeProvider.when('/tools/whereareshards', {templateUrl: 'partials/whereareshards.html', controller: 'WhereShardsCtrl'});
         $routeProvider.when('/about', {templateUrl: 'partials/about.html'});
         $routeProvider.otherwise({redirectTo: '/dashboard'});
     }]);
@@ -117,6 +117,12 @@
     'use strict';
     angular
         .module('guiapp.suggestion', ['guiapp.services','ngRoute']);
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.whereshards', ['guiapp.services','ngRoute']);
 })();
 
 (function () {
@@ -1181,45 +1187,6 @@ function ($scope, $modal, $location, elastic, aggregateBuilder, queryStorage) {
     };
 
     $scope.resetQuery();
-}]);
-
-angular.module('guiapp').controller('WhereShardsCtrl',['$scope', '$timeout', 'elastic',
-function WhereShardsCtrl($scope, $timeout, elastic) {
-    $scope.shardsInfo = {};
-    $scope.nodeInfo = {};
-    $scope.init = function () {
-        obtainShardsInfo();
-    };
-
-    function obtainShardsInfo() {
-        elastic.obtainShards(function (nodeInfo,data) {
-            var nodes = {};
-            angular.forEach(data, function (shards, indexName) {
-                angular.forEach(shards.shards, function (shardArray,shardKey) {
-                    angular.forEach(shardArray, function(shard) {
-                        var desc;
-                        if (shard.primary) {
-                            desc = " (P)";
-                        } else {
-                            desc = " (R)";
-                        }
-                        if (!nodes[shard.node]) {
-                            nodes[shard.node]={};
-                        }
-                        if (!nodes[shard.node][indexName]) {
-                            nodes[shard.node][indexName]=[];
-                        }
-                        nodes[shard.node][indexName].push(shard.shard + desc)
-                    });
-                });
-            });
-            $scope.nodeInfo = nodeInfo;
-            $scope.shardsInfo = nodes;
-        });
-        $timeout(function() {
-            obtainShardsInfo();
-        }, 5000);
-    }
 }]);
 
 (function () {
@@ -2740,6 +2707,74 @@ angular.module('guiapp.filters', []).
             .when('/tools/suggestions', {
                 templateUrl: '/partials/suggestions.html',
                 controller: 'SuggestionCtrl',
+                controllerAs: 'vm'
+            });
+    }
+})();
+(function () {
+    'use strict';
+
+    angular.module('guiapp')
+        .controller('WhereShardsCtrl', WhereShardsCtrl);
+
+    WhereShardsCtrl.$inject = ['$timeout', 'elastic'];
+
+    function WhereShardsCtrl($timeout, elastic) {
+        var vm = this;
+        vm.shardsInfo = {};
+        vm.nodeInfo = {};
+
+        activate();
+
+        function activate() {
+            obtainShardsInfo();
+        }
+
+        function obtainShardsInfo() {
+            elastic.obtainShards(function (nodeInfo, data) {
+                var nodes = {};
+                angular.forEach(data, function (shards, indexName) {
+                    angular.forEach(shards.shards, function (shardArray, shardKey) {
+                        angular.forEach(shardArray, function (shard) {
+                            var desc;
+                            if (shard.primary) {
+                                desc = " (P)";
+                            } else {
+                                desc = " (R)";
+                            }
+                            if (!nodes[shard.node]) {
+                                nodes[shard.node] = {};
+                            }
+                            if (!nodes[shard.node][indexName]) {
+                                nodes[shard.node][indexName] = [];
+                            }
+                            nodes[shard.node][indexName].push(shard.shard + desc)
+                        });
+                    });
+                });
+                vm.nodeInfo = nodeInfo;
+                vm.shardsInfo = nodes;
+            });
+            $timeout(function () {
+                obtainShardsInfo();
+            }, 5000);
+        }
+    }
+})();
+
+(function() {
+    'use strict';
+    angular
+        .module('guiapp.whereshards')
+        .config(config);
+
+    config.$inject = ['$routeProvider'];
+
+    function config($routeProvider) {
+        $routeProvider
+            .when('/tools/whereareshards', {
+                templateUrl: '/partials/whereareshards.html',
+                controller: 'WhereShardsCtrl',
                 controllerAs: 'vm'
             });
     }

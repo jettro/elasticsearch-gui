@@ -7,10 +7,10 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div ng-init="init()">
-            <div class="panel panel-default" ng-repeat="(node,indices) in shardsInfo">
+        <div>
+            <div class="panel panel-default" ng-repeat="(node,indices) in vm.shardsInfo">
                 <div class="panel-heading">
-                    <h3 class="panel-title">{{nodeInfo[node].name}}</h3>
+                    <h3 class="panel-title">{{vm.nodeInfo[node].name}}</h3>
                 </div>
                 <div class="panel-body">
                     <div ng-repeat="(index,shards) in indices" class="whereshard">

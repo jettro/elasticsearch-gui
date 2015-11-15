@@ -5,12 +5,12 @@
         .module('guiapp.search')
         .controller('SearchCtrl', SearchCtrl);
 
-    SearchCtrl.$inject = ['elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+    SearchCtrl.$inject = ['$scope','elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
-    function SearchCtrl(elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+    function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
         var vm = this;
         vm.isCollapsed = true; // Configuration div
-        vm.configure = configuration;
+        vm.configure = {};
         vm.fields = [];
         vm.search = {};
         vm.search.advanced = {};
@@ -49,11 +49,20 @@
         vm.saveQuery = saveQuery;
         vm.showAnalysis = showAnalysis;
 
+        activate();
+
+        function activate() {
+            init();
+        }
+
         function changePage () {
             vm.doSearch();
         }
 
         function init () {
+            vm.configure.title = configuration.configuration.title;
+            vm.configure.description = configuration.configuration.description;
+
             elastic.fields([], [], function (data) {
                 vm.fields = data;
                 if (!vm.configure.title) {
@@ -66,6 +75,11 @@
                     vm.configure.description = "description";
                 }
             });
+
+            $scope.$watchCollection('vm.configure', function() {
+                console.log("watch triggered");
+                configuration.changeConfiguration(vm.configure);
+            }, true);
         }
 
         function restartSearch() {

@@ -3,7 +3,7 @@
 
     angular
         .module('guiapp.services')
-        .factory('serverConfig', ServerConfig);
+        .factory('IKWORDNIETGEBRUIKT', ServerConfig);
 
     ServerConfig.$inject = ['$location'];
 

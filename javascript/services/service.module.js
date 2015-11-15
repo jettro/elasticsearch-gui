@@ -1,6 +1,12 @@
 (function() {
     'use strict';
-    var services = angular.module('guiapp.services', ['elasticsearch']);
+    angular
+        .module('guiapp.services', ['elasticsearch'])
+        .value('version', '2.0.0')
+        .run(runBlock);
 
-    services.value('version', '2.0.0');
+    runBlock.$inject = ['configuration'];
+    function runBlock(configuration) {
+        configuration.loadConfiguration();
+    }
 })();

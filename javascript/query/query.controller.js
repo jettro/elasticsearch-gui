@@ -349,7 +349,6 @@
                     if (vm.query.type === 'phrase') {
                         matchQuery[fieldName].type = "phrase";
                     } else {
-                        console.log(tree[prop] + '-' + tree['_type_' + prop]);
                         matchQuery[fieldName].operator = tree['_type_' + prop];
                     }
                     boolQuery.bool.must.push({"match": matchQuery});

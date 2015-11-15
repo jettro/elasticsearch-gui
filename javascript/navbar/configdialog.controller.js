@@ -9,10 +9,19 @@
 
     function ConfigDialogCtrl($modalInstance, configuration) {
         var confVm = this;
-        confVm.configuration = configuration;
+        confVm.configuration = {};
         confVm.close = close;
 
-        function close (result) {
+        activate();
+
+        function activate() {
+            confVm.configuration.serverUrl = configuration.configuration.serverUrl;
+            confVm.configuration.excludedIndexes = configuration.configuration.excludedIndexes;
+            confVm.configuration.includedIndexes = configuration.configuration.includedIndexes;
+        }
+
+
+        function close () {
             $modalInstance.close(confVm.configuration);
         }
     }

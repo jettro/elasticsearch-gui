@@ -68,7 +68,7 @@
             modalInstance.result.then(function (result) {
                 if (result) {
                     elastic.changeServerAddress(result.serverUrl);
-                    configuration = angular.copy(result);
+                    configuration.changeConfiguration(angular.copy(result));
                 }
             }, function () {
                 // Nothing to do here

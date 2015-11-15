@@ -109,9 +109,15 @@
 
 (function() {
     'use strict';
-    var services = angular.module('guiapp.services', ['elasticsearch']);
+    angular
+        .module('guiapp.services', ['elasticsearch'])
+        .value('version', '2.0.0')
+        .run(runBlock);
 
-    services.value('version', '2.0.0');
+    runBlock.$inject = ['configuration'];
+    function runBlock(configuration) {
+        configuration.loadConfiguration();
+    }
 })();
 
 (function() {
@@ -188,7 +194,7 @@
     'use strict';
 
     angular
-    .module('guiapp.services')
+        .module('guiapp.services')
         .factory('configuration', LocalStorageService);
 
     LocalStorageService.$inject = ['$rootScope', 'localStorage', '$location'];
@@ -196,19 +202,20 @@
     function LocalStorageService($rootScope, localStorage, $location) {
         var LOCAL_STORAGE_ID = 'es-config';
 
+        var configuration = {};
+
         var service = {
-            configuration:{},
+            configuration: configuration,
+            loadConfiguration: loadConfiguration,
             changeConfiguration: changeConfiguration
         };
 
-        initConfiguration();
-
         return service;
 
-        function initConfiguration() {
+        function loadConfiguration() {
             var configurationString = localStorage[LOCAL_STORAGE_ID];
             if (configurationString) {
-                changeConfiguration(JSON.parse(configurationString));
+                doChangeConfiguration(JSON.parse(configurationString));
             } else {
                 var host;
                 if ($location.host() == 'www.gridshore.nl') {
@@ -217,23 +224,44 @@
                     host = $location.protocol() + "://" + $location.host() + ":" + $location.port();
                 }
 
-                changeConfiguration({
+                doChangeConfiguration({
                     title: undefined,
                     description: undefined,
                     excludedIndexes: undefined,
+                    includedIndexes: undefined,
                     serverUrl: host
                 });
             }
 
-            $rootScope.$watch(function () {
-                return service.configuration;
-            }, function () {
-                localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
-            }, true);
+            //$rootScope.$watch(function () {
+            //    return service.configuration;
+            //}, function () {
+            //    console.log("ABOUT TO STORE CONFIG TO LOCAL STORAGE");
+            //    localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
+            //}, true);
         }
 
         function changeConfiguration(configuration) {
-            service.configuration = configuration;
+            doChangeConfiguration(configuration);
+            localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
+        }
+
+        function doChangeConfiguration(configuration) {
+            if (configuration.title && configuration.title.length > 0) {
+                service.configuration.title = configuration.title;
+            }
+            if (configuration.description && configuration.description.length > 0) {
+                service.configuration.description = configuration.description;
+            }
+            if (configuration.excludedIndexes && configuration.excludedIndexes.length > 0) {
+                service.configuration.excludedIndexes = configuration.excludedIndexes;
+            }
+            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
+                service.configuration.includedIndexes = configuration.includedIndexes;
+            }
+            if (configuration.serverUrl && configuration.serverUrl.length > 0) {
+                service.configuration.serverUrl = configuration.serverUrl;
+            }
         }
     }
 })();
@@ -764,7 +792,7 @@
 
     angular
         .module('guiapp.services')
-        .factory('serverConfig', ServerConfig);
+        .factory('IKWORDNIETGEBRUIKT', ServerConfig);
 
     ServerConfig.$inject = ['$location'];
 
@@ -1367,10 +1395,19 @@ angular.module('guiapp.filters', []).
 
     function ConfigDialogCtrl($modalInstance, configuration) {
         var confVm = this;
-        confVm.configuration = configuration;
+        confVm.configuration = {};
         confVm.close = close;
 
-        function close (result) {
+        activate();
+
+        function activate() {
+            confVm.configuration.serverUrl = configuration.configuration.serverUrl;
+            confVm.configuration.excludedIndexes = configuration.configuration.excludedIndexes;
+            confVm.configuration.includedIndexes = configuration.configuration.includedIndexes;
+        }
+
+
+        function close () {
             $modalInstance.close(confVm.configuration);
         }
     }
@@ -1445,7 +1482,7 @@ angular.module('guiapp.filters', []).
             modalInstance.result.then(function (result) {
                 if (result) {
                     elastic.changeServerAddress(result.serverUrl);
-                    configuration = angular.copy(result);
+                    configuration.changeConfiguration(angular.copy(result));
                 }
             }, function () {
                 // Nothing to do here
@@ -1675,8 +1712,6 @@ angular.module('guiapp.filters', []).
         function initQuery() {
             vm.query = {};
             vm.query.term = "";
-            vm.query.chosenIndices = [];
-            vm.query.chosenTypes = [];
             vm.query.chosenFields = [];
             vm.query.aggs = {};
             vm.query.indices = {};
@@ -1868,14 +1903,12 @@ angular.module('guiapp.filters', []).
         }
 
         function saveQuery() {
-            console.log(vm.query);
             queryStorage.saveQuery(angular.copy(vm.query));
         }
 
         function loadQuery() {
             queryStorage.loadQuery(function (data) {
                 vm.query = angular.copy(data);
-                console.log(vm.query);
                 changeQuery();
             });
         }
@@ -1971,7 +2004,6 @@ angular.module('guiapp.filters', []).
                     if (vm.query.type === 'phrase') {
                         matchQuery[fieldName].type = "phrase";
                     } else {
-                        console.log(tree[prop] + '-' + tree['_type_' + prop]);
                         matchQuery[fieldName].operator = tree['_type_' + prop];
                     }
                     boolQuery.bool.must.push({"match": matchQuery});
@@ -2044,12 +2076,12 @@ angular.module('guiapp.filters', []).
         .module('guiapp.search')
         .controller('SearchCtrl', SearchCtrl);
 
-    SearchCtrl.$inject = ['elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
+    SearchCtrl.$inject = ['$scope','elastic', 'configuration', 'aggregateBuilder', '$modal', 'queryStorage'];
 
-    function SearchCtrl(elastic, configuration, aggregateBuilder, $modal, queryStorage) {
+    function SearchCtrl($scope, elastic, configuration, aggregateBuilder, $modal, queryStorage) {
         var vm = this;
         vm.isCollapsed = true; // Configuration div
-        vm.configure = configuration;
+        vm.configure = {};
         vm.fields = [];
         vm.search = {};
         vm.search.advanced = {};
@@ -2088,11 +2120,20 @@ angular.module('guiapp.filters', []).
         vm.saveQuery = saveQuery;
         vm.showAnalysis = showAnalysis;
 
+        activate();
+
+        function activate() {
+            init();
+        }
+
         function changePage () {
             vm.doSearch();
         }
 
         function init () {
+            vm.configure.title = configuration.configuration.title;
+            vm.configure.description = configuration.configuration.description;
+
             elastic.fields([], [], function (data) {
                 vm.fields = data;
                 if (!vm.configure.title) {
@@ -2105,6 +2146,11 @@ angular.module('guiapp.filters', []).
                     vm.configure.description = "description";
                 }
             });
+
+            $scope.$watchCollection('vm.configure', function() {
+                console.log("watch triggered");
+                configuration.changeConfiguration(vm.configure);
+            }, true);
         }
 
         function restartSearch() {

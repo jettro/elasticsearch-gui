@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/tools/whereareshards', {
-                templateUrl: '/partials/whereareshards.html',
+                templateUrl: 'partials/whereareshards.html',
                 controller: 'WhereShardsCtrl',
                 controllerAs: 'vm'
             });

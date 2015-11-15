@@ -9,12 +9,12 @@
     function config($routeProvider) {
         $routeProvider
             .when('/inspect/:index/:type/:id', {
-                templateUrl: '/partials/inspect.html',
+                templateUrl: 'partials/inspect.html',
                 controller: 'InspectCtrl',
                 controllerAs: 'vm'
             })
             .when('/inspect', {
-                templateUrl: '/partials/inspect.html',
+                templateUrl: 'partials/inspect.html',
                 controller: 'InspectCtrl',
                 controllerAs: 'vm'
             });

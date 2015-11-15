@@ -232,13 +232,6 @@
                     serverUrl: host
                 });
             }
-
-            //$rootScope.$watch(function () {
-            //    return service.configuration;
-            //}, function () {
-            //    console.log("ABOUT TO STORE CONFIG TO LOCAL STORAGE");
-            //    localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
-            //}, true);
         }
 
         function changeConfiguration(configuration) {
@@ -988,7 +981,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/dashboard', {
-                templateUrl: '/partials/dashboard.html',
+                templateUrl: 'partials/dashboard.html',
                 controller: 'DashboardCtrl',
                 controllerAs: 'vm'
             });
@@ -1194,7 +1187,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/graph', {
-                templateUrl: '/partials/graph.html',
+                templateUrl: 'partials/graph.html',
                 controller: 'GraphCtrl',
                 controllerAs: 'vm'
             });
@@ -1299,12 +1292,12 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/inspect/:index/:type/:id', {
-                templateUrl: '/partials/inspect.html',
+                templateUrl: 'partials/inspect.html',
                 controller: 'InspectCtrl',
                 controllerAs: 'vm'
             })
             .when('/inspect', {
-                templateUrl: '/partials/inspect.html',
+                templateUrl: 'partials/inspect.html',
                 controller: 'InspectCtrl',
                 controllerAs: 'vm'
             });
@@ -1378,7 +1371,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/tools/monitoring', {
-                templateUrl: '/partials/monitoring.html',
+                templateUrl: 'partials/monitoring.html',
                 controller: 'MonitoringCtrl',
                 controllerAs: 'vm'
             });
@@ -1600,7 +1593,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/node/:nodeId', {
-                templateUrl: '/partials/node.html',
+                templateUrl: 'partials/node.html',
                 controller: 'NodeInfoCtrl',
                 controllerAs: 'vm'
             });
@@ -2063,7 +2056,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/query', {
-                templateUrl: '/partials/query.html',
+                templateUrl: 'partials/query.html',
                 controller: 'QueryCtrl',
                 controllerAs: 'vm'
             });
@@ -2508,7 +2501,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/search', {
-                templateUrl: '/partials/search.html',
+                templateUrl: 'partials/search.html',
                 controller: 'SearchCtrl',
                 controllerAs: 'vm'
             });
@@ -2713,7 +2706,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/tools/snapshots', {
-                templateUrl: '/partials/snapshots.html',
+                templateUrl: 'partials/snapshots.html',
                 controller: 'SnapshotCtrl',
                 controllerAs: 'vm'
             });
@@ -2811,7 +2804,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/tools/suggestions', {
-                templateUrl: '/partials/suggestions.html',
+                templateUrl: 'partials/suggestions.html',
                 controller: 'SuggestionCtrl',
                 controllerAs: 'vm'
             });
@@ -2879,7 +2872,7 @@ angular.module('guiapp.filters', []).
     function config($routeProvider) {
         $routeProvider
             .when('/tools/whereareshards', {
-                templateUrl: '/partials/whereareshards.html',
+                templateUrl: 'partials/whereareshards.html',
                 controller: 'WhereShardsCtrl',
                 controllerAs: 'vm'
             });

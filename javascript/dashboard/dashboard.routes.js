@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/dashboard', {
-                templateUrl: '/partials/dashboard.html',
+                templateUrl: 'partials/dashboard.html',
                 controller: 'DashboardCtrl',
                 controllerAs: 'vm'
             });

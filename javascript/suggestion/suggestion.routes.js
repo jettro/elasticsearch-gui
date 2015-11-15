@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/tools/suggestions', {
-                templateUrl: '/partials/suggestions.html',
+                templateUrl: 'partials/suggestions.html',
                 controller: 'SuggestionCtrl',
                 controllerAs: 'vm'
             });

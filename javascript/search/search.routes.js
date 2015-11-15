@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/search', {
-                templateUrl: '/partials/search.html',
+                templateUrl: 'partials/search.html',
                 controller: 'SearchCtrl',
                 controllerAs: 'vm'
             });

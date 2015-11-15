@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/query', {
-                templateUrl: '/partials/query.html',
+                templateUrl: 'partials/query.html',
                 controller: 'QueryCtrl',
                 controllerAs: 'vm'
             });

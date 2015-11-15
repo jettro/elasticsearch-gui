@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/node/:nodeId', {
-                templateUrl: '/partials/node.html',
+                templateUrl: 'partials/node.html',
                 controller: 'NodeInfoCtrl',
                 controllerAs: 'vm'
             });

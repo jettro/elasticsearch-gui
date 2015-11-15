@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/tools/snapshots', {
-                templateUrl: '/partials/snapshots.html',
+                templateUrl: 'partials/snapshots.html',
                 controller: 'SnapshotCtrl',
                 controllerAs: 'vm'
             });

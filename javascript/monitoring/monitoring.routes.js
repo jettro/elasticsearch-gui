@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/tools/monitoring', {
-                templateUrl: '/partials/monitoring.html',
+                templateUrl: 'partials/monitoring.html',
                 controller: 'MonitoringCtrl',
                 controllerAs: 'vm'
             });

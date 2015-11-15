@@ -77,7 +77,6 @@
             });
 
             $scope.$watchCollection('vm.configure', function() {
-                console.log("watch triggered");
                 configuration.changeConfiguration(vm.configure);
             }, true);
         }

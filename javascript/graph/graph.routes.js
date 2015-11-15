@@ -9,7 +9,7 @@
     function config($routeProvider) {
         $routeProvider
             .when('/graph', {
-                templateUrl: '/partials/graph.html',
+                templateUrl: 'partials/graph.html',
                 controller: 'GraphCtrl',
                 controllerAs: 'vm'
             });

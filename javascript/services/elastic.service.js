@@ -396,9 +396,9 @@
 
         function indexIsNotIgnored(index) {
             var ignore = false;
-            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
+            if (configuration.configuration.includedIndexes && configuration.configuration.includedIndexes.length > 0) {
                 ignore = true;
-                var includedIndexes = (configuration.includedIndexes) ? configuration.includedIndexes.split(",") : [];
+                var includedIndexes = (configuration.configuration.includedIndexes) ? configuration.configuration.includedIndexes.split(",") : [];
                 angular.forEach(includedIndexes, function (includedIndex) {
                     var indexToCheck = includedIndex.trim();
                     if (index.substring(0, indexToCheck.length) === indexToCheck) {
@@ -406,7 +406,7 @@
                     }
                 });
             } else {
-                var excludedIndexes = (configuration.excludedIndexes) ? configuration.excludedIndexes.split(",") : [];
+                var excludedIndexes = (configuration.configuration.excludedIndexes) ? configuration.configuration.excludedIndexes.split(",") : [];
                 angular.forEach(excludedIndexes, function (excludedIndex) {
                     var indexToCheck = excludedIndex.trim();
                     if (index.substring(0, indexToCheck.length) === indexToCheck) {

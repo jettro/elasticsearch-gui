@@ -7,7 +7,7 @@
     ElasticService.$inject = ['esFactory', 'configuration', '$rootScope', '$log'];
 
     function ElasticService(esFactory, configuration, $rootScope, $log) {
-        var serverUrl = configuration.serverUrl;
+        var serverUrl = configuration.configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
         var activeIndexes = [];

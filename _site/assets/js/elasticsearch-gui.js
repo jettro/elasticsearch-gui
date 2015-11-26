@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-15
+/*! elasticsearch-gui - v2.0.0 - 2015-11-26
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2015 ; Licensed  */
 (function() {
@@ -268,7 +268,7 @@
     ElasticService.$inject = ['esFactory', 'configuration', '$rootScope', '$log'];
 
     function ElasticService(esFactory, configuration, $rootScope, $log) {
-        var serverUrl = configuration.serverUrl;
+        var serverUrl = configuration.configuration.serverUrl;
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = createEsFactory();
         var activeIndexes = [];
@@ -2141,7 +2141,6 @@ angular.module('guiapp.filters', []).
             });
 
             $scope.$watchCollection('vm.configure', function() {
-                console.log("watch triggered");
                 configuration.changeConfiguration(vm.configure);
             }, true);
         }

@@ -145,11 +145,11 @@
 
         <div ng-repeat="result in vm.results.hits">
             <div><a ng-click="vm.showAnalysis(result._index,result._type,result._id)">Show terms</a>&nbsp;<span
-                    class="text-info">{{result._source[configure.title]}}</span><span class="text-warning"
+                    class="text-info">{{result._source[vm.configure.title]}}</span><span class="text-warning"
                                                                                         ng-show="vm.search.details">    index: {{result._index}} - score: {{result._score}} - type: {{result._type}}</span>
             </div>
             <div class="well-small">
-                {{result._source[configure.description]}}
+                {{result._source[vm.configure.description]}}
             </div>
             <div class="well" ng-if="result._index+result._type+result._id == vm.tokensPerField.id">
                 <table class="table table-condensed">

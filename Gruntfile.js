@@ -11,7 +11,7 @@ module.exports = function (grunt) {
         watch: {
             js: {
                 files: '<%= jshint.all %>',
-                tasks: ['concat']
+                tasks: ['combine','rsync:deploy']
             },
             sass: {
                 files: ['sass/*.scss'],

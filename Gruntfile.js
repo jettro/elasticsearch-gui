@@ -39,10 +39,7 @@ module.exports = function (grunt) {
             },
             all: [
                 'Gruntfile.js',
-                'javascript/controllers/*',
-                'javascript/services/*',
-                'javascript/dashboard/*',
-                'javascript/*.js'
+                'javascript/**/*.js'
             ]
         },
         uglify: {

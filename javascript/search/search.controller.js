@@ -77,7 +77,7 @@
             });
 
             $scope.$watchCollection('vm.configure', function() {
-                configuration.changeConfiguration(vm.configure);
+                configuration.changeSearchConfiguration(vm.configure);
             }, true);
         }
 

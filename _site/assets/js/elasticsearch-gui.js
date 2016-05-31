@@ -1,6 +1,6 @@
-/*! elasticsearch-gui - v2.0.0 - 2015-11-26
+/*! elasticsearch-gui - v2.0.0 - 2016-05-30
 * https://github.com/jettro/elasticsearch-gui
-* Copyright (c) 2015 ; Licensed  */
+* Copyright (c) 2016 ; Licensed  */
 (function() {
     'use strict';
     angular
@@ -207,7 +207,8 @@
         var service = {
             configuration: configuration,
             loadConfiguration: loadConfiguration,
-            changeConfiguration: changeConfiguration
+            changeConfiguration: changeConfiguration,
+            changeSearchConfiguration: changeSearchConfiguration
         };
 
         return service;
@@ -215,7 +216,9 @@
         function loadConfiguration() {
             var configurationString = localStorage[LOCAL_STORAGE_ID];
             if (configurationString) {
-                doChangeConfiguration(JSON.parse(configurationString));
+                var loadedConfiguration = JSON.parse(configurationString);
+                doChangeConfiguration(loadedConfiguration);
+                doChangeSearchConfiguration(loadedConfiguration);
             } else {
                 var host;
                 if ($location.host() == 'www.gridshore.nl') {
@@ -224,13 +227,29 @@
                     host = $location.protocol() + "://" + $location.host() + ":" + $location.port();
                 }
 
-                doChangeConfiguration({
+                var emptyConfiguration = {
                     title: undefined,
                     description: undefined,
                     excludedIndexes: undefined,
                     includedIndexes: undefined,
                     serverUrl: host
-                });
+                };
+                doChangeSearchConfiguration(emptyConfiguration);
+                changeConfiguration(emptyConfiguration);
+            }
+        }
+
+        function changeSearchConfiguration(configuration) {
+            doChangeSearchConfiguration(configuration);
+            localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
+        }
+        
+        function doChangeSearchConfiguration(configuration) {
+            if (configuration.title && configuration.title.length > 0) {
+                service.configuration.title = configuration.title;
+            }
+            if (configuration.description && configuration.description.length > 0) {
+                service.configuration.description = configuration.description;
             }
         }
 
@@ -238,23 +257,11 @@
             doChangeConfiguration(configuration);
             localStorage[LOCAL_STORAGE_ID] = JSON.stringify(service.configuration);
         }
-
+        
         function doChangeConfiguration(configuration) {
-            if (configuration.title && configuration.title.length > 0) {
-                service.configuration.title = configuration.title;
-            }
-            if (configuration.description && configuration.description.length > 0) {
-                service.configuration.description = configuration.description;
-            }
-            if (configuration.excludedIndexes && configuration.excludedIndexes.length > 0) {
-                service.configuration.excludedIndexes = configuration.excludedIndexes;
-            }
-            if (configuration.includedIndexes && configuration.includedIndexes.length > 0) {
-                service.configuration.includedIndexes = configuration.includedIndexes;
-            }
-            if (configuration.serverUrl && configuration.serverUrl.length > 0) {
-                service.configuration.serverUrl = configuration.serverUrl;
-            }
+            service.configuration.excludedIndexes = configuration.excludedIndexes;
+            service.configuration.includedIndexes = configuration.includedIndexes;
+            service.configuration.serverUrl = configuration.serverUrl;
         }
     }
 })();
@@ -2141,7 +2148,7 @@ angular.module('guiapp.filters', []).
             });
 
             $scope.$watchCollection('vm.configure', function() {
-                configuration.changeConfiguration(vm.configure);
+                configuration.changeSearchConfiguration(vm.configure);
             }, true);
         }
 

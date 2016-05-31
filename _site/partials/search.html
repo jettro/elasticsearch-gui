@@ -115,7 +115,7 @@
                 <div ng-show="vm.search.aggs[key].aggsType === 'term'">
                     <button class="btn btn-link" ng-show="vm.checkSelectedAggregate(key,bucket.key)" ng-click="vm.removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>
                     <button ng-hide="vm.checkSelectedAggregate(key,bucket.key)" class="btn btn-link"
-                          ng-click="vm.addFilter(search.aggs[key].name,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
+                          ng-click="vm.addFilter(vm.search.aggs[key].name,bucket.key)">{{bucket.key}} ({{bucket.doc_count}})</button>
                 </div>
                 <div ng-show="vm.search.aggs[key].aggsType === 'histogram'">
                     <button class="btn btn-link" ng-show="vm.checkSelectedAggregate(key,bucket.key)" ng-click="vm.removeFilter(key,bucket.key)">{{bucket.key}} ({{bucket.doc_count}}) <span class="glyphicon glyphicon-remove"></span></button>

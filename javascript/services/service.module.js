@@ -5,8 +5,9 @@
         .value('version', '2.0.0')
         .run(runBlock);
 
-    runBlock.$inject = ['configuration'];
-    function runBlock(configuration) {
+    runBlock.$inject = ['configuration','elastic'];
+    function runBlock(configuration, elastic) {
         configuration.loadConfiguration();
+        elastic.indexes();
     }
 })();

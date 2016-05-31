@@ -5,9 +5,9 @@
         .module('guiapp.services')
         .factory('configuration', LocalStorageService);
 
-    LocalStorageService.$inject = ['$rootScope', 'localStorage', '$location'];
+    LocalStorageService.$inject = ['localStorage', '$location'];
 
-    function LocalStorageService($rootScope, localStorage, $location) {
+    function LocalStorageService(localStorage, $location) {
         var LOCAL_STORAGE_ID = 'es-config';
 
         var configuration = {};

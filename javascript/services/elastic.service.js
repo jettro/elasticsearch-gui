@@ -88,7 +88,7 @@
             });
         }
 
-        function indexes (callback) {
+        function indexes () {
             es.cluster.state({"ignoreUnavailable": true}).then(function (data) {
                 var indices = [];
                 for (var index in data.metadata.indices) {
@@ -98,9 +98,6 @@
                     }
                 }
                 activeIndexes = indices;
-                if (callback) {
-                    callback(indices);
-                }
             });
         }
 

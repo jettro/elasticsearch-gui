@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2016-05-30
+/*! elasticsearch-gui - v2.0.0 - 2016-05-31
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2016 ; Licensed  */
 (function() {
@@ -114,9 +114,10 @@
         .value('version', '2.0.0')
         .run(runBlock);
 
-    runBlock.$inject = ['configuration'];
-    function runBlock(configuration) {
+    runBlock.$inject = ['configuration','elastic'];
+    function runBlock(configuration, elastic) {
         configuration.loadConfiguration();
+        elastic.indexes();
     }
 })();
 
@@ -197,9 +198,9 @@
         .module('guiapp.services')
         .factory('configuration', LocalStorageService);
 
-    LocalStorageService.$inject = ['$rootScope', 'localStorage', '$location'];
+    LocalStorageService.$inject = ['localStorage', '$location'];
 
-    function LocalStorageService($rootScope, localStorage, $location) {
+    function LocalStorageService(localStorage, $location) {
         var LOCAL_STORAGE_ID = 'es-config';
 
         var configuration = {};
@@ -356,7 +357,7 @@
             });
         }
 
-        function indexes (callback) {
+        function indexes () {
             es.cluster.state({"ignoreUnavailable": true}).then(function (data) {
                 var indices = [];
                 for (var index in data.metadata.indices) {
@@ -366,9 +367,6 @@
                     }
                 }
                 activeIndexes = indices;
-                if (callback) {
-                    callback(indices);
-                }
             });
         }
 

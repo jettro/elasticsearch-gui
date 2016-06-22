@@ -39,11 +39,9 @@
             createSnapshot: createSnapshot,
             doSearch: doSearch,
             suggest: suggest,
-            getDocument: getDocument
+            getDocument: getDocument,
+            getActiveIndexes: getActiveIndexes
         };
-
-        // just to initialize the indices
-        //indexes();
 
         return service;
 
@@ -93,12 +91,16 @@
                 var indices = [];
                 for (var index in data.metadata.indices) {
                     var ignored = indexIsNotIgnored(index);
-                    if (indexIsNotIgnored(index)) {
+                    if (ignored) {
                         indices.push(index);
                     }
                 }
                 activeIndexes = indices;
             });
+        }
+
+        function getActiveIndexes(callback) {
+            callback(activeIndexes);
         }
 
         function removeIndex(index, callback) {

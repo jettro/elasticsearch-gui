@@ -92,7 +92,7 @@
         /* Functions to retrieve values used to created the query */
         function loadIndices() {
             vm.unbind.indicesScope();
-            elastic.indexes(function (data) {
+            elastic.getActiveIndexes(function (data) {
                 if (data) {
                     for (var i = 0; i < data.length; i++) {
                         vm.query.indices[data[i]] = {"name": data[i], "state": false};

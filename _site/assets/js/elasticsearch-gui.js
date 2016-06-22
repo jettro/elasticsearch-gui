@@ -1,4 +1,4 @@
-/*! elasticsearch-gui - v2.0.0 - 2016-05-31
+/*! elasticsearch-gui - v2.0.0 - 2016-06-22
 * https://github.com/jettro/elasticsearch-gui
 * Copyright (c) 2016 ; Licensed  */
 (function() {
@@ -308,11 +308,9 @@
             createSnapshot: createSnapshot,
             doSearch: doSearch,
             suggest: suggest,
-            getDocument: getDocument
+            getDocument: getDocument,
+            getActiveIndexes: getActiveIndexes
         };
-
-        // just to initialize the indices
-        //indexes();
 
         return service;
 
@@ -362,12 +360,16 @@
                 var indices = [];
                 for (var index in data.metadata.indices) {
                     var ignored = indexIsNotIgnored(index);
-                    if (indexIsNotIgnored(index)) {
+                    if (ignored) {
                         indices.push(index);
                     }
                 }
                 activeIndexes = indices;
             });
+        }
+
+        function getActiveIndexes(callback) {
+            callback(activeIndexes);
         }
 
         function removeIndex(index, callback) {
@@ -1745,7 +1747,7 @@ angular.module('guiapp.filters', []).
         /* Functions to retrieve values used to created the query */
         function loadIndices() {
             vm.unbind.indicesScope();
-            elastic.indexes(function (data) {
+            elastic.getActiveIndexes(function (data) {
                 if (data) {
                     for (var i = 0; i < data.length; i++) {
                         vm.query.indices[data[i]] = {"name": data[i], "state": false};

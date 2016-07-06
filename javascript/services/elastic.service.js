@@ -7,12 +7,13 @@
     ElasticService.$inject = ['esFactory', 'configuration', '$rootScope', '$log'];
 
     function ElasticService(esFactory, configuration, $rootScope, $log) {
-        var serverUrl = configuration.configuration.serverUrl;
+        var serverUrl = "";
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
-        var es = createEsFactory();
+        var es = {};
         var activeIndexes = [];
 
         var service = {
+            initialise: initialise,
             changeServerAddress: changeServerAddress,
             obtainServerAddress: function(){return serverUrl},
             clusterStatus: clusterStatus,
@@ -45,6 +46,12 @@
 
         return service;
 
+        function initialise() {
+            serverUrl = configuration.configuration.serverUrl;
+            es = createEsFactory();
+            indexes();
+        }
+        
         function changeServerAddress (serverAddress) {
             serverUrl = serverAddress;
             es = createEsFactory();
@@ -422,7 +429,11 @@
         }
 
         function broadcastError(error) {
-            $rootScope.$broadcast('msg:notification', 'error', error.message);
+            if ("unknown error" === error.message) {
+                $rootScope.$broadcast('msg:notification', 'error', "Connection problems");
+            } else {
+                $rootScope.$broadcast('msg:notification', 'error', error.message);
+            }
         }
     }
 })();

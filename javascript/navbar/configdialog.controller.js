@@ -15,6 +15,7 @@
         activate();
 
         function activate() {
+            confVm.configuration.apiVersion = configuration.configuration.apiVersion;
             confVm.configuration.serverUrl = configuration.configuration.serverUrl;
             confVm.configuration.excludedIndexes = configuration.configuration.excludedIndexes;
             confVm.configuration.includedIndexes = configuration.configuration.includedIndexes;

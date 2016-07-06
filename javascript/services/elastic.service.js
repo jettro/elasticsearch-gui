@@ -8,6 +8,7 @@
 
     function ElasticService(esFactory, configuration, $rootScope, $log) {
         var serverUrl = "";
+        var apiVersion = "2.0";
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = {};
         var activeIndexes = [];
@@ -48,12 +49,14 @@
 
         function initialise() {
             serverUrl = configuration.configuration.serverUrl;
+            apiVersion = configuration.configuration.apiVersion;
             es = createEsFactory();
             indexes();
         }
         
-        function changeServerAddress (serverAddress) {
+        function changeServerAddress (serverAddress, newApiVersion) {
             serverUrl = serverAddress;
+            apiVersion = newApiVersion;
             es = createEsFactory();
             indexes();
         }
@@ -397,7 +400,7 @@
         }
 
         function createEsFactory() {
-            return esFactory({"host": serverUrl, "apiVersion": "2.0"});
+            return esFactory({"host": serverUrl, "apiVersion": apiVersion});
         }
 
         function indexIsNotIgnored(index) {

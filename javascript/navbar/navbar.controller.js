@@ -67,7 +67,7 @@
             var modalInstance = $modal.open(opts);
             modalInstance.result.then(function (result) {
                 if (result) {
-                    elastic.changeServerAddress(result.serverUrl);
+                    elastic.changeServerAddress(result.serverUrl, result.apiVersion);
                     configuration.changeConfiguration(angular.copy(result));
                 }
             }, function () {

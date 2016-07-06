@@ -40,7 +40,8 @@
                     description: undefined,
                     excludedIndexes: undefined,
                     includedIndexes: undefined,
-                    serverUrl: host
+                    serverUrl: host,
+                    apiVersion: "2.0"
                 };
                 doChangeSearchConfiguration(emptyConfiguration);
                 changeConfiguration(emptyConfiguration);
@@ -70,6 +71,7 @@
             service.configuration.excludedIndexes = configuration.excludedIndexes;
             service.configuration.includedIndexes = configuration.includedIndexes;
             service.configuration.serverUrl = configuration.serverUrl;
+            service.configuration.apiVersion = configuration.apiVersion;
         }
     }
 })();

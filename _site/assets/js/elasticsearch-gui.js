@@ -233,7 +233,8 @@
                     description: undefined,
                     excludedIndexes: undefined,
                     includedIndexes: undefined,
-                    serverUrl: host
+                    serverUrl: host,
+                    apiVersion: "2.0"
                 };
                 doChangeSearchConfiguration(emptyConfiguration);
                 changeConfiguration(emptyConfiguration);
@@ -263,6 +264,7 @@
             service.configuration.excludedIndexes = configuration.excludedIndexes;
             service.configuration.includedIndexes = configuration.includedIndexes;
             service.configuration.serverUrl = configuration.serverUrl;
+            service.configuration.apiVersion = configuration.apiVersion;
         }
     }
 })();
@@ -277,6 +279,7 @@
 
     function ElasticService(esFactory, configuration, $rootScope, $log) {
         var serverUrl = "";
+        var apiVersion = "2.0";
         var statussus = {"green": "success", "yellow": "warning", "red": "error"};
         var es = {};
         var activeIndexes = [];
@@ -317,12 +320,14 @@
 
         function initialise() {
             serverUrl = configuration.configuration.serverUrl;
+            apiVersion = configuration.configuration.apiVersion;
             es = createEsFactory();
             indexes();
         }
         
-        function changeServerAddress (serverAddress) {
+        function changeServerAddress (serverAddress, newApiVersion) {
             serverUrl = serverAddress;
+            apiVersion = newApiVersion;
             es = createEsFactory();
             indexes();
         }
@@ -666,7 +671,7 @@
         }
 
         function createEsFactory() {
-            return esFactory({"host": serverUrl, "apiVersion": "2.0"});
+            return esFactory({"host": serverUrl, "apiVersion": apiVersion});
         }
 
         function indexIsNotIgnored(index) {
@@ -1412,6 +1417,7 @@ angular.module('guiapp.filters', []).
         activate();
 
         function activate() {
+            confVm.configuration.apiVersion = configuration.configuration.apiVersion;
             confVm.configuration.serverUrl = configuration.configuration.serverUrl;
             confVm.configuration.excludedIndexes = configuration.configuration.excludedIndexes;
             confVm.configuration.includedIndexes = configuration.configuration.includedIndexes;
@@ -1492,7 +1498,7 @@ angular.module('guiapp.filters', []).
             var modalInstance = $modal.open(opts);
             modalInstance.result.then(function (result) {
                 if (result) {
-                    elastic.changeServerAddress(result.serverUrl);
+                    elastic.changeServerAddress(result.serverUrl, result.apiVersion);
                     configuration.changeConfiguration(angular.copy(result));
                 }
             }, function () {
